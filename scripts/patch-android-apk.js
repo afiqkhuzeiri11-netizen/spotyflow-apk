@@ -48,8 +48,6 @@ import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -78,7 +76,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
-    public static final String CHANNEL_ID = "spotyflow_media_v2";
+    public static final String CHANNEL_ID = "spotyflow_playback_v3";
     public static final int NOTIFICATION_ID = 1001;
 
     public static final String ACTION_UPDATE = "com.spotyflow.music.ACTION_UPDATE";
@@ -90,8 +88,6 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
     public static volatile boolean isPlaying = false;
 
     private MediaSessionCompat mediaSession;
-    private AudioManager audioManager;
-    private AudioFocusRequest audioFocusRequest;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
     private ExecutorService artworkExecutor;
@@ -110,21 +106,6 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
     private Bitmap fallbackArtworkCache = null;
     private boolean noisyReceiverRegistered = false;
     private boolean isInForeground = false;
-    private long lastPlayRequestedElapsedMs = 0L;
-
-    private final AudioManager.OnAudioFocusChangeListener focusChangeListener = focusChange -> {
-        if (focusChange == AudioManager.AUDIOFOCUS_LOSS
-                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-            // Abaikan bentrok internal sementara saat Chromium WebView ikut meminta fokus audio di awal pemutaran
-            if (SystemClock.elapsedRealtime() - lastPlayRequestedElapsedMs < 1800L) {
-                return;
-            }
-            isPlaying = false;
-            releasePowerLocks();
-            SpotyFlowMediaPlugin.emitMediaAction("pause", -1L);
-            updatePlaybackStateAndNotification();
-        }
-    };
 
     private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
         @Override
@@ -143,7 +124,6 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         artworkExecutor = Executors.newSingleThreadExecutor();
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         createNotificationChannel();
         initMediaSession();
@@ -182,6 +162,7 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
         );
 
         mediaSession = new MediaSessionCompat(this, "SpotyFlowMediaSession", mediaButtonReceiver, mediaButtonPendingIntent);
+        mediaSession.setPlaybackToLocal(AudioManager.STREAM_MUSIC);
         mediaSession.setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                         | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
@@ -219,52 +200,12 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
             public void onStop() {
                 isPlaying = false;
                 releasePowerLocks();
-                abandonAudioFocus();
                 SpotyFlowMediaPlugin.emitMediaAction("pause", -1L);
                 stopSelf();
             }
         });
         setSessionToken(mediaSession.getSessionToken());
         mediaSession.setActive(true);
-    }
-
-    private void requestAudioFocusSafe() {
-        if (audioManager == null) return;
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (audioFocusRequest == null) {
-                    AudioAttributes attrs = new AudioAttributes.Builder()
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build();
-                    audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                            .setAudioAttributes(attrs)
-                            .setAcceptsDelayedFocusGain(true)
-                            .setOnAudioFocusChangeListener(focusChangeListener, mainHandler)
-                            .build();
-                }
-                audioManager.requestAudioFocus(audioFocusRequest);
-            } else {
-                audioManager.requestAudioFocus(
-                        focusChangeListener,
-                        AudioManager.STREAM_MUSIC,
-                        AudioManager.AUDIOFOCUS_GAIN
-                );
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void abandonAudioFocus() {
-        if (audioManager == null) return;
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && audioFocusRequest != null) {
-                audioManager.abandonAudioFocusRequest(audioFocusRequest);
-            } else {
-                audioManager.abandonAudioFocus(focusChangeListener);
-            }
-        } catch (Exception ignored) {
-        }
     }
 
     private void registerNoisyReceiverSafe() {
@@ -374,8 +315,6 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
         isPlaying = playing;
 
         if (isPlaying) {
-            lastPlayRequestedElapsedMs = SystemClock.elapsedRealtime();
-            requestAudioFocusSafe();
             acquirePowerLocks();
         } else {
             releasePowerLocks();
@@ -482,6 +421,7 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, safeDurationMs);
         if (art != null) {
             metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, art);
+            metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, art);
             metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, art);
         }
         mediaSession.setMetadata(metaBuilder.build());
@@ -519,7 +459,6 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setColorized(true)
-                .setSilent(true)
                 .setOngoing(isPlaying)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
@@ -533,36 +472,27 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
 
         Notification notification = builder.build();
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (isPlaying) {
-            if (!isInForeground) {
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-                    } else {
-                        startForeground(NOTIFICATION_ID, notification);
-                    }
-                    isInForeground = true;
-                } catch (Exception e) {
-                    if (nm != null) nm.notify(NOTIFICATION_ID, notification);
-                }
-            } else if (nm != null) {
-                nm.notify(NOTIFICATION_ID, notification);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            } else {
+                startForeground(NOTIFICATION_ID, notification);
             }
-        } else {
-            if (isInForeground) {
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        stopForeground(STOP_FOREGROUND_DETACH);
-                    } else {
-                        stopForeground(false);
-                    }
-                } catch (Exception ignored) {
+            isInForeground = true;
+        } catch (Exception e) {
+            if (nm != null) nm.notify(NOTIFICATION_ID, notification);
+        }
+        if (!isPlaying && isInForeground) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_DETACH);
+                } else {
+                    stopForeground(false);
                 }
                 isInForeground = false;
+            } catch (Exception ignored) {
             }
-            if (nm != null) {
-                nm.notify(NOTIFICATION_ID, notification);
-            }
+            if (nm != null) nm.notify(NOTIFICATION_ID, notification);
         }
     }
 
@@ -570,7 +500,6 @@ public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
     public void onDestroy() {
         isPlaying = false;
         releasePowerLocks();
-        abandonAudioFocus();
         if (noisyReceiverRegistered) {
             try {
                 unregisterReceiver(noisyReceiver);
@@ -889,12 +818,12 @@ public class SpotyFlowMediaPlugin extends Plugin {
         intent.putExtra("playbackRate", playbackRate);
 
         try {
-            if (playing) {
-                ContextCompat.startForegroundService(ctx, intent);
-            } else {
+            ContextCompat.startForegroundService(ctx, intent);
+        } catch (Exception e) {
+            try {
                 ctx.startService(intent);
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
         }
         call.resolve();
     }
@@ -1235,15 +1164,62 @@ function writeJavaSources() {
   console.log('  + Written SpotyFlowMediaService.java (MediaBrowserServiceCompat), SpotyFlowMediaPlugin.java, SpotyFlowWebView.java, MainActivity.java, bridge_layout_main.xml, ic_stat_music.xml');
 }
 
-function main() {
-  if (!fs.existsSync(ANDROID_DIR)) {
-    throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
+function verifyPatchedProject() {
+  const mustExist = [
+    BUILD_GRADLE,
+    MANIFEST_XML,
+    path.join(JAVA_PKG_DIR, 'SpotyFlowMediaService.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowMediaPlugin.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'),
+    path.join(JAVA_PKG_DIR, 'MainActivity.java'),
+    path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'),
+    path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'),
+  ];
+  for (const f of mustExist) {
+    if (!fs.existsSync(f)) {
+      console.error('[SpotyFlow Android Patcher] VERIFY FAILED — file hilang:', f);
+      process.exit(1);
+    }
   }
-  console.log('[SpotyFlow Android Patcher] Applying Spotify-style native MediaSession & Background Playback patches...');
-  patchBuildGradle();
-  patchAndroidManifest();
-  writeJavaSources();
-  console.log('[SpotyFlow Android Patcher] SELESAI — siap kompilasi Gradle!');
+  const gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
+  const manifest = fs.readFileSync(MANIFEST_XML, 'utf8');
+  const svc = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowMediaService.java'), 'utf8');
+  const checks = [
+    [gradle.includes('androidx.media:media:1.7.0'), 'build.gradle missing androidx.media:media:1.7.0'],
+    [gradle.includes('"wav"') && gradle.includes('"wasm"'), 'build.gradle missing noCompress wav/wasm'],
+    [manifest.includes('android:appCategory="audio"'), 'AndroidManifest.xml missing android:appCategory="audio"'],
+    [manifest.includes('android.media.browse.MediaBrowserService'), 'AndroidManifest.xml missing MediaBrowserService'],
+    [manifest.includes('androidx.media.session.MediaButtonReceiver'), 'AndroidManifest.xml missing MediaButtonReceiver'],
+    [!manifest.includes('SYSTEM_ALERT_WINDOW'), 'AndroidManifest.xml must NOT contain SYSTEM_ALERT_WINDOW'],
+    [svc.includes('setPlaybackToLocal(AudioManager.STREAM_MUSIC)'), 'SpotyFlowMediaService missing setPlaybackToLocal'],
+    [svc.includes('spotyflow_playback_v3'), 'SpotyFlowMediaService missing spotyflow_playback_v3 channel'],
+    [!svc.includes('requestAudioFocus'), 'SpotyFlowMediaService must NOT call requestAudioFocus'],
+    [!svc.includes('.setSilent(true)'), 'SpotyFlowMediaService must NOT call .setSilent(true)'],
+  ];
+  for (const [ok, msg] of checks) {
+    if (!ok) {
+      console.error('[SpotyFlow Android Patcher] VERIFY FAILED:', msg);
+      process.exit(1);
+    }
+  }
+  console.log('  + Strict self-verification passed (10/10 native checks)');
+}
+
+function main() {
+  try {
+    if (!fs.existsSync(ANDROID_DIR)) {
+      throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
+    }
+    console.log('[SpotyFlow Android Patcher] Applying Spotify-style native MediaSession & Background Playback patches...');
+    patchBuildGradle();
+    patchAndroidManifest();
+    writeJavaSources();
+    verifyPatchedProject();
+    console.log('[SpotyFlow Android Patcher] SELESAI — siap kompilasi Gradle!');
+  } catch (err) {
+    console.error('[SpotyFlow Android Patcher] ERROR:', err?.message || err);
+    process.exit(1);
+  }
 }
 
 main();
