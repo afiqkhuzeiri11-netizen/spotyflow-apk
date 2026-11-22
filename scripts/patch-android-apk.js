@@ -84,7 +84,9 @@ public class SpotyFlowMediaService extends Service {
 
     private String lastLoadedCoverUrl = "";
     private Bitmap cachedCoverBitmap = null;
+    private Bitmap fallbackArtworkCache = null;
     private boolean noisyReceiverRegistered = false;
+    private boolean isInForeground = false;
 
     private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
         @Override
@@ -283,8 +285,12 @@ public class SpotyFlowMediaService extends Service {
     }
 
     private Bitmap getFallbackArtwork() {
+        if (fallbackArtworkCache != null && !fallbackArtworkCache.isRecycled()) {
+            return fallbackArtworkCache;
+        }
         try {
-            return BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            fallbackArtworkCache = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            return fallbackArtworkCache;
         } catch (Exception e) {
             return null;
         }
@@ -409,6 +415,7 @@ public class SpotyFlowMediaService extends Service {
                 .setOngoing(isPlaying)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
+                .setDeleteIntent(buildServiceActionIntent(ACTION_STOP, 4))
                 .addAction(android.R.drawable.ic_media_previous, "Sebelumnya", buildServiceActionIntent(ACTION_PREV, 1))
                 .addAction(playPauseIcon, playPauseLabel, buildServiceActionIntent(ACTION_PLAY_PAUSE, 2))
                 .addAction(android.R.drawable.ic_media_next, "Berikutnya", buildServiceActionIntent(ACTION_NEXT, 3))
@@ -417,14 +424,34 @@ public class SpotyFlowMediaService extends Service {
                         .setShowActionsInCompactView(0, 1, 2));
 
         Notification notification = builder.build();
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-            } else {
-                startForeground(NOTIFICATION_ID, notification);
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (isPlaying) {
+            if (!isInForeground) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+                    } else {
+                        startForeground(NOTIFICATION_ID, notification);
+                    }
+                    isInForeground = true;
+                } catch (Exception e) {
+                    if (nm != null) nm.notify(NOTIFICATION_ID, notification);
+                }
+            } else if (nm != null) {
+                nm.notify(NOTIFICATION_ID, notification);
             }
-        } catch (Exception e) {
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        } else {
+            if (isInForeground) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        stopForeground(STOP_FOREGROUND_DETACH);
+                    } else {
+                        stopForeground(false);
+                    }
+                } catch (Exception ignored) {
+                }
+                isInForeground = false;
+            }
             if (nm != null) {
                 nm.notify(NOTIFICATION_ID, notification);
             }
@@ -494,15 +521,32 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @CapacitorPlugin(name = "SpotyFlowMedia")
 public class SpotyFlowMediaPlugin extends Plugin {
     private static volatile SpotyFlowMediaPlugin activeInstance;
     private static volatile String pendingAuthNonce = null;
+    private ExecutorService networkExecutor;
 
     @Override
     public void load() {
         super.load();
         activeInstance = this;
+        if (networkExecutor == null || networkExecutor.isShutdown()) {
+            networkExecutor = Executors.newCachedThreadPool();
+        }
         if (pendingAuthNonce != null) {
             String n = pendingAuthNonce;
             pendingAuthNonce = null;
@@ -514,6 +558,10 @@ public class SpotyFlowMediaPlugin extends Plugin {
     protected void handleOnDestroy() {
         if (activeInstance == this) {
             activeInstance = null;
+        }
+        if (networkExecutor != null) {
+            networkExecutor.shutdownNow();
+            networkExecutor = null;
         }
         super.handleOnDestroy();
     }
@@ -539,6 +587,140 @@ public class SpotyFlowMediaPlugin extends Plugin {
         JSObject data = new JSObject();
         data.put("nonce", nonce);
         inst.notifyListeners("authReturn", data, true);
+    }
+
+    public static void emitAppVisibility(boolean visible) {
+        SpotyFlowMediaPlugin inst = activeInstance;
+        if (inst == null) return;
+        JSObject data = new JSObject();
+        data.put("visible", visible);
+        inst.notifyListeners("appVisibility", data, true);
+    }
+
+    @PluginMethod
+    public void resolveYoutubeAudio(PluginCall call) {
+        final String videoId = call.getString("videoId", "").trim();
+        if (!videoId.matches("^[a-zA-Z0-9_-]{11}$")) {
+            JSObject fail = new JSObject();
+            fail.put("ok", false);
+            call.resolve(fail);
+            return;
+        }
+        if (networkExecutor == null || networkExecutor.isShutdown()) {
+            networkExecutor = Executors.newCachedThreadPool();
+        }
+        networkExecutor.execute(() -> {
+            JSObject result = fetchInnertubeAudio(videoId, "ANDROID_VR", "1.60.19", "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip");
+            if (result == null) {
+                result = fetchInnertubeAudio(videoId, "IOS", "19.29.1", "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)");
+            }
+            if (result == null) {
+                result = new JSObject();
+                result.put("ok", false);
+            }
+            call.resolve(result);
+        });
+    }
+
+    private JSObject fetchInnertubeAudio(String videoId, String clientName, String clientVersion, String userAgent) {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL("https://www.youtube.com/youtubei/v1/player?prettyPrint=false");
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setConnectTimeout(3500);
+            conn.setReadTimeout(3800);
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("User-Agent", userAgent);
+
+            JSONObject client = new JSONObject();
+            client.put("clientName", clientName);
+            client.put("clientVersion", clientVersion);
+            client.put("hl", "id");
+            client.put("gl", "ID");
+            if ("ANDROID_VR".equals(clientName)) {
+                client.put("androidSdkVersion", 32);
+                client.put("deviceMake", "Oculus");
+                client.put("deviceModel", "Quest 3");
+            } else {
+                client.put("deviceMake", "Apple");
+                client.put("deviceModel", "iPhone16,2");
+            }
+
+            JSONObject context = new JSONObject();
+            context.put("client", client);
+            JSONObject body = new JSONObject();
+            body.put("videoId", videoId);
+            body.put("context", context);
+            body.put("contentCheckOk", true);
+            body.put("racyCheckOk", true);
+
+            byte[] payloadBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payloadBytes);
+            }
+
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            try (InputStream is = conn.getInputStream();
+                 BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+            }
+
+            JSONObject json = new JSONObject(sb.toString());
+            JSONObject streamingData = json.optJSONObject("streamingData");
+            if (streamingData == null) return null;
+            JSONArray formats = streamingData.optJSONArray("adaptiveFormats");
+            if (formats == null) return null;
+
+            String bestUrl = null;
+            String bestMime = "";
+            int bestScore = -1;
+            int bestBitrate = 0;
+
+            for (int i = 0; i < formats.length(); i++) {
+                JSONObject fmt = formats.optJSONObject(i);
+                if (fmt == null) continue;
+                String mime = fmt.optString("mimeType", "");
+                if (!mime.startsWith("audio/")) continue;
+                String streamUrl = fmt.optString("url", "");
+                if (streamUrl.isEmpty() || !streamUrl.startsWith("https://")) continue;
+                int bitrate = fmt.optInt("bitrate", 0);
+                // Prefer hardware-decoded audio/mp4 (M4A/AAC) for zero CPU stutter on Android
+                int bonus = mime.startsWith("audio/mp4") ? 1000000 : 0;
+                int score = bonus + bitrate;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestUrl = streamUrl;
+                    bestMime = mime.split(";")[0];
+                    bestBitrate = bitrate;
+                }
+            }
+
+            if (bestUrl == null) return null;
+            JSONObject videoDetails = json.optJSONObject("videoDetails");
+            long durSec = videoDetails != null ? videoDetails.optLong("lengthSeconds", 0L) : 0L;
+
+            JSObject out = new JSObject();
+            out.put("ok", true);
+            out.put("url", bestUrl);
+            out.put("mimeType", bestMime);
+            out.put("bitrate", bestBitrate);
+            out.put("duration", durSec);
+            out.put("client", clientName);
+            return out;
+        } catch (Exception ignored) {
+            return null;
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
     }
 
     @PluginMethod
@@ -739,6 +921,12 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        SpotyFlowMediaPlugin.emitAppVisibility(true);
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         scheduleBackgroundWebViewKeepAlive();
@@ -746,6 +934,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onStop() {
+        SpotyFlowMediaPlugin.emitAppVisibility(false);
         super.onStop();
         scheduleBackgroundWebViewKeepAlive();
     }

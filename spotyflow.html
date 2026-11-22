@@ -5229,15 +5229,34 @@
             }
           } catch {}
         });
-        if (!__nativeMediaSyncTimer) {
-          __nativeMediaSyncTimer = setInterval(() => {
-            try {
-              if (AppState.currentTrack && (AppState.isPlaying || (audio && !audio.paused))) {
-                updateSystemMediaSession(AppState.currentTrack);
+        nativeMedia.addListener('appVisibility', ({ visible } = {}) => {
+          try {
+            const isBg = visible === false;
+            window.__sfNativeAppBg = isBg;
+            document.documentElement.classList.toggle('sf-tab-hidden', isBg);
+            if (isBg) {
+              window.__sfLastBgAt = Date.now();
+              stopVisualizerLoop();
+              if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
+              saveListeningStats(true);
+              if (typeof savePlaybackSession === 'function') savePlaybackSession(true);
+            } else {
+              if (AppState.isPlaying) {
+                startVisualizerLoop();
               }
-            } catch {}
-          }, 5000);
-        }
+              if (typeof syncCanvasMotionLoop === 'function') syncCanvasMotionLoop();
+              if (AppState.currentTrack) {
+                const cur = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
+                  ? Number(SFYtFull.getCurrentTime() || 0)
+                  : Number(audio?.currentTime || 0);
+                syncLyricsWithTime(cur);
+              }
+              if (__sfNativeApkAuthNonce && typeof pollNativeApkGoogleAuthOnce === 'function') {
+                pollNativeApkGoogleAuthOnce();
+              }
+            }
+          } catch {}
+        });
       } catch {}
     }
 
@@ -7507,6 +7526,9 @@
             return;
           }
 
+          // Hemat CPU/GPU penuh di latar belakang APK agar audio 0% patah-patah
+          if (window.__sfNativeAppBg || document.hidden) return;
+
           const pct = Math.max(0, Math.min(100, (cur / total) * 100));
           const curText = formatTime(cur);
           if (!AppState.isSeeking) {
@@ -7828,14 +7850,21 @@
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
 
-        // 1. PRIORITAS UTAMA DI SPOTYFLOW.APK v3+: Resolusi YouTube Full-Duration langsung di IP HP
-        if (ytCandidates.length && window.SpotyFlowNative && typeof window.SpotyFlowNative.resolveFullAudioAsync === 'function') {
+        // 1. PRIORITAS UTAMA DI SPOTYFLOW.APK: Resolusi YouTube Audio-Only M4A/AAC langsung dari IP HP (0% decode video = 0% patah-patah di latar belakang!)
+        const nativeCapMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
+        const canResolveOnDevice = Boolean(
+          (IS_NATIVE_APK && nativeCapMedia && typeof nativeCapMedia.resolveYoutubeAudio === 'function') ||
+          (window.SpotyFlowNative && typeof window.SpotyFlowNative.resolveFullAudioAsync === 'function')
+        );
+        if (ytCandidates.length && canResolveOnDevice) {
           for (let j = 0; j < Math.min(ytCandidates.length, 3); j++) {
             const cand = ytCandidates[j];
             if (!cand?.videoId) continue;
-            setLoadingBanner(true, `Memuat audio YouTube "${track.title}" (${formatTime(cand.duration || track.duration)})...`);
+            setLoadingBanner(true, `Memuat audio HD YouTube "${track.title}" (${formatTime(cand.duration || track.duration)})...`);
             try {
-              const nativeRes = await resolveFullAudioOnAndroidDevice(cand.videoId);
+              const nativeRes = (IS_NATIVE_APK && nativeCapMedia && typeof nativeCapMedia.resolveYoutubeAudio === 'function')
+                ? await nativeCapMedia.resolveYoutubeAudio({ videoId: cand.videoId })
+                : await resolveFullAudioOnAndroidDevice(cand.videoId);
               if (sessionId !== AppState.playSessionId) return;
               if (nativeRes && nativeRes.ok && nativeRes.url) {
                 await tryPlayAudioUrl(nativeRes.url, sessionId, { supportsCors: false });
@@ -7843,12 +7872,12 @@
 
                 setLoadingBanner(false);
                 AppState.isPlaying = true;
-                const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (nativeRes.duration || cand.duration || track.duration || 210);
+                const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (Number(nativeRes.duration) || cand.duration || track.duration || 210);
                 track.duration = realDur;
                 applyPendingResumePosition(false, realDur);
                 updateDurationDisplays(realDur);
                 setSignalBadge(`YOUTUBE HI-FI • ${formatTime(realDur)}`, true);
-                document.getElementById('stage-source-label').textContent = `YouTube Master • Hi-Fi AAC (${formatTime(realDur)})`;
+                document.getElementById('stage-source-label').textContent = `YouTube Master • Native Audio HD (${formatTime(realDur)})`;
                 updatePlayPauseIcons();
                 highlightPlayingTrackRows();
                 renderAudioSourcesPanel();
@@ -8635,7 +8664,7 @@
         }
 
         // Dual-Deck Pre-Staging & True Crossfade (Dilewati saat layar mati agar stabil single-deck)
-        const allowDualDeck = !document.hidden && !AppState.mobileBgBypass;
+        const allowDualDeck = !document.hidden && !window.__sfNativeAppBg && !AppState.mobileBgBypass;
         const cfSec = Math.max(0, Math.min(12, Number(AppState.crossfadeSeconds) || 0));
         const stageWindow = Math.max(15, cfSec + 8);
         if (allowDualDeck && total > 20 && remaining > 0.5 && remaining <= stageWindow && AppState.repeatMode !== 'one' && AppState.sleepMode !== 'end') {
@@ -8655,7 +8684,7 @@
           return;
         }
 
-        if (AppState.isSeeking) return;
+        if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden) return;
         const pct = Math.min(100, Math.max(0, (deckEl.currentTime / total) * 100));
         ['seek-slider', 'stage-seek-slider'].forEach((id) => {
           const el = document.getElementById(id);
