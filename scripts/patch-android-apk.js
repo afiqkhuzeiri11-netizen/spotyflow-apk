@@ -138,10 +138,12 @@ public class SpotyFlowWebView extends CapacitorWebView {
 
 const BRIDGE_LAYOUT_MAIN_XML = `<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="#050505"
+    tools:context="com.getcapacitor.BridgeActivity">
 
     <${APP_ID}.SpotyFlowWebView
         android:id="@+id/webview"
@@ -211,6 +213,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     public static volatile SpotyFlowPlaybackService instance = null;
     public static volatile boolean isPlaying = false;
     private static volatile String pendingJsonPayload = null;
+    private volatile boolean serviceStarted = false;
 
     private Handler mainHandler;
     private ExecutorService artworkExecutor;
@@ -316,15 +319,27 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     public static void dispatchStateUpdate(Context ctx, String jsonPayload) {
         if (jsonPayload == null || jsonPayload.isEmpty()) return;
         // Update flag isPlaying SEKETIKA sebelum mainHandler.post agar SpotyFlowWebView langsung melindungi audio walau Home/Power ditekan 50ms setelah Play!
+        boolean playingQuick = false;
+        boolean hasPlayingField = false;
         try {
             JSONObject quickObj = new JSONObject(jsonPayload);
             if (quickObj.has("isPlaying")) {
-                SpotyFlowPlaybackService.isPlaying = quickObj.optBoolean("isPlaying", SpotyFlowPlaybackService.isPlaying);
+                hasPlayingField = true;
+                playingQuick = quickObj.optBoolean("isPlaying", SpotyFlowPlaybackService.isPlaying);
+                SpotyFlowPlaybackService.isPlaying = playingQuick;
             }
         } catch (Throwable ignored) {
         }
         SpotyFlowPlaybackService svc = instance;
         if (svc != null && svc.mainHandler != null) {
+            // Pastikan service benar-benar STARTED Foreground Service (bukan hanya bound oleh MediaController)
+            // saat musik mulai diputar di foreground agar Android 15/16 tidak pernah membekukan proses saat tombol Home ditekan!
+            if (hasPlayingField && playingQuick && !svc.serviceStarted && ctx != null && MainActivity.isActivityInForeground) {
+                try {
+                    ContextCompat.startForegroundService(ctx, new Intent(ctx, SpotyFlowPlaybackService.class));
+                } catch (Throwable ignored) {
+                }
+            }
             svc.mainHandler.post(() -> svc.applyJsonState(jsonPayload));
             return;
         }
@@ -348,6 +363,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         SpotyFlowPlaybackService svc = instance;
         if (svc != null && svc.mainHandler != null) {
             svc.mainHandler.post(() -> {
+                svc.serviceStarted = false;
                 svc.updateWakeAndWifiLocks(false);
                 if (svc.remotePlayer != null) {
                     svc.remotePlayer.setLocalPlayingState(false);
@@ -467,6 +483,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        serviceStarted = true;
         super.onStartCommand(intent, flags, startId);
         String queued = pendingJsonPayload;
         pendingJsonPayload = null;
@@ -501,6 +518,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         if (instance == this) {
             instance = null;
         }
+        serviceStarted = false;
         isPlaying = false;
         updateWakeAndWifiLocks(false);
         unregisterBecomingNoisyReceiver();
@@ -939,6 +957,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -954,6 +974,8 @@ import android.webkit.WebView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
@@ -971,6 +993,7 @@ import java.util.List;
 public class MainActivity extends BridgeActivity {
     private static final int REQ_SPOTYFLOW_PERMISSIONS = 1001;
     private static WeakReference<MainActivity> activeInstance = new WeakReference<>(null);
+    public static volatile boolean isActivityInForeground = false;
 
     private Handler mainHandler;
     private ListenableFuture<MediaController> controllerFuture;
@@ -979,12 +1002,25 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         activeInstance = new WeakReference<>(this);
+        isActivityInForeground = true;
         mainHandler = new Handler(Looper.getMainLooper());
 
         // Buat 4 kategori notifikasi persis Spotify segera saat app dibuka
         SpotyFlowPlaybackService.ensureNotificationChannels(this);
 
         super.onCreate(savedInstanceState);
+
+        // Pastikan area status bar & gesture bar Android 15/16 (edge-to-edge) selalu gelap pekat #050505 dengan ikon putih tajam
+        try {
+            getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#050505")));
+            WindowInsetsControllerCompat insetsController =
+                    WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+            if (insetsController != null) {
+                insetsController.setAppearanceLightStatusBars(false);
+                insetsController.setAppearanceLightNavigationBars(false);
+            }
+        } catch (Throwable ignored) {
+        }
 
         if (getBridge() != null && getBridge().getWebView() != null) {
             attachMediaBridgeInstance(getBridge().getWebView());
@@ -1191,12 +1227,14 @@ public class MainActivity extends BridgeActivity {
     public void onResume() {
         super.onResume();
         activeInstance = new WeakReference<>(this);
+        isActivityInForeground = true;
         dispatchAppBackgroundedToWebView(false);
         dispatchAppVisibilityToWebView(true);
     }
 
     @Override
     public void onPause() {
+        isActivityInForeground = false;
         // Segera istirahatkan animasi visual berat sebelum transisi keluar APK agar animasi sistem mulus tanpa merebut CPU dari audio!
         dispatchAppBackgroundedToWebView(true);
         super.onPause();
@@ -1513,10 +1551,13 @@ function writeJavaAndResSources() {
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), SPOTYFLOW_WEBVIEW_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), SPOTYFLOW_PLAYBACK_SERVICE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), MAIN_ACTIVITY_JAVA, 'utf8');
+  // KRUSIAL CAPACITOR 7: BridgeActivity.java memakai R.layout.capacitor_bridge_layout_main (bukan hanya bridge_layout_main)!
+  // Tulis KEDUANYA agar SpotyFlowWebView 100% ter-inflate pada Capacitor 7 maupun kompatibilitas mundur.
+  fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'), IC_STAT_MUSIC_XML, 'utf8');
 
-  console.log(`  + Written 3 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + layout & vector icon`);
+  console.log(`  + Written 3 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + capacitor_bridge_layout_main.xml & bridge_layout_main.xml + vector icon`);
 }
 
 function verifyPatchedProject() {
@@ -1526,6 +1567,7 @@ function verifyPatchedProject() {
     path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'),
     path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'),
     path.join(JAVA_PKG_DIR, 'MainActivity.java'),
+    path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'),
     path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'),
     path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'),
   ];
@@ -1554,6 +1596,7 @@ function verifyPatchedProject() {
   const svc = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), 'utf8');
   const act = fs.readFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), 'utf8');
   const webv = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), 'utf8');
+  const capLayout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'), 'utf8');
   const layout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), 'utf8');
 
   const pkgDecl = `package ${APP_ID};`;
@@ -1568,7 +1611,9 @@ function verifyPatchedProject() {
     [gradle.includes('JavaVersion.VERSION_21'), 'build.gradle missing Java 21'],
     [gradle.includes('minifyEnabled false') && gradle.includes('shrinkResources false') && gradle.includes('signingConfig signingConfigs.debug'), 'build.gradle missing production release buildType config'],
     [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
+    [capLayout.includes(`<${APP_ID}.SpotyFlowWebView`), `capacitor_bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
     [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
+    [svc.includes('serviceStarted') && act.includes('isActivityInForeground'), 'Service/MainActivity missing Android 15 foreground service promotion guard'],
     [webv.includes('onWindowVisibilityChanged') && webv.includes('dispatchWindowVisibilityChanged') && webv.includes('onVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing full background visibility & pause overrides'],
     [manifest.includes('android:appCategory="audio"'), 'Manifest missing appCategory="audio"'],
     [manifest.includes('android:launchMode="singleTask"'), 'Manifest missing launchMode="singleTask" on MainActivity'],

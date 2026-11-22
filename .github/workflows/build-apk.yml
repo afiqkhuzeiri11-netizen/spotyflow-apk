@@ -59,7 +59,10 @@ jobs:
           test -f "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           test ! -f "android/app/src/main/java/${PKG_PATH}/NativeYouTubeResolver.java"
           test ! -d "android/app/src/main/java/com/spotyflow/music"
+          test -f android/app/src/main/res/layout/capacitor_bridge_layout_main.xml
+          grep -q "${APP_ID}.SpotyFlowWebView" android/app/src/main/res/layout/capacitor_bridge_layout_main.xml
           test -f android/app/src/main/res/layout/bridge_layout_main.xml
+          grep -q "${APP_ID}.SpotyFlowWebView" android/app/src/main/res/layout/bridge_layout_main.xml
           test -f android/app/src/main/res/drawable/ic_stat_music.xml
           grep -q "compileSdkVersion = 35" android/variables.gradle
           grep -q "targetSdkVersion = 35" android/variables.gradle
@@ -101,13 +104,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android APK (v13.0.0 — Production Release · Capacitor 7 · SDK 35 · Static Tailwind)
+          name: SpotyFlow Android APK (v13.1.0 — Fix Home Audio & Android 15 Edge-to-Edge · Capacitor 7)
           body: |
-            ### SpotyFlow Android APK (v13.0.0 — Production Release Stack Upgrade)
-            - **Static Compiled Tailwind CSS v3.4.17 (`www/assets/tailwind.min.css`)**: menghapus 100% runtime `cdn.tailwindcss.com` & `MutationObserver` di dalam APK untuk performa scroll & animasi maksimal sambil menjaga 100% tampilan mewah asli SpotyFlow identik dengan Web.
-            - **Pondasi Resmi Modern**: Capacitor 7 (`^7.0.0`) + Android 15 (SDK 35) + Java 21 (Temurin) + AndroidX Media3 `1.5.1` + **Build Production `assembleRelease`** (full Android ART optimization, non-debuggable, zero R8/ProGuard breakage).
-            - **Zero-Pause Keluar/Masuk & Layar Mati**: `SpotyFlowWebView` menahan 5 sinyal pause/hide saat musik diputar + `RENDERER_PRIORITY_IMPORTANT` + `singleTask` + tombol Back `moveTaskToBack(true)` + indefinite `PARTIAL_WAKE_LOCK` & `WifiLock` + `SFYtFull._intendedPlaying` auto-resume guard.
-            - **Vivo Origin Island & Full YouTube (`SFYtFull`)**: tetap utuh 100% di `com.netease.cloudmusic` (`SpotyFlow`), 4 kategori notifikasi persis Spotify, diff-check Media3 & cache sampul 256×256 JPEG.
+            ### SpotyFlow Android APK (v13.1.0 — Capacitor 7 Background Audio & Edge-to-Edge Hotfix)
+            - **Perbaikan Kritis Suara Hilang Saat Pencet Home (Capacitor 7 Layout)**: Capacitor 7 memindahkan layout utama `BridgeActivity` dari `bridge_layout_main.xml` ke **`capacitor_bridge_layout_main.xml`**. Sekarang patcher memasang `<com.netease.cloudmusic.SpotyFlowWebView>` pada **kedua** layout (`capacitor_bridge_layout_main.xml` + `bridge_layout_main.xml`) sehingga proteksi background YouTube, tombol Home, dan layar mati kembali bekerja 100% tanpa jeda!
+            - **Perbaikan Tata Letak Android 15/16 (`adjustMarginsForEdgeToEdge: "auto"`)**: mengaktifkan margin otomatis status bar & navigation bar resmi Capacitor 7 dengan latar belakang `#050505` + ikon sistem putih tajam sehingga header atas & bar bawah tidak lagi bertabrakan dengan bilah sistem Vivo OriginOS 6.
+            - **Jaminan Foreground Service Android 15/16**: memastikan `SpotyFlowPlaybackService` berstatus *started* `mediaPlayback` Foreground Service (bukan sekadar bound) saat musik mulai diputar di foreground.
+            - **Tetap Utuh 100%**: Static Tailwind CSS (`www/assets/tailwind.min.css`), Build Production `assembleRelease` (Java 21 / SDK 35 / Media3 `1.5.1`), Vivo Origin Island (`com.netease.cloudmusic`), Full YouTube (`SFYtFull`), 4 kategori notifikasi persis Spotify, dan GUI mewah asli SpotyFlow.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
