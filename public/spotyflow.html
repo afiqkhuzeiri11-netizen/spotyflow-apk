@@ -4232,6 +4232,12 @@
         const ytVol = AppState.isMuted ? 0 : Math.round(Math.max(0, Math.min(1, Number(AppState.volume) || 0)) * 100);
         SFYtFull.setVolume(ytVol);
       }
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try {
+          const exoVol = AppState.isMuted ? 0 : Math.max(0, Math.min(1, Number(AppState.volume) || 0));
+          window.SpotyFlowExo.setVolume(exoVol);
+        } catch {}
+      }
     }
 
     function applyMonoSetting() {
@@ -4753,11 +4759,22 @@
       }
     }
 
+    function syncNativeExoLoudness() {
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try {
+          const presetBonus = AppState.loudnessLevel === 'loud' ? 25 : (AppState.loudnessLevel === 'quiet' ? -20 : 0);
+          const effectiveBoost = Math.max(100, Math.min(300, (parseInt(AppState.volumeBoostPct, 10) || 100) + presetBonus));
+          window.SpotyFlowExo.setLoudnessAndBoost(effectiveBoost, Boolean(AppState.normalizerEnabled));
+        } catch {}
+      }
+    }
+
     function setLoudnessLevel(level) {
       if (!LOUDNESS_PRESETS[level]) return;
       resumeAudioContext(true);
       AppState.loudnessLevel = level;
       applyMasterVolumeGain(false);
+      syncNativeExoLoudness();
       updateLoudnessControlsUI();
       savePrefs();
       showToast(`Level Volume: ${LOUDNESS_PRESETS[level].label} (${LOUDNESS_PRESETS[level].gain}x)`);
@@ -4768,6 +4785,7 @@
       const pct = Math.max(100, Math.min(300, parseInt(rawPct, 10) || 160));
       AppState.volumeBoostPct = pct;
       applyMasterVolumeGain(false);
+      syncNativeExoLoudness();
       updateLoudnessControlsUI();
       savePrefs();
     }
@@ -4782,6 +4800,7 @@
       AppState.volumeBoostPct = isMax ? 160 : 300;
       applyNormalizerSettings();
       applyMasterVolumeGain(false);
+      syncNativeExoLoudness();
       updateVolumeUI();
       updateLoudnessControlsUI();
       savePrefs();
@@ -4849,6 +4868,9 @@
       eqNodes.forEach((node, i) => {
         if (node) node.gain.value = AppState.eqGains[i];
       });
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try { window.SpotyFlowExo.setEqBands(JSON.stringify(AppState.eqGains)); } catch {}
+      }
       renderEqControls();
       savePrefs();
       showToast(`Equalizer: ${found.name}`);
@@ -4860,6 +4882,9 @@
       AppState.eqPresetId = 'custom';
       AppState.eqGains[index] = val;
       if (eqNodes[index]) eqNodes[index].gain.value = val;
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try { window.SpotyFlowExo.setEqBands(JSON.stringify(AppState.eqGains)); } catch {}
+      }
       const readout = document.getElementById(`eq-val-${index}`);
       if (readout) readout.textContent = `${val > 0 ? '+' : ''}${val.toFixed(1)}`;
       savePrefs();
@@ -4870,6 +4895,7 @@
       AppState.normalizerEnabled = !AppState.normalizerEnabled;
       safeStorageSet('sf_normalize_volume', AppState.normalizerEnabled ? '1' : '0');
       applyNormalizerSettings();
+      syncNativeExoLoudness();
       updateLoudnessControlsUI();
       savePrefs();
       showToast(AppState.normalizerEnabled ? 'Normalisasi Volume aktif (kompresor studio + limiter anti-pecah).' : 'Normalisasi Volume dimatikan.');
@@ -5013,17 +5039,269 @@
     /* =====================================================================
        3. BACKGROUND PLAYBACK, MEDIA SESSION API, WAKE LOCK & SLEEP TIMER
        ===================================================================== */
+    function hasNativeExo() {
+      try {
+        return Boolean(
+          window.SpotyFlowExo &&
+          typeof window.SpotyFlowExo.isAvailable === 'function' &&
+          window.SpotyFlowExo.isAvailable()
+        );
+      } catch {
+        return false;
+      }
+    }
+
     function getNativeBridge() {
-      return window.SpotyFlowNative || null;
+      return window.SpotyFlowExo || window.SpotyFlowNative || null;
     }
 
     function isRunningInNativeApk() {
       return Boolean(
-        getNativeBridge() ||
+        hasNativeExo() ||
+        window.SpotyFlowNative ||
         window.Capacitor?.isNativePlatform?.() ||
         /SpotyFlowApp/i.test(navigator.userAgent || '')
       );
     }
+
+    const ExoState = {
+      active: false,
+      isPlaying: false,
+      positionSec: 0,
+      durationSec: 0,
+      sessionId: 0,
+      track: null,
+      candidates: [],
+      candidateIdx: 0,
+      lastTickMs: 0,
+      pendingResumeSec: 0,
+    };
+
+    function buildExoTrackPayload(track, candidate) {
+      const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
+      const artistName = typeof track.artist === 'string' ? track.artist : (track.artist?.name || 'SpotyFlow');
+      const durSec = Number(candidate?.duration || track.duration || 210);
+      const presetBonus = AppState.loudnessLevel === 'loud' ? 25 : (AppState.loudnessLevel === 'quiet' ? -20 : 0);
+      const effBoost = Math.max(100, Math.min(300, (parseInt(AppState.volumeBoostPct, 10) || 100) + presetBonus));
+      return {
+        url: String(candidate?.url || ''),
+        videoId: String(candidate?.videoId || ''),
+        title: String(track.title || 'SpotyFlow'),
+        artist: String(artistName || 'SpotyFlow'),
+        album: String(albumTitle || 'SpotyFlow'),
+        coverUrl: resolveAbsoluteNativeCoverUrl(track),
+        durationMs: Math.max(1000, Math.round(durSec * 1000)),
+        speed: Number(AppState.playbackRate || 1.0),
+        preservesPitch: AppState.preservesPitch !== false,
+        volume: AppState.isMuted ? 0 : Math.max(0, Math.min(1, Number(AppState.volume) || 1.0)),
+        eqGains: Array.isArray(AppState.eqGains) ? AppState.eqGains.slice(0, 5).map((g) => Number(g) || 0) : [0, 0, 0, 0, 0],
+        boostPct: effBoost,
+        normalizerEnabled: Boolean(AppState.normalizerEnabled),
+        reverbMix: Math.max(0, Math.min(1, Number(AppState.reverbMix) || 0)),
+      };
+    }
+
+    function dispatchCurrentExoCandidate() {
+      if (!hasNativeExo()) return false;
+      const cand = ExoState.candidates[ExoState.candidateIdx];
+      const track = ExoState.track;
+      if (!cand || !track) return false;
+
+      clearWebViewMediaSessionIfNative();
+      ExoState.active = true;
+      setLoadingBanner(true, `Memutar ExoPlayer HD "${track.title}"...`);
+      try {
+        const payload = buildExoTrackPayload(track, cand);
+        window.SpotyFlowExo.playTrack(JSON.stringify(payload));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    window.__sfOnExoEvent = function (ev) {
+      if (!ev || typeof ev !== 'object') return;
+      const type = String(ev.type || '');
+      const posMs = Number(ev.positionMs || 0);
+      const durMs = Number(ev.durationMs || 0);
+      const posSec = posMs > 0 ? posMs / 1000 : 0;
+      const durSec = durMs > 0 ? durMs / 1000 : (ExoState.durationSec || AppState.currentTrack?.duration || 0);
+
+      if (type === 'timeupdate') {
+        if (!ExoState.active) return;
+        ExoState.positionSec = posSec;
+        if (durMs > 1000) ExoState.durationSec = durSec;
+        ExoState.isPlaying = Boolean(ev.isPlaying);
+
+        if (ExoState.isPlaying) {
+          const now = Date.now();
+          if (ExoState.lastTickMs && now - ExoState.lastTickMs < 2500) {
+            accumulateListenTime((now - ExoState.lastTickMs) / 1000);
+          }
+          ExoState.lastTickMs = now;
+        } else {
+          ExoState.lastTickMs = 0;
+        }
+
+        // A-B Loop
+        if (AppState.abLoop?.active && AppState.abLoop.a !== null && AppState.abLoop.b !== null && posSec >= AppState.abLoop.b) {
+          try { window.SpotyFlowExo.seekTo(Math.round(AppState.abLoop.a * 1000)); } catch {}
+          return;
+        }
+
+        // Pre-fetch next track 15s before end
+        const total = ExoState.durationSec || AppState.currentTrack?.duration || 0;
+        if (total > 20 && total - posSec > 0.5 && total - posSec <= 15 && AppState.repeatMode !== 'one' && AppState.sleepMode !== 'end') {
+          prefetchNextTrack();
+        }
+
+        if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden || !total) return;
+        const pct = Math.max(0, Math.min(100, (posSec / total) * 100));
+        const curText = formatTime(posSec);
+        ['seek-slider', 'stage-seek-slider'].forEach((id) => {
+          const sl = document.getElementById(id);
+          if (sl) {
+            sl.value = pct;
+            sl.style.setProperty('--slider-pct', `${pct}%`);
+          }
+        });
+        const tc = document.getElementById('time-current');
+        const stc = document.getElementById('stage-time-current');
+        if (tc) tc.textContent = curText;
+        if (stc) stc.textContent = curText;
+        const mpb = document.getElementById('mobile-progress-bar');
+        if (mpb) mpb.style.width = `${pct}%`;
+        const tvBar = document.getElementById('tv-progress-fill');
+        if (tvBar) tvBar.style.width = `${pct}%`;
+        const tvCur = document.getElementById('tv-time-current');
+        if (tvCur) tvCur.textContent = curText;
+        const carBar = document.getElementById('car-progress-fill');
+        if (carBar) carBar.style.width = `${pct}%`;
+        const carCur = document.getElementById('car-time-current');
+        if (carCur) carCur.textContent = curText;
+        const carDur = document.getElementById('car-time-duration');
+        if (carDur) carDur.textContent = formatTime(total);
+        updateDurationDisplays(total);
+        if (typeof updateMiniPlayerPipProgress === 'function') updateMiniPlayerPipProgress(posSec, total);
+        if (typeof checkFloatingCommentBubbles === 'function') checkFloatingCommentBubbles(posSec);
+        syncLyricsWithTime(posSec);
+        return;
+      }
+
+      if (type === 'buffering') {
+        if (!ExoState.active) return;
+        AppState.isResolving = true;
+        updatePlayPauseIcons();
+        return;
+      }
+
+      if (type === 'ready') {
+        if (!ExoState.active) return;
+        if (durMs > 1000) {
+          ExoState.durationSec = durSec;
+          if (AppState.currentTrack) AppState.currentTrack.duration = durSec;
+          updateDurationDisplays(durSec);
+          setSignalBadge(`EXOPLAYER HD • ${formatTime(durSec)}`, true);
+          const lbl = document.getElementById('stage-source-label');
+          if (lbl) lbl.textContent = `Native ExoPlayer • Hardware Audio HD (${formatTime(durSec)})`;
+        }
+        if (ExoState.pendingResumeSec > 1) {
+          const cap = durSec > 5 ? Math.max(0, durSec - 2) : ExoState.pendingResumeSec;
+          const target = Math.min(ExoState.pendingResumeSec, cap);
+          ExoState.pendingResumeSec = 0;
+          if (target > 1) {
+            try { window.SpotyFlowExo.seekTo(Math.round(target * 1000)); } catch {}
+            syncLyricsWithTime(target);
+          }
+        }
+        prefetchNextTrackInQueue();
+        return;
+      }
+
+      if (type === 'playing') {
+        if (!ExoState.active) return;
+        ExoState.isPlaying = true;
+        ExoState.lastTickMs = Date.now();
+        AppState.isPlaying = true;
+        AppState.isResolving = false;
+        setLoadingBanner(false);
+        const d = ExoState.durationSec || AppState.currentTrack?.duration || 210;
+        setSignalBadge(`EXOPLAYER HD • ${formatTime(d)}`, true);
+        if (!window.__sfNativeAppBg && !document.hidden) startVisualizerLoop();
+        updatePlayPauseIcons();
+        highlightPlayingTrackRows();
+        if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
+        return;
+      }
+
+      if (type === 'paused') {
+        if (!ExoState.active) return;
+        ExoState.isPlaying = false;
+        ExoState.lastTickMs = 0;
+        AppState.isPlaying = false;
+        AppState.isResolving = false;
+        stopVisualizerLoop();
+        updatePlayPauseIcons();
+        highlightPlayingTrackRows();
+        saveListeningStats(true);
+        savePlaybackSession(true);
+        if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
+        return;
+      }
+
+      if (type === 'ended') {
+        if (!ExoState.active) return;
+        ExoState.isPlaying = false;
+        ExoState.lastTickMs = 0;
+        stopVisualizerLoop();
+        if (AppState.sleepMode === 'end') {
+          AppState.sleepMode = 'off';
+          document.getElementById('header-sleep-pill')?.classList.add('hidden');
+          const sr = document.getElementById('sleep-readout');
+          if (sr) sr.textContent = 'Selesai';
+          AppState.isPlaying = false;
+          updatePlayPauseIcons();
+          highlightPlayingTrackRows();
+          showToast('Lagu selesai. Timer tidur menghentikan pemutaran.');
+          return;
+        }
+        if (AppState.repeatMode === 'one') {
+          try {
+            window.SpotyFlowExo.seekTo(0);
+            window.SpotyFlowExo.resume();
+          } catch {}
+          return;
+        }
+        playNext(false);
+        return;
+      }
+
+      if (type === 'next') {
+        playNext(true);
+        return;
+      }
+
+      if (type === 'prev') {
+        playPrev();
+        return;
+      }
+
+      if (type === 'error') {
+        if (!ExoState.active || ExoState.sessionId !== AppState.playSessionId) return;
+        ExoState.candidateIdx += 1;
+        if (ExoState.candidateIdx < ExoState.candidates.length) {
+          dispatchCurrentExoCandidate();
+        } else {
+          setLoadingBanner(false);
+          ExoState.isPlaying = false;
+          AppState.isPlaying = false;
+          setSignalBadge('SUMBER TIDAK TERSEDIA', false);
+          updatePlayPauseIcons();
+          highlightPlayingTrackRows();
+          showToast(ev.message || 'Gagal memutar sumber audio.', 'error');
+        }
+      }
+    };
 
     function registerServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
@@ -5361,6 +5639,10 @@
 
     function stopNativeMediaServiceSafe() {
       try {
+        if (hasNativeExo() && typeof window.SpotyFlowExo.stop === 'function') {
+          window.SpotyFlowExo.stop();
+          return;
+        }
         const bridge = getNativeBridge();
         if (bridge && typeof bridge.stopService === 'function') {
           bridge.stopService();
@@ -5454,6 +5736,14 @@
         }
       }
       applyAllDecksPlaybackProps();
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try {
+          window.SpotyFlowExo.setPlaybackParams(
+            Number(AppState.playbackRate || 1.0),
+            AppState.preservesPitch !== false
+          );
+        } catch {}
+      }
       const spEl = document.getElementById('speed-readout');
       if (spEl) spEl.textContent = AppState.playbackRate.toFixed(2) + 'x';
       const spSlider = document.getElementById('playback-speed-slider');
@@ -7795,8 +8085,27 @@
       SFYtFull.stop();
       cancelActiveCrossfade(true);
       revokeDeckBlobUrl(activeDeckIndex);
+      if (typeof decks !== 'undefined' && Array.isArray(decks)) {
+        decks.forEach((d) => {
+          if (d) {
+            try { d.pause(); d.removeAttribute('src'); } catch {}
+          }
+        });
+      }
       audio.pause();
       audio.removeAttribute('src');
+      if (hasNativeExo()) {
+        ExoState.active = false;
+        ExoState.isPlaying = false;
+        ExoState.positionSec = 0;
+        ExoState.durationSec = Number(track.duration || 210);
+        ExoState.sessionId = sessionId;
+        ExoState.track = track;
+        ExoState.candidates = [];
+        ExoState.candidateIdx = 0;
+        ExoState.pendingResumeSec = pendingResumeSec;
+        try { window.SpotyFlowExo.stop(); } catch {}
+      }
       if (!IS_MOBILE_DEVICE || hasAnyActiveAudioFx()) {
         resumeAudioContext();
       } else {
@@ -7902,6 +8211,13 @@
         }];
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
+        if (hasNativeExo() && /^https?:\/\//i.test(directUrl)) {
+          ExoState.sessionId = sessionId;
+          ExoState.track = track;
+          ExoState.candidates = [{ url: directUrl, videoId: '', duration: Number(track.duration || 180) }];
+          ExoState.candidateIdx = 0;
+          if (dispatchCurrentExoCandidate()) return;
+        }
         try {
           await tryPlayAudioUrl(directUrl, sessionId);
           if (sessionId !== AppState.playSessionId) return;
@@ -7954,6 +8270,39 @@
         AppState.audioSources = displaySources;
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
+
+        // 0. MODE APK NATIVE ANDROIDX MEDIA3 EXOPLAYER (100% Native Hardware Decoding + DSP EQ/BassBoost/Reverb/Pitch, 0% WebView Audio/IFrame!)
+        if (hasNativeExo()) {
+          const exoCandidates = [];
+          youtubeDirectSources.forEach((s) => {
+            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
+              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
+            }
+          });
+          ytCandidates.slice(0, 5).forEach((cand) => {
+            if (cand?.videoId) {
+              exoCandidates.push({ url: '', videoId: cand.videoId, duration: Number(cand.duration || track.duration || 210) });
+            }
+          });
+          otherFullSources.forEach((s) => {
+            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
+              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
+            }
+          });
+          previewFallbackSources.forEach((s) => {
+            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
+              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || 30) });
+            }
+          });
+
+          if (exoCandidates.length > 0) {
+            ExoState.sessionId = sessionId;
+            ExoState.track = track;
+            ExoState.candidates = exoCandidates;
+            ExoState.candidateIdx = 0;
+            if (dispatchCurrentExoCandidate()) return;
+          }
+        }
 
         // 1. PRIORITAS UTAMA DI SPOTYFLOW.APK: Resolusi YouTube Audio-Only M4A/AAC langsung dari IP HP via NativeYouTubeResolver (0% decode video = 0% mati di layar terkunci!)
         const nativeBridge = getNativeBridge();
@@ -8205,6 +8554,23 @@
         clearInterval(sleepFadeTimerId);
         sleepFadeTimerId = null;
         applyMasterVolumeGain(false);
+      }
+      if (hasNativeExo() && ExoState.active) {
+        if (ExoState.isPlaying || AppState.isPlaying) {
+          window.__sfUserPauseTs = Date.now();
+          try { window.SpotyFlowExo.pause(); } catch {}
+          ExoState.isPlaying = false;
+          AppState.isPlaying = false;
+        } else {
+          window.__sfUserPauseTs = 0;
+          try { window.SpotyFlowExo.resume(); } catch {}
+          ExoState.isPlaying = true;
+          AppState.isPlaying = true;
+        }
+        updatePlayPauseIcons();
+        highlightPlayingTrackRows();
+        if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
+        return;
       }
       if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
         if (SFYtFull.isPlaying()) {
@@ -8897,8 +9263,9 @@
         AppState.isSeeking = true;
         const pct = parseFloat(e.target.value);
         el.style.setProperty('--slider-pct', `${pct}%`);
-        const useYt = typeof SFYtFull !== 'undefined' && SFYtFull.active;
-        const rawDur = useYt ? SFYtFull.getDuration() : audio.duration;
+        const useExo = hasNativeExo() && ExoState.active;
+        const useYt = !useExo && typeof SFYtFull !== 'undefined' && SFYtFull.active;
+        const rawDur = useExo ? ExoState.durationSec : (useYt ? SFYtFull.getDuration() : audio.duration);
         const dur = rawDur && isFinite(rawDur) ? rawDur : (AppState.currentTrack?.duration || 0);
         if (dur) {
           const preview = formatTime((pct / 100) * dur);
@@ -8908,12 +9275,16 @@
       });
       el.addEventListener('change', (e) => {
         const pct = parseFloat(e.target.value) / 100;
-        const useYt = typeof SFYtFull !== 'undefined' && SFYtFull.active;
-        const rawDur = useYt ? SFYtFull.getDuration() : audio.duration;
+        const useExo = hasNativeExo() && ExoState.active;
+        const useYt = !useExo && typeof SFYtFull !== 'undefined' && SFYtFull.active;
+        const rawDur = useExo ? ExoState.durationSec : (useYt ? SFYtFull.getDuration() : audio.duration);
         const dur = rawDur && isFinite(rawDur) ? rawDur : (AppState.currentTrack?.duration || 0);
         if (dur > 0) {
           const targetSec = pct * dur;
-          if (useYt) {
+          if (useExo) {
+            ExoState.positionSec = targetSec;
+            try { window.SpotyFlowExo.seekTo(Math.round(targetSec * 1000)); } catch {}
+          } else if (useYt) {
             SFYtFull.seekTo(targetSec);
           } else {
             audio.currentTime = targetSec;
@@ -9697,7 +10068,10 @@
     function seekToLyricTime(sec) {
       if (isNaN(sec)) return;
       const targetAudioSec = Math.max(0, sec + (Number(AppState.lyricsOffsetSec) || 0));
-      if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+      if (hasNativeExo() && ExoState.active) {
+        ExoState.positionSec = targetAudioSec;
+        try { window.SpotyFlowExo.seekTo(Math.round(targetAudioSec * 1000)); } catch {}
+      } else if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
         SFYtFull.seekTo(targetAudioSec);
       } else {
         if (!audio.src) return;
@@ -22166,6 +22540,9 @@
         }
       }
       applyReverbMixSetting();
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try { window.SpotyFlowExo.setReverbMix(Number(AppState.reverbMix || 0)); } catch {}
+      }
       updateAudioFxUI();
       const labels = {
         normal: 'Ruang Audio 3D: Normal',
@@ -22182,6 +22559,9 @@
       const pct = Math.max(0, Math.min(100, Number(rawPct) || 0));
       AppState.reverbMix = pct / 100;
       applyReverbMixSetting();
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try { window.SpotyFlowExo.setReverbMix(Number(AppState.reverbMix || 0)); } catch {}
+      }
       updateAudioFxUI();
     }
 
@@ -22222,6 +22602,12 @@
 
       setPlaybackSpeed(AppState.playbackRate, true);
       applyReverbMixSetting();
+      if (typeof hasNativeExo === 'function' && hasNativeExo()) {
+        try {
+          window.SpotyFlowExo.setPlaybackParams(Number(AppState.playbackRate || 1.0), AppState.preservesPitch !== false);
+          window.SpotyFlowExo.setReverbMix(Number(AppState.reverbMix || 0));
+        } catch {}
+      }
       applyMonoSetting();
       applyAudio8dSetting();
       updateAudioFxUI();
@@ -22491,8 +22877,8 @@
       },
       start(kind) {
         if (this.nodes[kind]) return;
-        // Mode APK Native: gunakan file audio studio HD offline ./assets/audio/ambient/*.wav (fallback otomatis ke Web Audio prosedural bila gagal)
-        if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && ['rain', 'ocean', 'fireplace', 'cafe', 'lofi'].includes(kind)) {
+        // Mode APK Ringan (Media3 ExoPlayer): langsung pakai Web Audio prosedural bersih tanpa file WAV dummy 200 MB
+        if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && !hasNativeExo() && ['rain', 'ocean', 'fireplace', 'cafe', 'lofi'].includes(kind)) {
           try {
             const hdEl = new Audio(`./assets/audio/ambient/${kind}.wav`);
             hdEl.loop = true;

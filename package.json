@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "app": "electron .",
+    "build:apk": "node scripts/build-apk-www.js",
     "build:apk-www": "node scripts/build-apk-www.js",
     "build:exe": "electron-builder --win dir",
     "open": "node server.js --open",

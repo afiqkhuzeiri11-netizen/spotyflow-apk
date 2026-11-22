@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (~200 MB)
+name: Build SpotyFlow Android APK (Media3 ExoPlayer)
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   build-android-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Repository
@@ -32,8 +32,8 @@ jobs:
       - name: Install NPM Dependencies
         run: npm install
 
-      - name: Build Offline Studio HD Web Assets (~195 MB www/)
-        run: npm run build:apk-www
+      - name: Build Lightweight Web Assets (www/)
+        run: npm run build:apk
 
       - name: Add & Sync Capacitor 6 Android Platform
         run: |
@@ -42,24 +42,23 @@ jobs:
           fi
           npx cap sync android
 
-      - name: Patch Native Android MediaSession & Background Playback
+      - name: Patch AndroidX Media3 ExoPlayer, Hardware Audio FX & Official MediaSessionService
         run: node scripts/patch-android-apk.js
 
-      - name: Verify Patched Native Files
+      - name: Verify Patched Media3 Native Files
         run: |
           test -f android/app/src/main/java/com/spotyflow/music/NativeYouTubeResolver.java
-          test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowMediaService.java
+          test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowPlaybackService.java
           test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowWebView.java
           test -f android/app/src/main/java/com/spotyflow/music/MainActivity.java
           test -f android/app/src/main/res/layout/bridge_layout_main.xml
           test -f android/app/src/main/res/drawable/ic_stat_music.xml
-          grep -q "androidx.media:media:1.7.0" android/app/build.gradle
-          grep -q "SpotyFlowMediaService" android/app/src/main/AndroidManifest.xml
+          grep -q "androidx.media3:media3-exoplayer:1.4.1" android/app/build.gradle
+          grep -q "androidx.media3:media3-session:1.4.1" android/app/build.gradle
+          grep -q "SpotyFlowPlaybackService" android/app/src/main/AndroidManifest.xml
           grep -q 'android:appCategory="audio"' android/app/src/main/AndroidManifest.xml
-          grep -q "android.media.browse.MediaBrowserService" android/app/src/main/AndroidManifest.xml
-          grep -q "android.permission.BLUETOOTH_CONNECT" android/app/src/main/AndroidManifest.xml
-          grep -q "android.permission.READ_MEDIA_AUDIO" android/app/src/main/AndroidManifest.xml
-          grep -q 'android:scheme="spotyflow"' android/app/src/main/AndroidManifest.xml
+          grep -q "androidx.media3.session.MediaSessionService" android/app/src/main/AndroidManifest.xml
+          grep -q "androidx.media3.session.MediaButtonReceiver" android/app/src/main/AndroidManifest.xml
           ! grep -q "SYSTEM_ALERT_WINDOW" android/app/src/main/AndroidManifest.xml
 
       - name: Compile Android Debug APK (Gradle 8 / Java 17)
@@ -76,7 +75,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-200MB
+          name: SpotyFlow-APK-Media3
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -84,12 +83,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android Studio HD APK (v10.0.0)
+          name: SpotyFlow Android Media3 ExoPlayer APK (v11.0.0)
           body: |
-            ### SpotyFlow Android APK (~200 MB Studio Master Edition)
-            - **Native Android MediaSessionCompat + MediaStyle Foreground Service** (otomatis mendukung Dynamic Island bawaan HyperOS/MIUI, Samsung Now Bar, Oppo/OnePlus Live Alerts, Realme Mini Capsule, Vivo Origin Island, Infinix Dynamic Bar, Lockscreen & kontrol Bluetooth).
-            - **Background Playback & Auto-Next** tetap lancar saat layar terkunci atau pindah aplikasi.
-            - **Aset Audio Studio HD Offline:** 5 Ambient Soundscapes 48kHz Stereo (150d seamless), 5 Studio 3D Impulse Responses 24-bit, 2 Studio SFX Chimes, dan FFmpeg WASM offline.
+            ### SpotyFlow Android APK (Native Media3 ExoPlayer + Hardware DSP Edition)
+            - **100% Native AndroidX Media3 ExoPlayer (`MediaSessionService`)**: hardware audio decoding + 20–60 detik buffer anti patah-patah saat layar terkunci atau pindah aplikasi.
+            - **Native Android Hardware Audio FX (`android.media.audiofx`)**: Equalizer 5-Band, Bass Boost, Loudness/Volume Boost, Reverb/3D Room, dan Slowed/Nightcore Pitch & Speed langsung di DSP audio sistem.
+            - **Dynamic Island, Origin Island, Live Alerts, Now Bar, Lockscreen & TWS Bluetooth**: menggunakan standar resmi `MediaSessionService` + `DefaultMediaNotificationProvider` + `android:appCategory="audio"` + 4 kategori notifikasi persis Spotify.
+            - **Ringan & Cepat (~15–20 MB)**: bebas aset WAV dummy 200 MB.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
