@@ -90,13 +90,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android APK (v12.2.0 — Full Luxury GUI + Smooth Scroll + Origin Island)
+          name: SpotyFlow Android APK (v12.3.0 — Zero-Pause Background + Screen-Off + Origin Island)
           body: |
-            ### SpotyFlow Android APK (v12.2.0 — Full Luxury Spotify GUI + Smooth WebView + Vivo Origin Island)
-            - **GUI Mewah 100% Utuh**: memulihkan tampilan asli SpotyFlow persis versi Web (tanpa pemaksaan flat/hilang blur dan tanpa `content-visibility: auto` yang membuat tinggi scroll loncat).
-            - **Scroll & Geser Mulus Tanpa Double-Compositing**: menghapus jebakan `LAYER_TYPE_HARDWARE` di WebView, zero Tailwind CDN class mutation saat scroll, passive touch listeners, kualitas video YouTube `'tiny'` agar decoder video ringan, throttle progress UI 400ms, dan visualizer mati total saat layar penuh tertutup.
-            - **Dynamic Island / Origin Island 0% Beban UI**: diff-check ketat pada `SpotyFlowPlaybackService` (skip `invalidateState()` jika drift < 2.5s), cache sampul 256×256 JPEG di memori (anti unduh ulang), dan 0 spam IPC berkala dari WebView.
-            - **Full YouTube (`SFYtFull`) + Latar Belakang & Layar Terkunci**: tetap utuh 100% di `com.netease.cloudmusic` (`SpotyFlow`).
+            ### SpotyFlow Android APK (v12.3.0 — Seamless Zero-Pause Exit/Enter + Screen-Off Playback + Luxury GUI)
+            - **Zero-Pause Keluar/Masuk APK & Layar Mati**: `SpotyFlowWebView` menahan `onPause`, `pauseTimers`, `onWindowVisibilityChanged`, `dispatchWindowVisibilityChanged`, dan `onVisibilityChanged` selama musik diputar + `RENDERER_PRIORITY_IMPORTANT` + `launchMode="singleTask"` + tombol Back `moveTaskToBack(true)`.
+            - **Auto-Resume Guard Layar Mati + Indefinite WakeLock & WifiLock**: flag `isPlaying` di-update seketika di `dispatchStateUpdate`, `PARTIAL_WAKE_LOCK` + `WifiLock` aktif tanpa timeout pendek selama memutar, dan `SFYtFull._intendedPlaying` otomatis pulih (80ms / 300ms / 800ms) jika YouTube embed mencoba pause saat layar mati.
+            - **Transisi Animasi Mulus + 100% GUI Mewah Utuh**: `window.__sfSetAppBackgrounded(true/false)` menghentikan animasi visual berat (`html.sf-app-bg`) saat keluar dan melanjutkannya 120ms setelah masuk tanpa menyentuh audio, tanpa `LAYER_TYPE_HARDWARE`, dan tanpa CSS flat perusak GUI.
+            - **Origin Island Vivo & Full YouTube (`SFYtFull`)**: tetap utuh 100% di `com.netease.cloudmusic` (`SpotyFlow`) dengan diff-check Media3 & cache sampul 256×256 JPEG.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true

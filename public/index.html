@@ -1031,6 +1031,14 @@
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
+
+    /* Hentikan HANYA animasi visual berat saat APK sedang tidak terlihat / transisi keluar-masuk (0% ganggu audio!) */
+    html.sf-app-bg *,
+    html.sf-app-bg *::before,
+    html.sf-app-bg *::after {
+      animation-play-state: paused !important;
+      transition: none !important;
+    }
   </style>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
@@ -4989,7 +4997,7 @@
     }
 
     function updatePlaybackProgressUI(cur, total, force = false) {
-      if (!total || AppState.isSeeking || window.__sfNativeAppBg || document.hidden) return;
+      if (!total || AppState.isSeeking || window.__sfIsAppBackgrounded || window.__sfNativeAppBg || document.hidden) return;
       if (window.__sfIsScrolling && !force) return;
       const now = Date.now();
       if (!force && now - __sfLastProgressUiMs < 400) return;
@@ -5508,31 +5516,64 @@
     };
     window.__sfHandleNativeMediaAction = window.__sfOnNativeMediaAction;
 
-    window.__sfHandleNativeAppVisibility = function (visible) {
+    let __sfBgResumeAnimTimer = null;
+    window.__sfIsAppBackgrounded = false;
+    window.__sfLastBgTransitionAt = 0;
+
+    window.__sfSetAppBackgrounded = function (isBg) {
       try {
-        const isBg = visible === false;
-        window.__sfNativeAppBg = isBg;
-        document.documentElement.classList.toggle('sf-tab-hidden', isBg);
-        if (isBg) {
+        const bg = Boolean(isBg);
+        window.__sfIsAppBackgrounded = bg;
+        window.__sfNativeAppBg = bg;
+        window.__sfLastBgTransitionAt = Date.now();
+        if (__sfBgResumeAnimTimer) {
+          clearTimeout(__sfBgResumeAnimTimer);
+          __sfBgResumeAnimTimer = null;
+        }
+        if (bg) {
           window.__sfLastBgAt = Date.now();
+          document.documentElement.classList.add('sf-app-bg');
           stopVisualizerLoop();
           if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
           saveListeningStats(true);
           if (typeof savePlaybackSession === 'function') savePlaybackSession(true);
+          // JANGAN PERNAH pause audio (SFYtFull / <audio>) saat keluar APK atau layar mati!
         } else {
-          if (AppState.isPlaying) {
-            startVisualizerLoop();
-          }
-          if (typeof syncCanvasMotionLoop === 'function') syncCanvasMotionLoop();
-          if (AppState.currentTrack) {
-            const cur = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
-              ? Number(SFYtFull.getCurrentTime() || 0)
-              : Number(audio?.currentTime || 0);
-            syncLyricsWithTime(cur);
-          }
+          // Tunggu 120ms agar animasi masuk APK dari sistem HP selesai mulus dulu tanpa stutter audio
+          __sfBgResumeAnimTimer = setTimeout(() => {
+            __sfBgResumeAnimTimer = null;
+            if (!window.__sfIsAppBackgrounded) {
+              document.documentElement.classList.remove('sf-app-bg');
+              if (AppState.currentTrack) {
+                const useYt = typeof SFYtFull !== 'undefined' && SFYtFull.active;
+                const cur = useYt ? Number(SFYtFull.getCurrentTime() || 0) : Number(audio?.currentTime || 0);
+                const total = useYt
+                  ? (Number(SFYtFull.getDuration() || 0) || Number(AppState.currentTrack.duration || 0))
+                  : ((audio && Number.isFinite(audio.duration) ? audio.duration : 0) || Number(AppState.currentTrack.duration || 0));
+                resetProgressRenderCache();
+                if (total > 0) updatePlaybackProgressUI(cur, total, true);
+                syncLyricsWithTime(cur);
+              }
+              const stageOpen = !document.getElementById('fullscreen-stage')?.classList.contains('hidden');
+              if (stageOpen && AppState.isPlaying) {
+                startVisualizerLoop();
+                if (typeof syncCanvasMotionLoop === 'function') syncCanvasMotionLoop();
+              }
+            }
+          }, 120);
           if (__sfNativeApkAuthNonce && typeof pollNativeApkGoogleAuthOnce === 'function') {
             pollNativeApkGoogleAuthOnce();
           }
+        }
+      } catch {}
+    };
+
+    window.__sfHandleNativeAppVisibility = function (visible) {
+      try {
+        const isBg = visible === false;
+        document.documentElement.classList.toggle('sf-tab-hidden', isBg);
+        if (typeof window.__sfSetAppBackgrounded === 'function') {
+          window.__sfSetAppBackgrounded(isBg);
         }
       } catch {}
     };
@@ -7684,6 +7725,17 @@
         return this.playerPromise;
       },
 
+      _intendedPlaying: false,
+      _autoResumeAttempts: 0,
+      _autoResumeTimer: null,
+
+      _clearAutoResume() {
+        if (this._autoResumeTimer) {
+          clearTimeout(this._autoResumeTimer);
+          this._autoResumeTimer = null;
+        }
+      },
+
       _clearPending() {
         if (this.pendingTimeout) {
           clearTimeout(this.pendingTimeout);
@@ -7699,6 +7751,9 @@
         // 1 = PLAYING
         if (st === 1) {
           this.active = true;
+          this._intendedPlaying = true;
+          this._autoResumeAttempts = 0;
+          this._clearAutoResume();
           try {
             const effVol = AppState.isMuted ? 0 : Math.round(Math.max(0, Math.min(1, computeMasterBoostGain())) * 100);
             if (!AppState.isMuted && typeof this.player?.unMute === 'function') this.player.unMute();
@@ -7741,17 +7796,32 @@
         } else if (st === 2) {
           // 2 = PAUSED
           if (!this.active) return;
-          // Proteksi background APK: jika YouTube embed menjeda sepihak saat layar dikunci / tekan Home (bukan klik user), langsung lanjutkan!
-          const userPausedRecently = Date.now() - Number(window.__sfUserPauseTs || 0) < 1800;
-          const bgRecently = document.hidden || window.__sfNativeAppBg || (Date.now() - Number(window.__sfLastBgAt || 0) < 4000);
-          if (isRunningInNativeApk() && AppState.isPlaying && !userPausedRecently && bgRecently) {
-            setTimeout(() => {
+          // Auto-Resume Guard Layar Mati / Pindah Aplikasi: jika YouTube embed menjeda sepihak padahal _intendedPlaying === true,
+          // JANGAN ubah status jadi pause & JANGAN kirim pause ke Dynamic Island — langsung lanjutkan (80ms, 300ms, 800ms)!
+          const bgOrTransition = Boolean(
+            window.__sfIsAppBackgrounded ||
+            window.__sfNativeAppBg ||
+            document.hidden ||
+            (Date.now() - Number(window.__sfLastBgTransitionAt || 0) < 3500) ||
+            (Date.now() - Number(window.__sfLastBgAt || 0) < 3500)
+          );
+          if (this._intendedPlaying && bgOrTransition && this._autoResumeAttempts < 3) {
+            const retryDelays = [80, 300, 800];
+            const delayMs = retryDelays[this._autoResumeAttempts] || 800;
+            this._autoResumeAttempts += 1;
+            this._clearAutoResume();
+            this._autoResumeTimer = setTimeout(() => {
+              this._autoResumeTimer = null;
               try {
-                if (this.active && AppState.isPlaying) this.play();
+                if (this.active && this._intendedPlaying && this.player && this.playerReady) {
+                  this.player.playVideo();
+                }
               } catch {}
-            }, 180);
+            }, delayMs);
             return;
           }
+          this._intendedPlaying = false;
+          this._clearAutoResume();
           AppState.isPlaying = false;
           this.lastTickMs = 0;
           updatePlayPauseIcons();
@@ -7771,6 +7841,7 @@
             document.getElementById('header-sleep-pill')?.classList.add('hidden');
             const sr = document.getElementById('sleep-readout');
             if (sr) sr.textContent = 'Selesai';
+            this._intendedPlaying = false;
             AppState.isPlaying = false;
             updatePlayPauseIcons();
             highlightPlayingTrackRows();
@@ -7804,9 +7875,12 @@
         if (sessionId !== AppState.playSessionId) throw new Error('Dibatalkan');
         this.stopSyncLoop();
         this._clearPending();
+        this._clearAutoResume();
         this.videoId = videoId;
         this.sessionId = sessionId;
         this.active = true;
+        this._intendedPlaying = true;
+        this._autoResumeAttempts = 0;
         return await new Promise((resolve, reject) => {
           this.pendingResolve = resolve;
           this.pendingReject = reject;
@@ -7815,6 +7889,7 @@
               const rejFn = this.pendingReject;
               this._clearPending();
               this.active = false;
+              this._intendedPlaying = false;
               try { player.stopVideo(); } catch {}
               rejFn(new Error('Waktu memuat lagu penuh habis.'));
             }
@@ -7835,6 +7910,7 @@
           } catch (err) {
             this._clearPending();
             this.active = false;
+            this._intendedPlaying = false;
             reject(err);
           }
         });
@@ -7868,8 +7944,8 @@
             return;
           }
 
-          // Hemat CPU/GPU penuh di latar belakang APK atau saat scroll aktif (tanpa spam JNI updateState!)
-          if (window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
+          // Hemat CPU/GPU penuh di latar belakang / layar mati atau saat scroll aktif (tanpa spam JNI updateState!)
+          if (window.__sfIsAppBackgrounded || window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
 
           updatePlaybackProgressUI(cur, total, false);
           updateMediaSessionPosition();
@@ -7885,6 +7961,9 @@
       },
 
       stop() {
+        this._intendedPlaying = false;
+        this._autoResumeAttempts = 0;
+        this._clearAutoResume();
         this.active = false;
         this.stopSyncLoop();
         this._clearPending();
@@ -7894,12 +7973,18 @@
       },
 
       play() {
+        this._intendedPlaying = true;
+        this._autoResumeAttempts = 0;
+        this._clearAutoResume();
         if (this.player && this.playerReady) {
           try { this.player.playVideo(); } catch {}
         }
       },
 
       pause() {
+        this._intendedPlaying = false;
+        this._autoResumeAttempts = 0;
+        this._clearAutoResume();
         if (this.player && this.playerReady) {
           try { this.player.pauseVideo(); } catch {}
         }
@@ -9041,7 +9126,7 @@
           return;
         }
 
-        if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
+        if (AppState.isSeeking || window.__sfIsAppBackgrounded || window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
         updatePlaybackProgressUI(deckEl.currentTime, total, false);
       });
 

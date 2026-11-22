@@ -90,6 +90,24 @@ public class SpotyFlowWebView extends CapacitorWebView {
     }
 
     @Override
+    public void onPause() {
+        // JANGAN pause WebView saat lagu sedang diputar agar TIDAK ada jeda sesaat saat keluar APK / layar mati!
+        if (SpotyFlowPlaybackService.isPlaying) {
+            return;
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void pauseTimers() {
+        // JANGAN hentikan timer JS/YouTube saat lagu berjalan di latar belakang!
+        if (SpotyFlowPlaybackService.isPlaying) {
+            return;
+        }
+        super.pauseTimers();
+    }
+
+    @Override
     protected void onWindowVisibilityChanged(int visibility) {
         if (visibility != View.VISIBLE && SpotyFlowPlaybackService.isPlaying) {
             super.onWindowVisibilityChanged(View.VISIBLE);
@@ -99,19 +117,21 @@ public class SpotyFlowWebView extends CapacitorWebView {
     }
 
     @Override
-    public void onPause() {
-        if (SpotyFlowPlaybackService.isPlaying) {
+    public void dispatchWindowVisibilityChanged(int visibility) {
+        if (visibility != View.VISIBLE && SpotyFlowPlaybackService.isPlaying) {
+            super.dispatchWindowVisibilityChanged(View.VISIBLE);
             return;
         }
-        super.onPause();
+        super.dispatchWindowVisibilityChanged(visibility);
     }
 
     @Override
-    public void pauseTimers() {
-        if (SpotyFlowPlaybackService.isPlaying) {
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        if (changedView == this && visibility != View.VISIBLE && SpotyFlowPlaybackService.isPlaying) {
+            super.onVisibilityChanged(changedView, View.VISIBLE);
             return;
         }
-        super.pauseTimers();
+        super.onVisibilityChanged(changedView, visibility);
     }
 }
 `;
@@ -295,6 +315,14 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
      */
     public static void dispatchStateUpdate(Context ctx, String jsonPayload) {
         if (jsonPayload == null || jsonPayload.isEmpty()) return;
+        // Update flag isPlaying SEKETIKA sebelum mainHandler.post agar SpotyFlowWebView langsung melindungi audio walau Home/Power ditekan 50ms setelah Play!
+        try {
+            JSONObject quickObj = new JSONObject(jsonPayload);
+            if (quickObj.has("isPlaying")) {
+                SpotyFlowPlaybackService.isPlaying = quickObj.optBoolean("isPlaying", SpotyFlowPlaybackService.isPlaying);
+            }
+        } catch (Throwable ignored) {
+        }
         SpotyFlowPlaybackService svc = instance;
         if (svc != null && svc.mainHandler != null) {
             svc.mainHandler.post(() -> svc.applyJsonState(jsonPayload));
@@ -523,7 +551,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         try {
             if (wakeLock != null) {
                 if (active && !wakeLock.isHeld()) {
-                    wakeLock.acquire(4L * 60L * 60L * 1000L);
+                    wakeLock.acquire();
                 } else if (!active && wakeLock.isHeld()) {
                     wakeLock.release();
                 }
@@ -923,6 +951,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.media3.common.util.UnstableApi;
@@ -961,6 +990,25 @@ public class MainActivity extends BridgeActivity {
             attachMediaBridgeInstance(getBridge().getWebView());
         }
 
+        // Tombol Back di halaman root meminimalkan aplikasi saat lagu berputar (seperti Spotify), BUKAN mematikan lagu!
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                WebView wv = (getBridge() != null) ? getBridge().getWebView() : null;
+                if (wv != null && wv.canGoBack()) {
+                    wv.goBack();
+                    return;
+                }
+                if (SpotyFlowPlaybackService.isPlaying) {
+                    moveTaskToBack(true);
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+            }
+        });
+
         connectMediaController();
         requestSpotifyLikePermissions();
         requestBatteryOptimizationExemptionOnce();
@@ -995,7 +1043,11 @@ public class MainActivity extends BridgeActivity {
             String ua = settings.getUserAgentString();
             if (ua == null) ua = "";
             if (!ua.contains("SpotyFlowApp/")) {
-                settings.setUserAgentString(ua + " SpotyFlowApp/5.2");
+                settings.setUserAgentString(ua + " SpotyFlowApp/5.3");
+            }
+            // Kunci prioritas renderer WebView tetap IMPORTANT agar OS tidak mencekik CPU audio saat keluar APK / layar mati
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false);
             }
             // Biarkan default View.LAYER_TYPE_NONE agar Chromium memakai native hardware compositor tanpa double FBO
             webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
@@ -1120,21 +1172,40 @@ public class MainActivity extends BridgeActivity {
         });
     }
 
+    public static void dispatchAppBackgroundedToWebView(final boolean isBg) {
+        MainActivity act = activeInstance != null ? activeInstance.get() : null;
+        if (act == null) return;
+        act.runOnUiThread(() -> {
+            try {
+                if (act.getBridge() != null && act.getBridge().getWebView() != null) {
+                    String js = "try{if(window.__sfSetAppBackgrounded){window.__sfSetAppBackgrounded("
+                            + (isBg ? "true" : "false") + ");}}catch(e){}";
+                    act.getBridge().getWebView().evaluateJavascript(js, null);
+                }
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         activeInstance = new WeakReference<>(this);
+        dispatchAppBackgroundedToWebView(false);
         dispatchAppVisibilityToWebView(true);
     }
 
     @Override
     public void onPause() {
+        // Segera istirahatkan animasi visual berat sebelum transisi keluar APK agar animasi sistem mulus tanpa merebut CPU dari audio!
+        dispatchAppBackgroundedToWebView(true);
         super.onPause();
         scheduleBackgroundWebViewKeepAlive();
     }
 
     @Override
     public void onStop() {
+        dispatchAppBackgroundedToWebView(true);
         dispatchAppVisibilityToWebView(false);
         super.onStop();
         scheduleBackgroundWebViewKeepAlive();
@@ -1336,10 +1407,24 @@ function patchAndroidManifest() {
     return `<application${nextAttrs}>`;
   });
 
-  // Ensure android:hardwareAccelerated="true" on <activity> (MainActivity) for 60-120fps WebView GPU rendering
+  // Ensure launchMode="singleTask", configChanges, and hardwareAccelerated="true" on <activity> (MainActivity)
+  const requiredConfigChanges = 'orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode';
   xml = xml.replace(/<activity\b([^>]*)>/, (full, attrs) => {
-    if (/android:hardwareAccelerated\s*=/.test(attrs)) return full;
-    return `<activity${attrs}\n            android:hardwareAccelerated="true">`;
+    let nextAttrs = attrs;
+    if (/android:launchMode\s*=\s*"[^"]*"/.test(nextAttrs)) {
+      nextAttrs = nextAttrs.replace(/android:launchMode\s*=\s*"[^"]*"/, 'android:launchMode="singleTask"');
+    } else {
+      nextAttrs += '\n            android:launchMode="singleTask"';
+    }
+    if (/android:configChanges\s*=\s*"[^"]*"/.test(nextAttrs)) {
+      nextAttrs = nextAttrs.replace(/android:configChanges\s*=\s*"[^"]*"/, `android:configChanges="${requiredConfigChanges}"`);
+    } else {
+      nextAttrs += `\n            android:configChanges="${requiredConfigChanges}"`;
+    }
+    if (!/android:hardwareAccelerated\s*=/.test(nextAttrs)) {
+      nextAttrs += '\n            android:hardwareAccelerated="true"';
+    }
+    return `<activity${nextAttrs}>`;
   });
 
   // Register spotyflow:// deep link on MainActivity (Chrome Google Auth handoff)
@@ -1470,8 +1555,10 @@ function verifyPatchedProject() {
     [gradle.includes('JavaVersion.VERSION_17'), 'build.gradle missing Java 17'],
     [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
     [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
-    [webv.includes('onWindowVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing background visibility override'],
+    [webv.includes('onWindowVisibilityChanged') && webv.includes('dispatchWindowVisibilityChanged') && webv.includes('onVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing full background visibility & pause overrides'],
     [manifest.includes('android:appCategory="audio"'), 'Manifest missing appCategory="audio"'],
+    [manifest.includes('android:launchMode="singleTask"'), 'Manifest missing launchMode="singleTask" on MainActivity'],
+    [manifest.includes('android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"'), 'Manifest missing full configChanges on MainActivity'],
     [manifest.includes('androidx.media3.session.MediaSessionService'), 'Manifest missing MediaSessionService'],
     [manifest.includes('androidx.media3.session.MediaButtonReceiver'), 'Manifest missing Media3 MediaButtonReceiver'],
     [!manifest.includes('SpotyFlowMediaService'), 'Manifest still has legacy SpotyFlowMediaService'],
@@ -1479,8 +1566,9 @@ function verifyPatchedProject() {
     [svc.includes('extends MediaSessionService') && svc.includes('extends SimpleBasePlayer') && svc.includes('@UnstableApi'), 'Service must use SimpleBasePlayer + MediaSessionService + @UnstableApi'],
     [svc.includes('ForwardingPlayer') && svc.includes('hasNextMediaItem') && svc.includes('hasPreviousMediaItem'), 'Service missing ForwardingPlayer Next/Prev overrides'],
     [svc.includes('spotyflow_general') && svc.includes('spotyflow_playback') && svc.includes('spotyflow_music') && svc.includes('spotyflow_downloads'), 'Service missing 4 notification channels'],
-    [svc.includes('PARTIAL_WAKE_LOCK') && svc.includes('ACTION_AUDIO_BECOMING_NOISY'), 'Service missing WakeLock or Noisy receiver'],
+    [svc.includes('PARTIAL_WAKE_LOCK') && svc.includes('wakeLock.acquire()') && svc.includes('ACTION_AUDIO_BECOMING_NOISY'), 'Service missing indefinite WakeLock or Noisy receiver'],
     [act.includes('"SpotyFlowMediaBridge"') && act.includes('sendMediaActionToJs') && act.includes('setMediaPlaybackRequiresUserGesture(false)') && act.includes('setDomStorageEnabled(true)'), 'MainActivity missing SpotyFlowMediaBridge or WebView settings'],
+    [act.includes('RENDERER_PRIORITY_IMPORTANT') && act.includes('moveTaskToBack(true)') && act.includes('__sfSetAppBackgrounded'), 'MainActivity missing renderer priority, moveTaskToBack, or __sfSetAppBackgrounded'],
     [!act.includes('LAYER_TYPE_HARDWARE'), 'MainActivity must NOT force LAYER_TYPE_HARDWARE (causes GPU double-compositing lag!)'],
     [act.includes('View.SCROLLBARS_INSIDE_OVERLAY') && act.includes('View.OVER_SCROLL_NEVER'), 'MainActivity missing WebView scroll/overscroll flags'],
     [svc.includes('cachedArtworkBytes') && svc.includes('createScaledBitmap') && svc.includes('Math.abs(positionMs - estPos) < 2500L'), 'Service missing diff-check debounce or 256x256 artwork cache'],
