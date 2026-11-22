@@ -760,6 +760,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -836,8 +837,11 @@ public class MainActivity extends BridgeActivity {
             String ua = settings.getUserAgentString();
             if (ua == null) ua = "";
             if (!ua.contains("SpotyFlowApp/")) {
-                settings.setUserAgentString(ua + " SpotyFlowApp/5.0");
+                settings.setUserAgentString(ua + " SpotyFlowApp/5.1");
             }
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+            webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             webView.addJavascriptInterface(new SpotyFlowMediaBridgeInterface(), "SpotyFlowMediaBridge");
         } catch (Exception ignored) {
         }
@@ -1156,7 +1160,7 @@ function patchAndroidManifest() {
     xml = xml.replace(/<manifest([^>]*)>/, `<manifest$1>\n${permBlock}`);
   }
 
-  // Set android:appCategory="audio", android:largeHeap="true", android:usesCleartextTraffic="true" on <application>
+  // Set android:appCategory="audio", android:largeHeap="true", android:usesCleartextTraffic="true", android:hardwareAccelerated="true" on <application>
   xml = xml.replace(/<application\b([^>]*)>/, (full, attrs) => {
     let nextAttrs = attrs;
     if (!/android:appCategory\s*=/.test(nextAttrs)) {
@@ -1168,7 +1172,16 @@ function patchAndroidManifest() {
     if (!/android:usesCleartextTraffic\s*=/.test(nextAttrs)) {
       nextAttrs += '\n        android:usesCleartextTraffic="true"';
     }
+    if (!/android:hardwareAccelerated\s*=/.test(nextAttrs)) {
+      nextAttrs += '\n        android:hardwareAccelerated="true"';
+    }
     return `<application${nextAttrs}>`;
+  });
+
+  // Ensure android:hardwareAccelerated="true" on <activity> (MainActivity) for 60-120fps WebView GPU rendering
+  xml = xml.replace(/<activity\b([^>]*)>/, (full, attrs) => {
+    if (/android:hardwareAccelerated\s*=/.test(attrs)) return full;
+    return `<activity${attrs}\n            android:hardwareAccelerated="true">`;
   });
 
   // Register spotyflow:// deep link on MainActivity (Chrome Google Auth handoff)
@@ -1310,6 +1323,8 @@ function verifyPatchedProject() {
     [svc.includes('spotyflow_general') && svc.includes('spotyflow_playback') && svc.includes('spotyflow_music') && svc.includes('spotyflow_downloads'), 'Service missing 4 notification channels'],
     [svc.includes('PARTIAL_WAKE_LOCK') && svc.includes('ACTION_AUDIO_BECOMING_NOISY'), 'Service missing WakeLock or Noisy receiver'],
     [act.includes('"SpotyFlowMediaBridge"') && act.includes('sendMediaActionToJs') && act.includes('setMediaPlaybackRequiresUserGesture(false)') && act.includes('setDomStorageEnabled(true)'), 'MainActivity missing SpotyFlowMediaBridge or WebView settings'],
+    [act.includes('View.LAYER_TYPE_HARDWARE') && act.includes('View.SCROLLBARS_INSIDE_OVERLAY') && act.includes('View.OVER_SCROLL_NEVER'), 'MainActivity missing GPU hardware acceleration WebView flags'],
+    [(manifest.match(/android:hardwareAccelerated="true"/g) || []).length >= 2, 'Manifest missing android:hardwareAccelerated="true" on <application> and <activity>'],
   ];
 
   for (const [ok, msg] of checks) {

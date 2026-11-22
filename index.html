@@ -1013,9 +1013,135 @@
         scroll-behavior: auto !important;
       }
     }
+
+    /* =====================================================================
+       MODE PERFORMA TINGGI KHUSUS APK ANDROID WEBVIEW (60–120 FPS)
+       ===================================================================== */
+    .sf-apk-mode *,
+    .sf-apk-mode *::before,
+    .sf-apk-mode *::after {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* Permukaan solid/pekat elegan ala Spotify pengganti backdrop-blur */
+    .sf-apk-mode header,
+    .sf-apk-mode footer,
+    .sf-apk-mode .sf-glass,
+    .sf-apk-mode .sf-smoked-glass,
+    .sf-apk-mode .sf-dynamic-pill,
+    .sf-apk-mode .mobile-bottom-nav,
+    .sf-apk-mode #mobile-mini-player,
+    .sf-apk-mode #custom-modal-box,
+    .sf-apk-mode .mobile-bottom-sheet,
+    .sf-apk-mode [class*="backdrop-blur"] {
+      background-color: rgba(18, 18, 18, 0.97) !important;
+    }
+
+    /* Ringankan transisi & bayangan daftar/kartu di dalam area scroll */
+    .sf-apk-mode .sp-card,
+    .sf-apk-mode .sf-bento-card,
+    .sf-apk-mode .track-row,
+    .sf-apk-mode .sf-swipe-wrap,
+    .sf-apk-mode .sf-queue-dnd-row {
+      transition: transform 120ms ease, opacity 120ms ease !important;
+      box-shadow: none !important;
+      will-change: auto;
+    }
+    .sf-apk-mode .sp-card,
+    .sf-apk-mode .sf-bento-card {
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      content-visibility: auto;
+      contain-intrinsic-size: auto 210px;
+      contain: layout style paint;
+    }
+    .sf-apk-mode .track-row,
+    .sf-apk-mode .sf-swipe-wrap,
+    .sf-apk-mode .sf-queue-dnd-row {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 64px;
+      contain: layout style paint;
+    }
+    .sf-apk-mode .sp-cover-shadow {
+      box-shadow: none !important;
+    }
+
+    /* Nonaktifkan transisi elemen list saat sedang aktif scroll (0ms frame drop) */
+    .sf-apk-mode.sf-scrolling .sp-card,
+    .sf-apk-mode.sf-scrolling .sf-bento-card,
+    .sf-apk-mode.sf-scrolling .track-row,
+    .sf-apk-mode.sf-scrolling .sf-swipe-wrap,
+    .sf-apk-mode.sf-scrolling .sf-tap {
+      transition: none !important;
+    }
+
+    /* Ringankan Fullscreen Stage Canvas blur agar buka/tutup instan tanpa lag GPU */
+    .sf-apk-mode #fullscreen-stage #stage-ken-burns-img {
+      filter: blur(12px) saturate(125%) brightness(0.55) !important;
+      animation: none !important;
+      transform: translate3d(0, 0, 0) scale(1.12) !important;
+    }
+    .sf-apk-mode #fullscreen-stage .sf-liquid-blob {
+      filter: blur(12px) !important;
+      animation: none !important;
+      mix-blend-mode: normal !important;
+      opacity: 0.42 !important;
+      transform: translate3d(0, 0, 0) !important;
+    }
+    .sf-apk-mode #fullscreen-stage .stage-ambient-drift {
+      animation: none !important;
+      transform: translate3d(0, 0, 0) scale(1.1) !important;
+    }
+    .sf-apk-mode #fullscreen-stage .sf-film-grain {
+      display: none !important;
+    }
+
+    /* Kelancaran arah scroll vertikal & geser horizontal native (touch-action) */
+    .sf-apk-mode #main-scroll,
+    .sf-apk-mode #stage-lyrics-body,
+    .sf-apk-mode #stage-queue-list,
+    .sf-apk-mode #queue-drawer-list,
+    .sf-apk-mode #lyrics-modal-body,
+    .sf-apk-mode #right-panel,
+    .sf-apk-mode #sidebar-library-list,
+    .sf-apk-mode .overflow-y-auto {
+      touch-action: pan-y;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: auto !important;
+    }
+    .sf-apk-mode .overflow-x-auto,
+    .sf-apk-mode [class*="overflow-x-auto"] {
+      touch-action: pan-x pan-y;
+      overscroll-behavior-x: contain;
+      scroll-behavior: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
+  <script>
+    (function bootSpotyFlowApkPerfClass() {
+      try {
+        var isApk = Boolean(
+          window.SpotyFlowMediaBridge ||
+          (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
+          /SpotyFlowApp/i.test(navigator.userAgent || '')
+        );
+        if (isApk) {
+          document.documentElement.classList.add('sf-apk-mode');
+          document.addEventListener('DOMContentLoaded', function () {
+            if (document.body) document.body.classList.add('sf-apk-mode');
+          }, { once: true });
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
+  <script>
+    if (document.documentElement.classList.contains('sf-apk-mode') && document.body) {
+      document.body.classList.add('sf-apk-mode');
+    }
+  </script>
 
   <!-- =====================================================================
        WAJIB LOGIN - AUTH GATE LAYAR PENUH (WHATSAPP OTP + GOOGLE OAUTH)
@@ -2722,7 +2848,7 @@
   <audio id="audio-engine" crossorigin="anonymous" preload="auto" playsinline x-webkit-airplay="allow"></audio>
   <audio id="audio-engine-b" crossorigin="anonymous" preload="auto" playsinline x-webkit-airplay="allow"></audio>
   <audio id="audio-engine-cast" preload="auto" playsinline x-webkit-airplay="allow" class="hidden"></audio>
-  <div id="sf-yt-full-host" aria-hidden="true" style="position:fixed;left:-9999px;top:0;width:240px;height:240px;pointer-events:none;overflow:hidden;"></div>
+  <div id="sf-yt-full-host" aria-hidden="true" style="position:fixed;bottom:0;left:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;contain:strict;overflow:hidden;"></div>
 
   <script>
     /* =====================================================================
@@ -4948,8 +5074,125 @@
       }
     }
 
+    window.__sfIsScrolling = false;
+    (function initGlobalScrollAwarePause() {
+      let scrollIdleTimer = null;
+      window.addEventListener('scroll', () => {
+        if (!window.__sfIsScrolling) {
+          window.__sfIsScrolling = true;
+          document.documentElement.classList.add('sf-scrolling');
+        }
+        if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
+        scrollIdleTimer = setTimeout(() => {
+          window.__sfIsScrolling = false;
+          document.documentElement.classList.remove('sf-scrolling');
+        }, 160);
+      }, { passive: true, capture: true });
+    })();
+
+    let __sfLastProgressUiMs = 0;
+    let __sfLastRenderedSec = -1;
+    let __sfLastRenderedDurSec = -1;
+
+    function resetProgressRenderCache() {
+      __sfLastProgressUiMs = 0;
+      __sfLastRenderedSec = -1;
+      __sfLastRenderedDurSec = -1;
+    }
+
+    function updatePlaybackProgressUI(cur, total, force = false) {
+      if (!total || AppState.isSeeking || window.__sfNativeAppBg || document.hidden) return;
+      if (window.__sfIsScrolling && !force) return;
+      const now = Date.now();
+      if (!force && now - __sfLastProgressUiMs < 300) return;
+      __sfLastProgressUiMs = now;
+
+      const pct = Math.max(0, Math.min(100, (cur / total) * 100));
+      const secInt = Math.floor(cur);
+      const secChanged = force || secInt !== __sfLastRenderedSec;
+      const durInt = Math.floor(total);
+      const durChanged = force || durInt !== __sfLastRenderedDurSec;
+      const curText = secChanged ? formatTime(cur) : '';
+      if (secChanged) __sfLastRenderedSec = secInt;
+      if (durChanged) __sfLastRenderedDurSec = durInt;
+
+      const stageEl = document.getElementById('fullscreen-stage');
+      const isStageOpen = Boolean(stageEl && !stageEl.classList.contains('hidden'));
+
+      if (isStageOpen) {
+        const stSl = document.getElementById('stage-seek-slider');
+        if (stSl) {
+          stSl.value = pct;
+          stSl.style.setProperty('--slider-pct', `${pct}%`);
+        }
+        if (secChanged) {
+          const stc = document.getElementById('stage-time-current');
+          if (stc) stc.textContent = curText;
+        }
+        if (durChanged) updateDurationDisplays(total);
+        if (typeof checkFloatingCommentBubbles === 'function') checkFloatingCommentBubbles(cur);
+        syncLyricsWithTime(cur);
+      } else {
+        const sl = document.getElementById('seek-slider');
+        if (sl) {
+          sl.value = pct;
+          sl.style.setProperty('--slider-pct', `${pct}%`);
+        }
+        if (secChanged) {
+          const tc = document.getElementById('time-current');
+          if (tc) tc.textContent = curText;
+        }
+        const mpb = document.getElementById('mobile-progress-bar');
+        if (mpb) mpb.style.width = `${pct}%`;
+
+        const tvOverlay = document.getElementById('tv-overlay');
+        if (tvOverlay && !tvOverlay.classList.contains('hidden')) {
+          const tvBar = document.getElementById('tv-progress-fill');
+          if (tvBar) tvBar.style.width = `${pct}%`;
+          if (secChanged) {
+            const tvCur = document.getElementById('tv-time-current');
+            if (tvCur) tvCur.textContent = curText;
+          }
+        }
+        const carOverlay = document.getElementById('car-mode-overlay');
+        if (carOverlay && !carOverlay.classList.contains('hidden')) {
+          const carBar = document.getElementById('car-progress-fill');
+          if (carBar) carBar.style.width = `${pct}%`;
+          if (secChanged) {
+            const carCur = document.getElementById('car-time-current');
+            if (carCur) carCur.textContent = curText;
+          }
+          if (durChanged) {
+            const carDur = document.getElementById('car-time-duration');
+            if (carDur) carDur.textContent = formatTime(total);
+          }
+        }
+        if (durChanged) updateDurationDisplays(total);
+        if (typeof updateMiniPlayerPipProgress === 'function') updateMiniPlayerPipProgress(cur, total);
+
+        // Hanya sync lirik saat stage tertutup jika modal lirik / TV mode / right panel desktop sedang terlihat
+        const lyricsModalOpen = !document.getElementById('lyrics-modal')?.classList.contains('hidden');
+        const tvOpen = tvOverlay && !tvOverlay.classList.contains('hidden');
+        if (lyricsModalOpen || tvOpen || window.innerWidth >= 1024) {
+          syncLyricsWithTime(cur);
+        }
+      }
+    }
+
+    function canRunVisualizerNow() {
+      if (!AppState.isPlaying || document.hidden || !analyserNode || AppState.dataSaver || IS_MOBILE_DEVICE) {
+        return false;
+      }
+      const isApkMode = document.documentElement.classList.contains('sf-apk-mode');
+      if (isApkMode) {
+        const stageHidden = document.getElementById('fullscreen-stage')?.classList.contains('hidden') !== false;
+        if (stageHidden) return false;
+      }
+      return true;
+    }
+
     function startVisualizerLoop() {
-      if (visualizerRafId || !AppState.isPlaying || document.hidden || !analyserNode || AppState.dataSaver || IS_MOBILE_DEVICE) {
+      if (visualizerRafId || !canRunVisualizerNow()) {
         return;
       }
       visualizerRafId = requestAnimationFrame(renderVisualizerLoop);
@@ -4957,12 +5200,18 @@
 
     function renderVisualizerLoop() {
       visualizerRafId = null;
-      if (!AppState.isPlaying || document.hidden || !analyserNode || AppState.dataSaver || IS_MOBILE_DEVICE) {
+      if (!canRunVisualizerNow()) {
+        return;
+      }
+      if (window.__sfIsScrolling) {
+        visualizerRafId = requestAnimationFrame(renderVisualizerLoop);
         return;
       }
       const freq = new Uint8Array(analyserNode.frequencyBinCount);
       analyserNode.getByteFrequencyData(freq);
-      drawBars('mini-visualizer', freq, 14);
+      if (!document.documentElement.classList.contains('sf-apk-mode')) {
+        drawBars('mini-visualizer', freq, 14);
+      }
       if (!document.getElementById('fullscreen-stage')?.classList.contains('hidden')) {
         if (AppState.stageVizStyle === 'circular') {
           drawCircularWave('stage-circular-canvas', freq);
@@ -5172,7 +5421,9 @@
         const track = trackOverride || AppState.currentTrack;
         if (!track) return;
         const now = Date.now();
-        if (!force && now - __lastNativeMediaSyncAt < 800) return;
+        // SpotyFlowRemotePlayer (Media3 SimpleBasePlayer) sudah menghitung detik berjalan lokal via PositionSupplier.
+        // Cukup kirim koreksi berkala ringan setiap 15.000 ms saat tidak force (hemat ribuan JNI IPC calls saat scroll!).
+        if (!force && now - __lastNativeMediaSyncAt < 15000) return;
         __lastNativeMediaSyncAt = now;
 
         const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
@@ -7737,47 +7988,17 @@
             return;
           }
 
-          // Sinkronkan durasi penuh & posisi ke Origin Island / Dynamic Island bahkan saat layar mati
+          // Sinkronkan koreksi berkala ringan ke Origin Island / Dynamic Island (tiap 15 detik)
           if (isRunningInNativeApk()) {
             syncNativeMediaBridge(false);
           }
 
-          // Hemat CPU/GPU penuh di latar belakang APK agar audio 0% patah-patah
-          if (window.__sfNativeAppBg || document.hidden) return;
+          // Hemat CPU/GPU penuh di latar belakang APK atau saat scroll aktif
+          if (window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
 
-          const pct = Math.max(0, Math.min(100, (cur / total) * 100));
-          const curText = formatTime(cur);
-          if (!AppState.isSeeking) {
-            ['seek-slider', 'stage-seek-slider'].forEach((id) => {
-              const sl = document.getElementById(id);
-              if (sl) {
-                sl.value = pct;
-                sl.style.setProperty('--slider-pct', `${pct}%`);
-              }
-            });
-            const tc = document.getElementById('time-current');
-            const stc = document.getElementById('stage-time-current');
-            if (tc) tc.textContent = curText;
-            if (stc) stc.textContent = curText;
-          }
-          const mpb = document.getElementById('mobile-progress-bar');
-          if (mpb) mpb.style.width = `${pct}%`;
-          const tvBar = document.getElementById('tv-progress-fill');
-          if (tvBar) tvBar.style.width = `${pct}%`;
-          const tvCur = document.getElementById('tv-time-current');
-          if (tvCur) tvCur.textContent = curText;
-          const carBar = document.getElementById('car-progress-fill');
-          if (carBar) carBar.style.width = `${pct}%`;
-          const carCur = document.getElementById('car-time-current');
-          if (carCur) carCur.textContent = curText;
-          const carDur = document.getElementById('car-time-duration');
-          if (carDur) carDur.textContent = formatTime(total);
-          updateDurationDisplays(total);
-          if (typeof updateMiniPlayerPipProgress === 'function') updateMiniPlayerPipProgress(cur, total);
-          if (typeof checkFloatingCommentBubbles === 'function') checkFloatingCommentBubbles(cur);
-          syncLyricsWithTime(cur);
+          updatePlaybackProgressUI(cur, total, false);
           updateMediaSessionPosition();
-        }, 250);
+        }, 300);
       },
 
       stopSyncLoop() {
@@ -8949,39 +9170,8 @@
           syncNativeAndroidMediaSession(false);
         }
 
-        if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden) return;
-        const pct = Math.min(100, Math.max(0, (deckEl.currentTime / total) * 100));
-        ['seek-slider', 'stage-seek-slider'].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.value = pct;
-            el.style.setProperty('--slider-pct', `${pct}%`);
-          }
-        });
-        const mBar = document.getElementById('mobile-progress-bar');
-        if (mBar) mBar.style.width = `${pct}%`;
-        const tvBar = document.getElementById('tv-progress-fill');
-        if (tvBar) tvBar.style.width = `${pct}%`;
-
-        const curText = formatTime(deckEl.currentTime);
-        document.getElementById('time-current').textContent = curText;
-        document.getElementById('stage-time-current').textContent = curText;
-        const tvCur = document.getElementById('tv-time-current');
-        if (tvCur) tvCur.textContent = curText;
-        const carBar = document.getElementById('car-progress-fill');
-        if (carBar) carBar.style.width = `${pct}%`;
-        const carCur = document.getElementById('car-time-current');
-        if (carCur) carCur.textContent = curText;
-        const carDur = document.getElementById('car-time-duration');
-        if (carDur) carDur.textContent = formatTime(total);
-        updateDurationDisplays(total);
-        if (typeof updateMiniPlayerPipProgress === 'function') {
-          updateMiniPlayerPipProgress(deckEl.currentTime, total);
-        }
-        if (typeof checkFloatingCommentBubbles === 'function') {
-          checkFloatingCommentBubbles(deckEl.currentTime);
-        }
-        syncLyricsWithTime(deckEl.currentTime);
+        if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
+        updatePlaybackProgressUI(deckEl.currentTime, total, false);
       });
 
       deckEl.addEventListener('pause', () => {
@@ -9080,6 +9270,7 @@
     });
 
     function resetProgressDisplay(dur) {
+      resetProgressRenderCache();
       document.getElementById('time-current').textContent = '0:00';
       document.getElementById('stage-time-current').textContent = '0:00';
       updateDurationDisplays(dur);
@@ -9812,6 +10003,7 @@
     }
 
     function syncLyricsWithTime(sec) {
+      if (window.__sfIsScrolling) return;
       const lyr = AppState.currentLyrics;
       if (!lyr || !lyr.syncedLines.length) return;
       const effectiveSec = sec - (Number(AppState.lyricsOffsetSec) || 0);
@@ -9821,15 +10013,23 @@
         if (effectiveSec + 0.18 >= lyr.syncedLines[i].time) newIdx = i;
         else break;
       }
+      const stageVisible = !document.getElementById('fullscreen-stage')?.classList.contains('hidden');
       if (newIdx === lyr.activeIndex) {
-        updateStageWordByWordSweep(lyr, newIdx, effectiveSec);
+        if (stageVisible) updateStageWordByWordSweep(lyr, newIdx, effectiveSec);
         return;
       }
       lyr.activeIndex = newIdx;
-      renderRightPanelMiniLyrics();
+      if (window.innerWidth >= 1024) renderRightPanelMiniLyrics();
       if (typeof updateMiniPlayerPipLyric === 'function') updateMiniPlayerPipLyric();
 
-      ['lyrics-modal-body', 'stage-lyrics-body', 'tv-lyrics-body'].forEach((id) => {
+      const lyricTargets = [
+        ['lyrics-modal-body', 'lyrics-modal'],
+        ['stage-lyrics-body', 'fullscreen-stage'],
+        ['tv-lyrics-body', 'tv-overlay'],
+      ];
+      lyricTargets.forEach(([id, parentId]) => {
+        const parent = document.getElementById(parentId);
+        if (parent && parent.classList.contains('hidden')) return;
         const box = document.getElementById(id);
         if (!box) return;
         bindLyricManualScrollPause(box);
@@ -9837,7 +10037,7 @@
         const activeEl = box.querySelector(`[data-lyric-idx="${newIdx}"]`);
         if (activeEl) smoothCenterScrollToLine(box, activeEl, false);
       });
-      updateStageWordByWordSweep(lyr, newIdx, effectiveSec);
+      if (stageVisible) updateStageWordByWordSweep(lyr, newIdx, effectiveSec);
     }
 
     function seekToLyricTime(sec) {
@@ -10860,12 +11060,14 @@
         const t = e.touches[0];
         const dx = t.clientX - swipeState.startX;
         const dy = t.clientY - swipeState.startY;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
         if (!swipeState.locked) {
-          if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) {
+          if (absDy >= absDx && absDy > 8) {
             swipeState.locked = 'vertical';
             return;
           }
-          if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          if (absDx > 16 && absDx > absDy * 1.5) {
             swipeState.locked = 'horizontal';
           } else {
             return;
@@ -15121,6 +15323,29 @@
     (function initTouchQueueDrag() {
       let dragState = null;
 
+      const onQueueDragMove = (e) => {
+        if (!dragState || e.touches.length !== 1) return;
+        const touchY = e.touches[0].clientY;
+        const dy = touchY - dragState.startY;
+        if (!dragState.moved && Math.abs(dy) < 6) return;
+        dragState.moved = true;
+        if (e.cancelable) e.preventDefault();
+        dragState.row.style.transform = `translate3d(0, ${dy}px, 0) scale(1.02)`;
+        const rows = [...dragState.container.querySelectorAll('.sf-queue-dnd-row')];
+        for (const r of rows) {
+          r.classList.remove('dnd-drop-before', 'dnd-drop-after');
+          if (r === dragState.row) continue;
+          const rect = r.getBoundingClientRect();
+          if (touchY >= rect.top && touchY <= rect.bottom) {
+            const idx = parseInt(r.dataset.queueItemIdx, 10);
+            if (Number.isFinite(idx)) {
+              dragState.targetIdx = idx;
+              r.classList.add(touchY < rect.top + rect.height / 2 ? 'dnd-drop-before' : 'dnd-drop-after');
+            }
+          }
+        }
+      };
+
       document.addEventListener('touchstart', (e) => {
         const handle = e.target.closest?.('[data-queue-drag-handle]');
         if (!handle || e.touches.length !== 1) return;
@@ -15137,32 +15362,15 @@
           fromIdx,
           targetIdx: fromIdx,
           startY: e.touches[0].clientY,
+          moved: false,
         };
+        // Hanya pasang listener non-passive saat benar-benar menyeret handle antrean (0ms scroll blocking global!)
+        document.addEventListener('touchmove', onQueueDragMove, { passive: false });
       }, { passive: true });
-
-      document.addEventListener('touchmove', (e) => {
-        if (!dragState || e.touches.length !== 1) return;
-        e.preventDefault();
-        const touchY = e.touches[0].clientY;
-        const dy = touchY - dragState.startY;
-        dragState.row.style.transform = `translate3d(0, ${dy}px, 0) scale(1.02)`;
-        const rows = [...dragState.container.querySelectorAll('.sf-queue-dnd-row')];
-        for (const r of rows) {
-          r.classList.remove('dnd-drop-before', 'dnd-drop-after');
-          if (r === dragState.row) continue;
-          const rect = r.getBoundingClientRect();
-          if (touchY >= rect.top && touchY <= rect.bottom) {
-            const idx = parseInt(r.dataset.queueItemIdx, 10);
-            if (Number.isFinite(idx)) {
-              dragState.targetIdx = idx;
-              r.classList.add(touchY < rect.top + rect.height / 2 ? 'dnd-drop-before' : 'dnd-drop-after');
-            }
-          }
-        }
-      }, { passive: false });
 
       const finishQueueDrag = () => {
         if (!dragState) return;
+        document.removeEventListener('touchmove', onQueueDragMove);
         const st = dragState;
         dragState = null;
         st.row.classList.remove('sf-touch-dragging');
@@ -15314,7 +15522,9 @@
       const stageArtFrame = document.getElementById('stage-vinyl-frame');
       if (stageArtFrame) stageArtFrame.classList.toggle('stage-art-paused', !AppState.isPlaying);
       pushOverlayHistoryState('stage');
+      resetProgressRenderCache();
       if (typeof syncCanvasMotionLoop === 'function') syncCanvasMotionLoop();
+      if (AppState.isPlaying) startVisualizerLoop();
       if (stage) refreshIcons(stage);
     }
     function closeFullscreenStage() {
@@ -15328,6 +15538,10 @@
         __sfStageCloseTimer = setTimeout(() => {
           stage.classList.add('hidden');
           __sfStageCloseTimer = null;
+          resetProgressRenderCache();
+          if (document.documentElement.classList.contains('sf-apk-mode')) {
+            stopVisualizerLoop();
+          }
         }, 380);
       }
       if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
@@ -20036,8 +20250,15 @@
         if (!tracking || !e.touches || !e.touches.length) return;
         const dx = e.touches[0].clientX - startX;
         const dy = e.touches[0].clientY - startY;
-        if (Math.abs(dx) > Math.abs(dy) * 1.3 && Math.abs(dx) < 110) {
-          mini.style.transform = `translateX(${dx * 0.45}px)`;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+        if (absDy >= absDx && absDy > 8) {
+          tracking = false;
+          mini.style.transform = '';
+          return;
+        }
+        if (absDx > 16 && absDx > absDy * 1.5 && absDx < 110) {
+          mini.style.transform = `translate3d(${dx * 0.45}px, 0, 0)`;
         }
       }, { passive: true });
 
@@ -20050,7 +20271,7 @@
         if (!touch) return;
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
-        if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy) * 1.5) {
           if (dx < 0) playNext();
           else playPrev();
         }

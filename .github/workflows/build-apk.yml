@@ -90,13 +90,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android APK (v12.0.0 — Full YouTube + Origin Island)
+          name: SpotyFlow Android APK (v12.1.0 — 120FPS Smooth + Full YouTube + Origin Island)
           body: |
-            ### SpotyFlow Android APK (v12.0.0 — Fast Full YouTube + Background Keep-Alive + Vivo Origin Island)
+            ### SpotyFlow Android APK (v12.1.0 — 60–120 FPS Smooth WebView + Full YouTube + Vivo Origin Island)
+            - **60–120 FPS Scroll & Touch Optimization**: `.sf-apk-mode` menonaktifkan `backdrop-filter` berat di WebView, virtualisasi `content-visibility: auto`, passive touch listeners + directional swipe lock (0ms scroll blocking), scroll-aware pause, throttle progress UI 300ms + IPC bridge 15 detik, dan GPU `LAYER_TYPE_HARDWARE` + `hardwareAccelerated="true"`.
             - **Pemutar Utama YouTube Penuh (`SFYtFull`)**: mulai bunyi cepat (~1–2 detik) dengan durasi 100% FULL (3–5+ menit) & lirik sinkron penuh (anti preview 30 detik Deezer/iTunes).
-            - **Vivo Origin Island & Dynamic Island Resmi**: tetap menggunakan `appId: com.netease.cloudmusic` (nama & ikon **SpotyFlow**) + AndroidX Media3 `MediaSessionService` (`SimpleBasePlayer` + `ForwardingPlayer` + `DefaultMediaNotificationProvider`) + 4 kategori notifikasi persis Spotify + real-time progress bar.
+            - **Vivo Origin Island & Dynamic Island Resmi**: tetap menggunakan `appId: com.netease.cloudmusic` (nama & ikon **SpotyFlow**) + AndroidX Media3 `MediaSessionService` (`SimpleBasePlayer` + `ForwardingPlayer` + `DefaultMediaNotificationProvider`) + 4 kategori notifikasi persis Spotify.
             - **Latar Belakang & Layar Terkunci Lancar**: `SpotyFlowWebView` override `onWindowVisibilityChanged` + Foreground Service Media3 + `PARTIAL_WAKE_LOCK` + `WifiLock` + auto-pause `ACTION_AUDIO_BECOMING_NOISY`.
-            - **Super Ringan (~5–10 MB)**: bebas ExoPlayer bloat dan bebas aset WAV dummy 200 MB.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
