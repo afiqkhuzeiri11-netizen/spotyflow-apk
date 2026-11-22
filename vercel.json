@@ -1,0 +1,77 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/ytm.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxDuration": 10
+      }
+    },
+    {
+      "src": "server.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 30,
+        "includeFiles": [
+          "spotyflow.html",
+          "index.html",
+          "manifest.json",
+          "sw.js",
+          "public/index.html",
+          "public/manifest.json",
+          "public/sw.js",
+          "public/icon-192.png",
+          "public/icon-512.png"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/SpotyFlow\\.apk$",
+      "dest": "/server.js"
+    },
+    {
+      "src": "^/(index\\.html|spotyflow\\.html)?$",
+      "dest": "/server.js",
+      "headers": {
+        "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "src": "^/manifest\\.json$",
+      "dest": "/server.js",
+      "headers": {
+        "Content-Type": "application/manifest+json; charset=utf-8",
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "^/sw\\.js$",
+      "dest": "/server.js",
+      "headers": {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Service-Worker-Allowed": "/",
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "src": "^/icon-(192|512)\\.png$",
+      "dest": "/server.js",
+      "headers": {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "^/api/ytm/?$",
+      "dest": "/api/ytm.py"
+    },
+    {
+      "src": "^/(.*)",
+      "dest": "/server.js"
+    }
+  ]
+}

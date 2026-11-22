@@ -1,0 +1,74 @@
+{
+  "name": "spotyflow-acoustic-studio",
+  "version": "10.0.0",
+  "description": "SpotyFlow Acoustic Studio - Vercel-Native Stateless Serverless & Desktop Music Studio with Dual-Deck Web Audio, Cloud Postgres Sync, Google OAuth & Gemini AI",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "node server.js",
+    "app": "electron .",
+    "build:apk-www": "node scripts/build-apk-www.js",
+    "build:exe": "electron-builder --win dir",
+    "open": "node server.js --open",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "build": {
+    "appId": "com.spotyflow.studio",
+    "productName": "SpotyFlow",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "backend/**/*",
+      "routes/**/*",
+      "services/**/*",
+      "public/**/*",
+      "server.js",
+      "spotyflow.html",
+      "index.html",
+      "spotyflow.ico",
+      "package.json",
+      "!cloudflared.exe",
+      "!dist/**/*",
+      "!.cache/**/*",
+      "!cloud-backend/**/*",
+      "!*.bat",
+      "!*.vbs",
+      "!*.ps1"
+    ],
+    "win": {
+      "target": [
+        "dir"
+      ],
+      "icon": "spotyflow.ico"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/splash-screen": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.2",
+    "@ffmpeg/core": "^0.12.6",
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@neondatabase/serverless": "^0.10.4",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "google-auth-library": "^9.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
+    "prisma": "^6.6.0"
+  }
+}

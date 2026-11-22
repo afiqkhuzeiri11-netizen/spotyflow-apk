@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+.cache/
+baileys_auth/
+data/
+prisma/dev.db
+prisma/dev.db-journal
+cloudflared.exe
+www/
+android/
+dist/
+*.apk
+*.log
+.DS_Store
+Thumbs.db
