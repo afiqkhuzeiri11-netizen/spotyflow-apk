@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '1.5.2';
-const NATIVE_APK_VERSION_CODE = 152;
+const VERSION = '1.5.3';
+const NATIVE_APK_VERSION_CODE = 153;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -2017,12 +2017,12 @@ app.get(['/api/app-version', '/api/app/version'], (_req, res) => {
     apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
     otaEnabled: true,
     releaseNotes: [
-      'Mesin UI Statis Tailwind + Build Release Produksi 60–120 FPS',
-      'Pre-Blurred Micro-Canvas Backdrop & Animasi Musik GPU Compositor',
-      'Zero-Pause Keluar/Masuk APK & Pemutaran Layar Mati Stabil',
-      'Axis-Lock Gesture Engine, Dynamic Tint Mini-Player & Mode Berkendara',
-      'Kartu Berbagi Lirik Estetik HD, Sleep Timer Akhir Lagu & Mini Wrapped Mingguan',
-      'Asisten Layar Mati APK, Pembersih Cache 1-Klik Aman & Pengaturan 4 Grup',
+      'Sakelar 1-Klik Lagu | Video (MV) Tanpa Jeda (Fixed Bounding-Rect Overlay)',
+      'Native Android Home Screen Widget 4×1 Mini & 4×2 Player (Anti-Crash Android 12–15)',
+      'AI Curhat → Playlist (Gemini AI + Smart Mood Fallback)',
+      'SpotyFlow Wrapped 5-Slide ala IG Story + Ekspor Poster HD 1080×1920',
+      'Pin Momen / Reff Favorit Langsung di Seekbar Fullscreen',
+      'Beranda Hidup (Mood Chips, Grid Cepat 2×3, Top Charts ID & Global), Radio Lagu & Theme Studio 4 Tema',
     ],
     updatedAt: new Date().toISOString(),
   });
@@ -6970,6 +6970,236 @@ async function resolvePlayableTrackFromQuery(title, artist) {
     source: 'ai-curated',
   };
 }
+
+const promptToPlaylistRateLimiter = createIpRateLimiter({
+  maxReq: 8,
+  windowMs: 60 * 1000,
+  label: 'AI Curhat → Playlist',
+});
+
+function buildSmartFallbackPlaylistQueries(promptText, targetCount = 14) {
+  const lower = String(promptText || '').toLowerCase();
+  let title = 'Mix Spesial SpotyFlow';
+  let description = 'Playlist pilihan yang diracik khusus sesuai suasana hatimu.';
+  let vibeColor = '#1ED760';
+  let pool = [
+    { title: 'Hati-Hati di Jalan', artist: 'Tulus' },
+    { title: 'Sial', artist: 'Mahalini' },
+    { title: 'Evaluasi', artist: 'Hindia' },
+    { title: 'Bertaut', artist: 'Nadin Amizah' },
+    { title: 'Komang', artist: 'Raim Laode' },
+    { title: 'As It Was', artist: 'Harry Styles' },
+    { title: 'Blinding Lights', artist: 'The Weeknd' },
+    { title: 'Yellow', artist: 'Coldplay' },
+    { title: 'Die With A Smile', artist: 'Lady Gaga Bruno Mars' },
+    { title: 'Birds of a Feather', artist: 'Billie Eilish' },
+    { title: 'Lowkey', artist: 'NIKI' },
+    { title: 'Glimpse of Us', artist: 'Joji' },
+    { title: 'Dan', artist: 'Sheila On 7' },
+    { title: 'Peri Cintaku', artist: 'Ziva Magnolya' },
+    { title: 'Cruel Summer', artist: 'Taylor Swift' },
+    { title: 'Tak Segampang Itu', artist: 'Anggi Marito' },
+  ];
+
+  if (/galau|sedih|putus|kangen|rindu|nangis|patah|sakit/i.test(lower)) {
+    title = 'Ruang Galau & Rindu';
+    description = 'Deretan lagu sendu untuk menemani perasaan yang belum selesai.';
+    vibeColor = '#6366F1';
+    pool = [
+      { title: 'Hati-Hati di Jalan', artist: 'Tulus' },
+      { title: 'Sial', artist: 'Mahalini' },
+      { title: 'Tak Segampang Itu', artist: 'Anggi Marito' },
+      { title: 'Runtuh', artist: 'Feby Putri Fiersa Besari' },
+      { title: 'Glimpse of Us', artist: 'Joji' },
+      { title: 'Traitor', artist: 'Olivia Rodrigo' },
+      { title: 'Someone You Loved', artist: 'Lewis Capaldi' },
+      { title: 'Fix You', artist: 'Coldplay' },
+      { title: 'Pesan Terakhir', artist: 'Lyodra' },
+      { title: 'Sisa Rasa', artist: 'Mahalini' },
+      { title: 'Jiwa Yang Bersedih', artist: 'Ghea Indrawari' },
+      { title: 'Secukupnya', artist: 'Hindia' },
+      { title: 'Back To December', artist: 'Taylor Swift' },
+      { title: 'All Too Well', artist: 'Taylor Swift' },
+      { title: 'Monolog', artist: 'Pamungkas' },
+      { title: 'Untungnya Hidup Harus Tetap Berjalan', artist: 'Bernadya' },
+    ];
+  } else if (/hujan|malam|tidur|santai|kopi|cafe|chill|rebahan/i.test(lower)) {
+    title = 'Hujan & Malam Tenang';
+    description = 'Nuansa akustik hangat dan tempo lembut untuk malam yang damai.';
+    vibeColor = '#38BDF8';
+    pool = [
+      { title: 'Sorai', artist: 'Nadin Amizah' },
+      { title: 'Zona Nyaman', artist: 'Fourtwnty' },
+      { title: 'Lowkey', artist: 'NIKI' },
+      { title: 'Slow Dancing in the Dark', artist: 'Joji' },
+      { title: 'Best Part', artist: 'Daniel Caesar H.E.R.' },
+      { title: 'Get You', artist: 'Daniel Caesar' },
+      { title: 'Rehat', artist: 'Kunto Aji' },
+      { title: 'Resah Jadi Luka', artist: 'Daun Jatuh' },
+      { title: 'To The Bone', artist: 'Pamungkas' },
+      { title: 'Seasons', artist: 'wave to earth' },
+      { title: 'Bad', artist: 'wave to earth' },
+      { title: 'Sunsetz', artist: 'Cigarettes After Sex' },
+      { title: 'Apocalypse', artist: 'Cigarettes After Sex' },
+      { title: 'Kita Ke Sana', artist: 'Hindia' },
+      { title: 'Interaksi', artist: 'Tulus' },
+      { title: 'Lantas', artist: 'Juicy Luicy' },
+    ];
+  } else if (/fokus|kerja|belajar|coding|lofi|study|skripsi/i.test(lower)) {
+    title = 'Deep Focus & Lofi Flow';
+    description = 'Ritme tenang bebas distraksi untuk kerja, belajar, dan coding.';
+    vibeColor = '#14B8A6';
+    pool = [
+      { title: 'Luv(sic) Part 3', artist: 'Nujabes' },
+      { title: 'Aruarian Dance', artist: 'Nujabes' },
+      { title: 'Feather', artist: 'Nujabes' },
+      { title: 'Snowman', artist: 'WYS' },
+      { title: 'Affection', artist: 'Jinsang' },
+      { title: 'Summer Madness', artist: 'Kool & The Gang' },
+      { title: 'Experience', artist: 'Ludovico Einaudi' },
+      { title: 'Nuvole Bianche', artist: 'Ludovico Einaudi' },
+      { title: 'River Flows In You', artist: 'Yiruma' },
+      { title: 'Cornfield Chase', artist: 'Hans Zimmer' },
+      { title: 'Time', artist: 'Hans Zimmer' },
+      { title: 'Midnight City', artist: 'M83' },
+      { title: 'Resonance', artist: 'HOME' },
+      { title: 'Coffee', artist: 'beabadoobee' },
+      { title: 'From The Start', artist: 'Laufey' },
+      { title: 'Falling Behind', artist: 'Laufey' },
+    ];
+  } else if (/semangat|gym|olahraga|lari|workout|energi|pagi|happy|senang/i.test(lower)) {
+    title = 'High Energy Booster';
+    description = 'Beat kencang dan anthem penuh semangat untuk pompa adrenalin.';
+    vibeColor = '#F59E0B';
+    pool = [
+      { title: 'Blinding Lights', artist: 'The Weeknd' },
+      { title: 'Levitating', artist: 'Dua Lipa' },
+      { title: 'Uptown Funk', artist: 'Bruno Mars' },
+      { title: 'Cant Hold Us', artist: 'Macklemore Ryan Lewis' },
+      { title: 'Believer', artist: 'Imagine Dragons' },
+      { title: 'Thunder', artist: 'Imagine Dragons' },
+      { title: 'Stronger', artist: 'Kanye West' },
+      { title: 'Till I Collapse', artist: 'Eminem' },
+      { title: 'Starboy', artist: 'The Weeknd' },
+      { title: 'Espresso', artist: 'Sabrina Carpenter' },
+      { title: 'APT.', artist: 'ROSE Bruno Mars' },
+      { title: 'Cruel Summer', artist: 'Taylor Swift' },
+      { title: 'Viva La Vida', artist: 'Coldplay' },
+      { title: 'Evaluasi', artist: 'Hindia' },
+      { title: 'Sephia', artist: 'Sheila On 7' },
+      { title: 'Melompat Lebih Tinggi', artist: 'Sheila On 7' },
+    ];
+  } else if (/anime|jepang|jpop|wibu|ost/i.test(lower)) {
+    title = 'Anime & J-Pop Essentials';
+    description = 'OST anime ikonik dan hits J-Pop penuh emosi dan energi.';
+    vibeColor = '#EC4899';
+    pool = [
+      { title: 'Yoru ni Kakeru', artist: 'YOASOBI' },
+      { title: 'Idol', artist: 'YOASOBI' },
+      { title: 'Gurenge', artist: 'LiSA' },
+      { title: 'Unravel', artist: 'TK from Ling tosite sigure' },
+      { title: 'Kick Back', artist: 'Kenshi Yonezu' },
+      { title: 'Lemon', artist: 'Kenshi Yonezu' },
+      { title: 'Shinunoga E-Wa', artist: 'Fujii Kaze' },
+      { title: 'Matsuri', artist: 'Fujii Kaze' },
+      { title: 'Sparkle', artist: 'RADWIMPS' },
+      { title: 'Nandemonaiya', artist: 'RADWIMPS' },
+      { title: 'Blue Bird', artist: 'Ikimonogakari' },
+      { title: 'Silhouette', artist: 'KANA-BOON' },
+      { title: 'Kaikai Kitan', artist: 'Eve' },
+      { title: 'Specialz', artist: 'King Gnu' },
+      { title: 'Bling-Bang-Bang-Born', artist: 'Creepy Nuts' },
+      { title: 'Suzume', artist: 'RADWIMPS' },
+    ];
+  } else if (/indo|indonesia|lokal|pop indo/i.test(lower)) {
+    title = 'Hits Indonesia Pilihan';
+    description = 'Kumpulan lagu Indonesia paling enak didengar sepanjang hari.';
+    vibeColor = '#1ED760';
+    pool = [
+      { title: 'Hati-Hati di Jalan', artist: 'Tulus' },
+      { title: 'Komang', artist: 'Raim Laode' },
+      { title: 'Sial', artist: 'Mahalini' },
+      { title: 'Satu Bulan', artist: 'Bernadya' },
+      { title: 'Kata Mereka Ini Berlebihan', artist: 'Bernadya' },
+      { title: 'Evaluasi', artist: 'Hindia' },
+      { title: 'Bertaut', artist: 'Nadin Amizah' },
+      { title: 'Lantas', artist: 'Juicy Luicy' },
+      { title: 'Tampar', artist: 'Juicy Luicy' },
+      { title: 'Dan', artist: 'Sheila On 7' },
+      { title: 'Kangen', artist: 'Dewa 19' },
+      { title: 'Separuh Aku', artist: 'NOAH' },
+      { title: 'Peri Cintaku', artist: 'Ziva Magnolya' },
+      { title: 'Nemen', artist: 'GildCoustic' },
+      { title: 'To The Bone', artist: 'Pamungkas' },
+      { title: 'Runtuh', artist: 'Feby Putri Fiersa Besari' },
+    ];
+  }
+
+  return {
+    title,
+    description,
+    vibeColor,
+    queries: pool.slice(0, Math.max(12, Math.min(16, targetCount))),
+    provider: 'smart-fallback',
+  };
+}
+
+app.post('/api/ai/prompt-to-playlist', promptToPlaylistRateLimiter, async (req, res) => {
+  const rawPrompt = String(req.body?.prompt || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 300);
+  if (!rawPrompt) {
+    return res.status(400).json({ ok: false, error: 'Tulis cerita atau suasana hatimu terlebih dahulu.' });
+  }
+  const count = Math.max(12, Math.min(16, parseInt(req.body?.count, 10) || 14));
+
+  const aiPrompt = `Kamu adalah kurator musik profesional SpotyFlow.
+Berdasarkan curhatan atau suasana berikut: "${rawPrompt}"
+Susun tepat ${count} lagu NYATA yang sangat cocok dengan emosi, bahasa, dan budaya permintaan tersebut.
+Balas HANYA JSON valid tanpa markdown:
+{"title":"Judul Playlist Menarik (maks 45 karakter)","description":"Deskripsi hangat 1 kalimat","vibeColor":"#1ED760","queries":[{"title":"Judul Lagu Nyata","artist":"Nama Artis Nyata"}]}`;
+
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      const aiText = await callGeminiPayload(
+        {
+          contents: [{ parts: [{ text: aiPrompt }] }],
+          generationConfig: { temperature: 0.75, maxOutputTokens: 1200 },
+        },
+        12000
+      );
+      if (aiText) {
+        const m = String(aiText).match(/\{[\s\S]*\}/);
+        if (m) {
+          const parsed = JSON.parse(m[0]);
+          const queries = Array.isArray(parsed?.queries)
+            ? parsed.queries
+                .filter((q) => q && String(q.title || '').trim())
+                .map((q) => ({
+                  title: String(q.title || '').trim().slice(0, 100),
+                  artist: String(q.artist || '').trim().slice(0, 80),
+                }))
+                .slice(0, 16)
+            : [];
+          if (queries.length >= 6) {
+            const safeColor = /^#[0-9a-fA-F]{6}$/.test(String(parsed.vibeColor || '')) ? String(parsed.vibeColor) : '#1ED760';
+            return res.status(200).json({
+              ok: true,
+              provider: 'gemini',
+              title: String(parsed.title || 'Mix AI SpotyFlow').trim().slice(0, 60),
+              description: String(parsed.description || 'Playlist hasil kurasi AI SpotyFlow.').trim().slice(0, 180),
+              vibeColor: safeColor,
+              queries,
+            });
+          }
+        }
+      }
+    }
+  } catch {
+    // Fallback otomatis ke kurator suasana pintar (ANTI-500)
+  }
+
+  const fb = buildSmartFallbackPlaylistQueries(rawPrompt, count);
+  return res.status(200).json({ ok: true, ...fb });
+});
 
 app.post('/api/ai/mood-playlist', aiRateLimiterMiddleware, async (req, res) => {
   const rawPrompt = String(req.body?.prompt || req.body?.mood || '').trim().slice(0, 220);

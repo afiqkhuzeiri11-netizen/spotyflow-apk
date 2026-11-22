@@ -26,6 +26,7 @@ const MANIFEST_XML = path.join(APP_DIR, 'src', 'main', 'AndroidManifest.xml');
 const JAVA_ROOT_DIR = path.join(APP_DIR, 'src', 'main', 'java');
 const RES_LAYOUT_DIR = path.join(APP_DIR, 'src', 'main', 'res', 'layout');
 const RES_DRAWABLE_DIR = path.join(APP_DIR, 'src', 'main', 'res', 'drawable');
+const RES_XML_DIR = path.join(APP_DIR, 'src', 'main', 'res', 'xml');
 
 function readDynamicAppId() {
   if (!fs.existsSync(CAP_CONFIG_PATH)) {
@@ -52,6 +53,456 @@ const IC_STAT_MUSIC_XML = `<?xml version="1.0" encoding="utf-8"?>
         android:fillColor="#FFFFFF"
         android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z" />
 </vector>
+`;
+
+const WIDGET_BG_DARK_XML = `<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#EB121212" />
+    <corners android:radius="20dp" />
+    <stroke
+        android:width="1dp"
+        android:color="#26FFFFFF" />
+</shape>
+`;
+
+const WIDGET_COVER_BG_XML = `<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#242424" />
+    <corners android:radius="12dp" />
+</shape>
+`;
+
+const WIDGET_BTN_PLAY_BG_XML = `<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFF" />
+</shape>
+`;
+
+const IC_WIDGET_PREV_XML = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,6h2v12H6V6zM9.5,12l8.5,6V6L9.5,12z" />
+</vector>
+`;
+
+const IC_WIDGET_NEXT_XML = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,18l8.5,-6L6,6v12zM16,6v12h2V6h-2z" />
+</vector>
+`;
+
+const IC_WIDGET_PLAY_XML = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#000000"
+        android:pathData="M8,5v14l11,-7L8,5z" />
+</vector>
+`;
+
+const IC_WIDGET_PAUSE_XML = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#000000"
+        android:pathData="M6,19h4V5H6v14zM14,5v14h4V5h-4z" />
+</vector>
+`;
+
+const WIDGET_SPOTYFLOW_SMALL_XML = `<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_dark"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="12dp"
+    android:paddingTop="8dp"
+    android:paddingRight="12dp"
+    android:paddingBottom="8dp">
+
+    <ImageView
+        android:id="@+id/widget_cover"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/widget_cover_bg"
+        android:contentDescription="Sampul Lagu"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_stat_music" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="8dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="SpotyFlow"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Ketuk untuk memutar musik"
+            android:textColor="#B3FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Sebelumnya"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_prev" />
+
+        <ImageButton
+            android:id="@+id/widget_btn_play_pause"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:background="@drawable/widget_btn_play_bg"
+            android:contentDescription="Putar atau Jeda"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_play" />
+
+        <ImageButton
+            android:id="@+id/widget_btn_next"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Berikutnya"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_next" />
+    </LinearLayout>
+
+</LinearLayout>
+`;
+
+const WIDGET_SPOTYFLOW_LARGE_XML = `<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_dark"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/widget_cover"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:background="@drawable/widget_cover_bg"
+            android:contentDescription="Sampul Lagu"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_stat_music" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.14"
+                android:text="SPOTYFLOW"
+                android:textColor="#1ED760"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="SpotyFlow"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Ketuk untuk memutar musik"
+                android:textColor="#B3FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Sebelumnya"
+            android:padding="7dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_prev" />
+
+        <ImageButton
+            android:id="@+id/widget_btn_play_pause"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/widget_btn_play_bg"
+            android:contentDescription="Putar atau Jeda"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_play" />
+
+        <ImageButton
+            android:id="@+id/widget_btn_next"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Berikutnya"
+            android:padding="7dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_next" />
+    </LinearLayout>
+
+</LinearLayout>
+`;
+
+const WIDGET_SPOTYFLOW_SMALL_INFO_XML = `<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:initialLayout="@layout/widget_spotyflow_small"
+    android:minWidth="250dp"
+    android:minHeight="56dp"
+    android:resizeMode="horizontal"
+    android:targetCellWidth="4"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    tools:targetApi="s" />
+`;
+
+const WIDGET_SPOTYFLOW_LARGE_INFO_XML = `<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:initialLayout="@layout/widget_spotyflow_large"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    tools:targetApi="s" />
+`;
+
+const SPOTYFLOW_WIDGET_PROVIDER_JAVA = `package ${APP_ID};
+
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.widget.RemoteViews;
+
+public class SpotyFlowWidgetProvider extends AppWidgetProvider {
+    public static final String ACTION_WIDGET_CMD = "${APP_ID}.WIDGET_CMD";
+    public static final String EXTRA_CMD = "cmd";
+
+    protected int getWidgetLayoutResId() {
+        return R.layout.widget_spotyflow_small;
+    }
+
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        if (context == null || appWidgetManager == null || appWidgetIds == null) return;
+        for (int widgetId : appWidgetIds) {
+            try {
+                RemoteViews views = buildRemoteViews(context, getWidgetLayoutResId());
+                appWidgetManager.updateAppWidget(widgetId, views);
+            } catch (Throwable ignored) {
+            }
+        }
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        if (context == null || intent == null) return;
+        if (ACTION_WIDGET_CMD.equals(intent.getAction())) {
+            String cmd = intent.getStringExtra(EXTRA_CMD);
+            if (!MainActivity.hasActiveWebView()) {
+                try {
+                    Intent launch = new Intent(context, MainActivity.class);
+                    launch.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(launch);
+                } catch (Throwable ignored) {
+                }
+                return;
+            }
+            if ("prev".equals(cmd)) {
+                MainActivity.sendMediaActionToJs("prev", 0L);
+            } else if ("next".equals(cmd)) {
+                MainActivity.sendMediaActionToJs("next", 0L);
+            } else if ("play_pause".equals(cmd)) {
+                String action = SpotyFlowPlaybackService.isPlaying ? "pause" : "play";
+                MainActivity.sendMediaActionToJs(action, 0L);
+            }
+            updateAllWidgets(context);
+        }
+    }
+
+    public static void updateAllWidgets(Context context) {
+        if (context == null) return;
+        try {
+            AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+            if (mgr == null) return;
+
+            int[] smallIds = mgr.getAppWidgetIds(new ComponentName(context, SpotyFlowWidgetProvider.class));
+            if (smallIds != null && smallIds.length > 0) {
+                RemoteViews smallViews = buildRemoteViews(context, R.layout.widget_spotyflow_small);
+                mgr.updateAppWidget(smallIds, smallViews);
+            }
+
+            int[] largeIds = mgr.getAppWidgetIds(new ComponentName(context, SpotyFlowWidgetLargeProvider.class));
+            if (largeIds != null && largeIds.length > 0) {
+                RemoteViews largeViews = buildRemoteViews(context, R.layout.widget_spotyflow_large);
+                mgr.updateAppWidget(largeIds, largeViews);
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static RemoteViews buildRemoteViews(Context context, int layoutResId) {
+        RemoteViews views = new RemoteViews(context.getPackageName(), layoutResId);
+
+        String title = SpotyFlowPlaybackService.lastWidgetTitle;
+        if (title == null || title.isEmpty()) title = "SpotyFlow";
+        String artist = SpotyFlowPlaybackService.lastWidgetArtist;
+        if (artist == null || artist.isEmpty()) artist = "Ketuk untuk memutar musik";
+
+        views.setTextViewText(R.id.widget_title, title);
+        views.setTextViewText(R.id.widget_artist, artist);
+        views.setImageViewResource(
+                R.id.widget_btn_play_pause,
+                SpotyFlowPlaybackService.isPlaying ? R.drawable.ic_widget_pause : R.drawable.ic_widget_play
+        );
+
+        Bitmap cover = SpotyFlowPlaybackService.lastWidgetBitmap;
+        if (cover != null && !cover.isRecycled()) {
+            views.setImageViewBitmap(R.id.widget_cover, cover);
+        } else {
+            views.setImageViewResource(R.id.widget_cover, R.drawable.ic_stat_music);
+        }
+
+        // Klik kartu widget -> buka MainActivity
+        Intent openIntent = new Intent(context, MainActivity.class);
+        openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent openPi = PendingIntent.getActivity(
+                context,
+                200,
+                openIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        views.setOnClickPendingIntent(R.id.widget_root, openPi);
+
+        // Tombol Prev / Play-Pause / Next -> explicit broadcast dengan requestCode unik & FLAG_IMMUTABLE
+        views.setOnClickPendingIntent(R.id.widget_btn_prev, buildCmdPendingIntent(context, "prev", 201));
+        views.setOnClickPendingIntent(R.id.widget_btn_play_pause, buildCmdPendingIntent(context, "play_pause", 202));
+        views.setOnClickPendingIntent(R.id.widget_btn_next, buildCmdPendingIntent(context, "next", 203));
+
+        return views;
+    }
+
+    private static PendingIntent buildCmdPendingIntent(Context context, String cmd, int requestCode) {
+        Intent intent = new Intent(context, SpotyFlowWidgetProvider.class);
+        intent.setAction(ACTION_WIDGET_CMD);
+        intent.putExtra(EXTRA_CMD, cmd);
+        return PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
+}
+`;
+
+const SPOTYFLOW_WIDGET_LARGE_PROVIDER_JAVA = `package ${APP_ID};
+
+public class SpotyFlowWidgetLargeProvider extends SpotyFlowWidgetProvider {
+    @Override
+    protected int getWidgetLayoutResId() {
+        return R.layout.widget_spotyflow_large;
+    }
+}
 `;
 
 const SPOTYFLOW_WEBVIEW_JAVA = `package ${APP_ID};
@@ -212,6 +663,9 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
 
     public static volatile SpotyFlowPlaybackService instance = null;
     public static volatile boolean isPlaying = false;
+    public static volatile String lastWidgetTitle = "SpotyFlow";
+    public static volatile String lastWidgetArtist = "Ketuk untuk memutar musik";
+    public static volatile Bitmap lastWidgetBitmap = null;
     private static volatile String pendingJsonPayload = null;
     private volatile boolean serviceStarted = false;
 
@@ -656,13 +1110,23 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             lastPlaybackRate = playbackRate;
 
             isPlaying = playingNow;
+            lastWidgetTitle = title;
+            lastWidgetArtist = artist;
             updateWakeAndWifiLocks(playingNow);
 
             byte[] artForCover = coverUrl.equals(cachedCoverUrl) ? cachedArtworkBytes : null;
+            if (artForCover != null) {
+                updateWidgetBitmapFromBytes(artForCover);
+            }
             remotePlayer.updateFromJs(
                     trackId, title, artist, album, coverUrl, artForCover,
                     playingNow, durationMs, positionMs, playbackRate
             );
+
+            try {
+                SpotyFlowWidgetProvider.updateAllWidgets(getApplicationContext());
+            } catch (Throwable ignored) {
+            }
 
             if (!coverUrl.equals(cachedCoverUrl) && !coverUrl.equals(fetchingCoverUrl)) {
                 fetchAndCacheCoverAsync(coverUrl);
@@ -748,7 +1212,12 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                         cachedCoverUrl = urlStr;
                         cachedArtworkBytes = finalBytes;
                         if (remotePlayer != null && urlStr.equals(lastCoverUrl)) {
+                            updateWidgetBitmapFromBytes(finalBytes);
                             remotePlayer.updateArtworkBytes(finalBytes);
+                            try {
+                                SpotyFlowWidgetProvider.updateAllWidgets(getApplicationContext());
+                            } catch (Throwable ignored) {
+                            }
                             if (mediaSession != null && isPlaying) {
                                 try {
                                     onUpdateNotification(mediaSession, true);
@@ -760,6 +1229,29 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 });
             }
         });
+    }
+
+    private void updateWidgetBitmapFromBytes(byte[] jpegBytes) {
+        if (jpegBytes == null || jpegBytes.length < 64) return;
+        try {
+            Bitmap decoded = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.length);
+            if (decoded == null) return;
+            int w = decoded.getWidth();
+            int h = decoded.getHeight();
+            if (w > 160 || h > 160) {
+                float scale = Math.min(160f / Math.max(1, w), 160f / Math.max(1, h));
+                int nw = Math.max(1, Math.round(w * scale));
+                int nh = Math.max(1, Math.round(h * scale));
+                Bitmap scaled = Bitmap.createScaledBitmap(decoded, nw, nh, true);
+                if (scaled != decoded) {
+                    decoded.recycle();
+                }
+                lastWidgetBitmap = scaled;
+            } else {
+                lastWidgetBitmap = decoded;
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     /**
@@ -1163,6 +1655,19 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
+    public static boolean hasActiveWebView() {
+        try {
+            MainActivity act = activeInstance != null ? activeInstance.get() : null;
+            return act != null
+                    && !act.isFinishing()
+                    && !act.isDestroyed()
+                    && act.getBridge() != null
+                    && act.getBridge().getWebView() != null;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
     public static void sendMediaActionToJs(final String action, final long positionMs) {
         MainActivity act = activeInstance != null ? activeInstance.get() : null;
         if (act == null || action == null) return;
@@ -1407,16 +1912,16 @@ function patchBuildGradle() {
     content = content.replace(/applicationId\s+["'][^"']+["']/, `applicationId "${APP_ID}"`);
   }
 
-  // Official SpotyFlow v1.5.2 versionCode 152 & versionName "1.5.2"
+  // Official SpotyFlow v1.5.3 versionCode 153 & versionName "1.5.3"
   if (/versionCode\s+\d+/.test(content)) {
-    content = content.replace(/versionCode\s+\d+/, 'versionCode 152');
+    content = content.replace(/versionCode\s+\d+/, 'versionCode 153');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 152');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 153');
   }
   if (/versionName\s+["'][^"']+["']/.test(content)) {
-    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "1.5.2"');
+    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "1.5.3"');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "1.5.2"');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "1.5.3"');
   }
 
   // Ensure Java 17 compileOptions inside android { ... } (proven Capacitor 6 + Gradle 8 + SDK 34 stack)
@@ -1466,7 +1971,7 @@ function patchBuildGradle() {
   }
 
   fs.writeFileSync(BUILD_GRADLE, content, 'utf8');
-  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, v1.5.2/152, Media3 1.4.1, Guava, Java 17, Production release buildType)`);
+  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, v1.5.3/153, Media3 1.4.1, Guava, Java 17, Production release buildType)`);
 }
 
 function patchAndroidManifest() {
@@ -1588,8 +2093,40 @@ function patchAndroidManifest() {
     xml = xml.replace('</application>', `${serviceBlock}\n    </application>`);
   }
 
+  // Register Native Android Home Screen Widgets 4x1 & 4x2
+  if (!xml.includes('android:name=".SpotyFlowWidgetProvider"')) {
+    const widgetReceiversBlock = `
+        <receiver
+            android:name=".SpotyFlowWidgetProvider"
+            android:exported="true"
+            android:label="SpotyFlow Mini (4×1)">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="${APP_ID}.WIDGET_CMD" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_spotyflow_small_info" />
+        </receiver>
+
+        <receiver
+            android:name=".SpotyFlowWidgetLargeProvider"
+            android:exported="true"
+            android:label="SpotyFlow Player (4×2)">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="${APP_ID}.WIDGET_CMD" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_spotyflow_large_info" />
+        </receiver>
+    `;
+    xml = xml.replace('</application>', `${widgetReceiversBlock}\n    </application>`);
+  }
+
   fs.writeFileSync(MANIFEST_XML, xml, 'utf8');
-  console.log('  + Patched AndroidManifest.xml (14 Spotify permissions, appCategory=audio, Media3 MediaSessionService & MediaButtonReceiver)');
+  console.log('  + Patched AndroidManifest.xml (14 Spotify permissions, appCategory=audio, Media3 MediaSessionService, MediaButtonReceiver & 4x1/4x2 Widgets)');
 }
 
 function writeJavaAndResSources() {
@@ -1609,6 +2146,7 @@ function writeJavaAndResSources() {
   fs.mkdirSync(JAVA_PKG_DIR, { recursive: true });
   fs.mkdirSync(RES_LAYOUT_DIR, { recursive: true });
   fs.mkdirSync(RES_DRAWABLE_DIR, { recursive: true });
+  fs.mkdirSync(RES_XML_DIR, { recursive: true });
 
   // Clean up any legacy ExoPlayer / resolver / service Java files
   for (const legacy of ['NativeYouTubeResolver.java', 'SpotyFlowMediaService.java', 'SpotyFlowMediaPlugin.java']) {
@@ -1619,16 +2157,34 @@ function writeJavaAndResSources() {
     }
   }
 
+  // 5 Native Java classes (WebView, PlaybackService, MainActivity, 4x1 Widget, 4x2 Widget)
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), SPOTYFLOW_WEBVIEW_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), SPOTYFLOW_PLAYBACK_SERVICE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), MAIN_ACTIVITY_JAVA, 'utf8');
-  // KRUSIAL CAPACITOR 7: BridgeActivity.java memakai R.layout.capacitor_bridge_layout_main (bukan hanya bridge_layout_main)!
-  // Tulis KEDUANYA agar SpotyFlowWebView 100% ter-inflate pada Capacitor 7 maupun kompatibilitas mundur.
+  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetProvider.java'), SPOTYFLOW_WIDGET_PROVIDER_JAVA, 'utf8');
+  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLargeProvider.java'), SPOTYFLOW_WIDGET_LARGE_PROVIDER_JAVA, 'utf8');
+
+  // WebView layouts (both Capacitor 6 & 7 compatibility) + 4x1 & 4x2 Home Screen Widget layouts
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
-  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'), IC_STAT_MUSIC_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_small.xml'), WIDGET_SPOTYFLOW_SMALL_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_large.xml'), WIDGET_SPOTYFLOW_LARGE_XML, 'utf8');
 
-  console.log(`  + Written 3 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + capacitor_bridge_layout_main.xml & bridge_layout_main.xml + vector icon`);
+  // Notification + Widget drawables
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'), IC_STAT_MUSIC_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_bg_dark.xml'), WIDGET_BG_DARK_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_cover_bg.xml'), WIDGET_COVER_BG_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_btn_play_bg.xml'), WIDGET_BTN_PLAY_BG_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_widget_prev.xml'), IC_WIDGET_PREV_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_widget_next.xml'), IC_WIDGET_NEXT_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_widget_play.xml'), IC_WIDGET_PLAY_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_widget_pause.xml'), IC_WIDGET_PAUSE_XML, 'utf8');
+
+  // AppWidget provider metadata XMLs
+  fs.writeFileSync(path.join(RES_XML_DIR, 'widget_spotyflow_small_info.xml'), WIDGET_SPOTYFLOW_SMALL_INFO_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_XML_DIR, 'widget_spotyflow_large_info.xml'), WIDGET_SPOTYFLOW_LARGE_INFO_XML, 'utf8');
+
+  console.log(`  + Written 5 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + WebView layouts + 4x1/4x2 Widgets & drawables`);
 }
 
 function verifyPatchedProject() {
@@ -1638,9 +2194,22 @@ function verifyPatchedProject() {
     path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'),
     path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'),
     path.join(JAVA_PKG_DIR, 'MainActivity.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetProvider.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLargeProvider.java'),
     path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'),
     path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'),
+    path.join(RES_LAYOUT_DIR, 'widget_spotyflow_small.xml'),
+    path.join(RES_LAYOUT_DIR, 'widget_spotyflow_large.xml'),
     path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'),
+    path.join(RES_DRAWABLE_DIR, 'widget_bg_dark.xml'),
+    path.join(RES_DRAWABLE_DIR, 'widget_cover_bg.xml'),
+    path.join(RES_DRAWABLE_DIR, 'widget_btn_play_bg.xml'),
+    path.join(RES_DRAWABLE_DIR, 'ic_widget_prev.xml'),
+    path.join(RES_DRAWABLE_DIR, 'ic_widget_next.xml'),
+    path.join(RES_DRAWABLE_DIR, 'ic_widget_play.xml'),
+    path.join(RES_DRAWABLE_DIR, 'ic_widget_pause.xml'),
+    path.join(RES_XML_DIR, 'widget_spotyflow_small_info.xml'),
+    path.join(RES_XML_DIR, 'widget_spotyflow_large_info.xml'),
   ];
   for (const f of mustExist) {
     if (!fs.existsSync(f)) {
@@ -1667,6 +2236,10 @@ function verifyPatchedProject() {
   const svc = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), 'utf8');
   const act = fs.readFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), 'utf8');
   const webv = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), 'utf8');
+  const wSmall = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetProvider.java'), 'utf8');
+  const wLarge = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLargeProvider.java'), 'utf8');
+  const wLayoutSm = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_small.xml'), 'utf8');
+  const wLayoutLg = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_large.xml'), 'utf8');
   const capLayout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'), 'utf8');
   const layout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), 'utf8');
 
@@ -1675,14 +2248,17 @@ function verifyPatchedProject() {
     [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 34') && variablesGradle.includes('targetSdkVersion = 34')), 'variables.gradle missing compileSdk/targetSdk = 34'],
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('versionCode 152') && gradle.includes('versionName "1.5.2"'), 'build.gradle missing versionCode 152 / versionName "1.5.2"'],
+    [gradle.includes('versionCode 153') && gradle.includes('versionName "1.5.3"'), 'build.gradle missing versionCode 153 / versionName "1.5.3"'],
     [gradle.includes('androidx.media3:media3-common:1.4.1'), 'build.gradle missing media3-common:1.4.1'],
     [gradle.includes('androidx.media3:media3-session:1.4.1'), 'build.gradle missing media3-session:1.4.1'],
     [!gradle.includes('media3-exoplayer'), 'build.gradle should NOT include heavy media3-exoplayer'],
     [gradle.includes('com.google.guava:guava:32.1.3-android'), 'build.gradle missing guava'],
     [gradle.includes('JavaVersion.VERSION_17'), 'build.gradle missing Java 17'],
     [gradle.includes('minifyEnabled false') && gradle.includes('shrinkResources false') && gradle.includes('signingConfig signingConfigs.debug'), 'build.gradle missing production release buildType config'],
-    [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
+    [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl) && wSmall.startsWith(pkgDecl) && wLarge.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
+    [wSmall.includes('PendingIntent.FLAG_IMMUTABLE') && !wLayoutSm.includes('ConstraintLayout') && !wLayoutSm.includes('CardView') && !wLayoutLg.includes('ConstraintLayout') && !wLayoutLg.includes('CardView'), 'Widget RemoteViews or FLAG_IMMUTABLE rule violated'],
+    [act.includes('hasActiveWebView()') && svc.includes('lastWidgetTitle') && svc.includes('lastWidgetBitmap') && svc.includes('updateAllWidgets'), 'MainActivity/Service missing Widget integration'],
+    [manifest.includes('SpotyFlowWidgetProvider') && manifest.includes('SpotyFlowWidgetLargeProvider'), 'Manifest missing 4x1 or 4x2 Widget receiver'],
     [capLayout.includes(`<${APP_ID}.SpotyFlowWebView`), `capacitor_bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
     [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
     [svc.includes('serviceStarted') && act.includes('isActivityInForeground'), 'Service/MainActivity missing foreground service promotion guard'],
@@ -1713,7 +2289,7 @@ function verifyPatchedProject() {
       process.exit(1);
     }
   }
-  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} SpotyFlow v1.5.2 Capacitor 6 + SDK 34 + Media3 1.4.1 + Release + Origin Island checks)`);
+  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} SpotyFlow v1.5.3 Capacitor 6 + SDK 34 + Media3 1.4.1 + 4x1/4x2 Widgets + Release checks)`);
 }
 
 function main() {
@@ -1721,13 +2297,13 @@ function main() {
     if (!fs.existsSync(ANDROID_DIR)) {
       throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
     }
-    console.log(`[SpotyFlow Media3 Patcher] Injecting SpotyFlow v1.5.2 (Capacitor 6 + SDK 34 + Media3 1.4.1 + Release, appId=${APP_ID})...`);
+    console.log(`[SpotyFlow Media3 Patcher] Injecting SpotyFlow v1.5.3 (Capacitor 6 + SDK 34 + Media3 1.4.1 + 4x1/4x2 Widgets + Release, appId=${APP_ID})...`);
     patchVariablesGradle();
     patchBuildGradle();
     patchAndroidManifest();
     writeJavaAndResSources();
     verifyPatchedProject();
-    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle 8 / Java 17 Release v1.5.2!');
+    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle 8 / Java 17 Release v1.5.3!');
   } catch (err) {
     console.error('[SpotyFlow Media3 Patcher] ERROR:', err?.message || err);
     process.exit(1);

@@ -1,6 +1,6 @@
 {
   "name": "spotyflow-acoustic-studio",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "SpotyFlow Acoustic Studio - Vercel-Native Stateless Serverless & Desktop Music Studio with Dual-Deck Web Audio, Cloud Postgres Sync, Google OAuth & Gemini AI",
   "main": "electron/main.js",
   "scripts": {
