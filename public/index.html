@@ -647,7 +647,8 @@
 
     #main-scroll {
       overscroll-behavior-y: contain;
-      scroll-behavior: smooth;
+      scroll-behavior: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* SpotyFlow Signature OLED Luxury Dark Canvas */
@@ -1014,134 +1015,25 @@
       }
     }
 
-    /* =====================================================================
-       MODE PERFORMA TINGGI KHUSUS APK ANDROID WEBVIEW (60–120 FPS)
-       ===================================================================== */
-    .sf-apk-mode *,
-    .sf-apk-mode *::before,
-    .sf-apk-mode *::after {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-
-    /* Permukaan solid/pekat elegan ala Spotify pengganti backdrop-blur */
-    .sf-apk-mode header,
-    .sf-apk-mode footer,
-    .sf-apk-mode .sf-glass,
-    .sf-apk-mode .sf-smoked-glass,
-    .sf-apk-mode .sf-dynamic-pill,
-    .sf-apk-mode .mobile-bottom-nav,
-    .sf-apk-mode #mobile-mini-player,
-    .sf-apk-mode #custom-modal-box,
-    .sf-apk-mode .mobile-bottom-sheet,
-    .sf-apk-mode [class*="backdrop-blur"] {
-      background-color: rgba(18, 18, 18, 0.97) !important;
-    }
-
-    /* Ringankan transisi & bayangan daftar/kartu di dalam area scroll */
-    .sf-apk-mode .sp-card,
-    .sf-apk-mode .sf-bento-card,
-    .sf-apk-mode .track-row,
-    .sf-apk-mode .sf-swipe-wrap,
-    .sf-apk-mode .sf-queue-dnd-row {
-      transition: transform 120ms ease, opacity 120ms ease !important;
-      box-shadow: none !important;
-      will-change: auto;
-    }
-    .sf-apk-mode .sp-card,
-    .sf-apk-mode .sf-bento-card {
-      border: 1px solid rgba(255, 255, 255, 0.06) !important;
-      content-visibility: auto;
-      contain-intrinsic-size: auto 210px;
-      contain: layout style paint;
-    }
-    .sf-apk-mode .track-row,
-    .sf-apk-mode .sf-swipe-wrap,
-    .sf-apk-mode .sf-queue-dnd-row {
-      content-visibility: auto;
-      contain-intrinsic-size: auto 64px;
-      contain: layout style paint;
-    }
-    .sf-apk-mode .sp-cover-shadow {
-      box-shadow: none !important;
-    }
-
-    /* Nonaktifkan transisi elemen list saat sedang aktif scroll (0ms frame drop) */
-    .sf-apk-mode.sf-scrolling .sp-card,
-    .sf-apk-mode.sf-scrolling .sf-bento-card,
-    .sf-apk-mode.sf-scrolling .track-row,
-    .sf-apk-mode.sf-scrolling .sf-swipe-wrap,
-    .sf-apk-mode.sf-scrolling .sf-tap {
-      transition: none !important;
-    }
-
-    /* Ringankan Fullscreen Stage Canvas blur agar buka/tutup instan tanpa lag GPU */
-    .sf-apk-mode #fullscreen-stage #stage-ken-burns-img {
-      filter: blur(12px) saturate(125%) brightness(0.55) !important;
-      animation: none !important;
-      transform: translate3d(0, 0, 0) scale(1.12) !important;
-    }
-    .sf-apk-mode #fullscreen-stage .sf-liquid-blob {
-      filter: blur(12px) !important;
-      animation: none !important;
-      mix-blend-mode: normal !important;
-      opacity: 0.42 !important;
-      transform: translate3d(0, 0, 0) !important;
-    }
-    .sf-apk-mode #fullscreen-stage .stage-ambient-drift {
-      animation: none !important;
-      transform: translate3d(0, 0, 0) scale(1.1) !important;
-    }
-    .sf-apk-mode #fullscreen-stage .sf-film-grain {
-      display: none !important;
-    }
-
-    /* Kelancaran arah scroll vertikal & geser horizontal native (touch-action) */
-    .sf-apk-mode #main-scroll,
-    .sf-apk-mode #stage-lyrics-body,
-    .sf-apk-mode #stage-queue-list,
-    .sf-apk-mode #queue-drawer-list,
-    .sf-apk-mode #lyrics-modal-body,
-    .sf-apk-mode #right-panel,
-    .sf-apk-mode #sidebar-library-list,
-    .sf-apk-mode .overflow-y-auto {
-      touch-action: pan-y;
-      overscroll-behavior-y: contain;
+    /* Ringan & tidak mengubah GUI mewah: scroll jari alami tanpa smooth-scroll lag + tanpa blur berulang di baris panjang */
+    #main-scroll,
+    #stage-lyrics-body,
+    #stage-queue-list,
+    #queue-drawer-list,
+    #lyrics-modal-body {
+      scroll-behavior: auto;
       -webkit-overflow-scrolling: touch;
-      scroll-behavior: auto !important;
     }
-    .sf-apk-mode .overflow-x-auto,
-    .sf-apk-mode [class*="overflow-x-auto"] {
-      touch-action: pan-x pan-y;
-      overscroll-behavior-x: contain;
-      scroll-behavior: auto !important;
-      -webkit-overflow-scrolling: touch;
+    .track-row,
+    .sp-card,
+    .sf-swipe-wrap,
+    .sf-queue-dnd-row {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
   </style>
-  <script>
-    (function bootSpotyFlowApkPerfClass() {
-      try {
-        var isApk = Boolean(
-          window.SpotyFlowMediaBridge ||
-          (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
-          /SpotyFlowApp/i.test(navigator.userAgent || '')
-        );
-        if (isApk) {
-          document.documentElement.classList.add('sf-apk-mode');
-          document.addEventListener('DOMContentLoaded', function () {
-            if (document.body) document.body.classList.add('sf-apk-mode');
-          }, { once: true });
-        }
-      } catch (e) {}
-    })();
-  </script>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
-  <script>
-    if (document.documentElement.classList.contains('sf-apk-mode') && document.body) {
-      document.body.classList.add('sf-apk-mode');
-    }
-  </script>
 
   <!-- =====================================================================
        WAJIB LOGIN - AUTH GATE LAYAR PENUH (WHATSAPP OTP + GOOGLE OAUTH)
@@ -2848,7 +2740,7 @@
   <audio id="audio-engine" crossorigin="anonymous" preload="auto" playsinline x-webkit-airplay="allow"></audio>
   <audio id="audio-engine-b" crossorigin="anonymous" preload="auto" playsinline x-webkit-airplay="allow"></audio>
   <audio id="audio-engine-cast" preload="auto" playsinline x-webkit-airplay="allow" class="hidden"></audio>
-  <div id="sf-yt-full-host" aria-hidden="true" style="position:fixed;bottom:0;left:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;contain:strict;overflow:hidden;"></div>
+  <div id="sf-yt-full-host" aria-hidden="true" style="position:fixed;left:-10px;bottom:-10px;width:2px;height:2px;opacity:0.001;pointer-events:none;z-index:-1;"></div>
 
   <script>
     /* =====================================================================
@@ -5078,14 +4970,10 @@
     (function initGlobalScrollAwarePause() {
       let scrollIdleTimer = null;
       window.addEventListener('scroll', () => {
-        if (!window.__sfIsScrolling) {
-          window.__sfIsScrolling = true;
-          document.documentElement.classList.add('sf-scrolling');
-        }
+        window.__sfIsScrolling = true;
         if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
         scrollIdleTimer = setTimeout(() => {
           window.__sfIsScrolling = false;
-          document.documentElement.classList.remove('sf-scrolling');
         }, 160);
       }, { passive: true, capture: true });
     })();
@@ -5104,7 +4992,7 @@
       if (!total || AppState.isSeeking || window.__sfNativeAppBg || document.hidden) return;
       if (window.__sfIsScrolling && !force) return;
       const now = Date.now();
-      if (!force && now - __sfLastProgressUiMs < 300) return;
+      if (!force && now - __sfLastProgressUiMs < 400) return;
       __sfLastProgressUiMs = now;
 
       const pct = Math.max(0, Math.min(100, (cur / total) * 100));
@@ -5170,7 +5058,6 @@
         if (durChanged) updateDurationDisplays(total);
         if (typeof updateMiniPlayerPipProgress === 'function') updateMiniPlayerPipProgress(cur, total);
 
-        // Hanya sync lirik saat stage tertutup jika modal lirik / TV mode / right panel desktop sedang terlihat
         const lyricsModalOpen = !document.getElementById('lyrics-modal')?.classList.contains('hidden');
         const tvOpen = tvOverlay && !tvOverlay.classList.contains('hidden');
         if (lyricsModalOpen || tvOpen || window.innerWidth >= 1024) {
@@ -5183,11 +5070,8 @@
       if (!AppState.isPlaying || document.hidden || !analyserNode || AppState.dataSaver || IS_MOBILE_DEVICE) {
         return false;
       }
-      const isApkMode = document.documentElement.classList.contains('sf-apk-mode');
-      if (isApkMode) {
-        const stageHidden = document.getElementById('fullscreen-stage')?.classList.contains('hidden') !== false;
-        if (stageHidden) return false;
-      }
+      const stageHidden = document.getElementById('fullscreen-stage')?.classList.contains('hidden') !== false;
+      if (stageHidden) return false;
       return true;
     }
 
@@ -5209,15 +5093,10 @@
       }
       const freq = new Uint8Array(analyserNode.frequencyBinCount);
       analyserNode.getByteFrequencyData(freq);
-      if (!document.documentElement.classList.contains('sf-apk-mode')) {
-        drawBars('mini-visualizer', freq, 14);
+      if (AppState.stageVizStyle === 'circular') {
+        drawCircularWave('stage-circular-canvas', freq);
       }
-      if (!document.getElementById('fullscreen-stage')?.classList.contains('hidden')) {
-        if (AppState.stageVizStyle === 'circular') {
-          drawCircularWave('stage-circular-canvas', freq);
-        }
-        drawBars('stage-visualizer', freq, 32);
-      }
+      drawBars('stage-visualizer', freq, 32);
       visualizerRafId = requestAnimationFrame(renderVisualizerLoop);
     }
 
@@ -5412,19 +5291,16 @@
       return true;
     }
 
-    let __lastNativeMediaSyncAt = 0;
     function syncNativeMediaBridge(force = false, trackOverride = null) {
       try {
+        // Hanya kirim state ke Java saat perubahan nyata (force === true: ganti lagu, Play/Pause, Seek, durasi/speed berubah).
+        // PositionSupplier di Media3 SimpleBasePlayer sudah menghitung detik berjalan lokal 0% beban WebView!
+        if (!force) return;
         const bridge = getNativeMediaBridge() || getNativeBridge();
         const capPlugin = getNativeMediaPlugin();
         if (!bridge && !capPlugin && !isRunningInNativeApk()) return;
         const track = trackOverride || AppState.currentTrack;
         if (!track) return;
-        const now = Date.now();
-        // SpotyFlowRemotePlayer (Media3 SimpleBasePlayer) sudah menghitung detik berjalan lokal via PositionSupplier.
-        // Cukup kirim koreksi berkala ringan setiap 15.000 ms saat tidak force (hemat ribuan JNI IPC calls saat scroll!).
-        if (!force && now - __lastNativeMediaSyncAt < 15000) return;
-        __lastNativeMediaSyncAt = now;
 
         const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
         const artistName = typeof track.artist === 'string' ? track.artist : (track.artist?.name || 'SpotyFlow');
@@ -5470,9 +5346,8 @@
     }
 
     function updateMediaSessionPosition() {
-      // MATIKAN navigator.mediaSession WEBVIEW saat di APK agar kapsul media native tidak pernah bentrok!
+      // MATIKAN navigator.mediaSession WEBVIEW saat di APK tanpa memicu panggilan JNI berkala!
       if (clearWebViewMediaSessionIfNative()) {
-        syncNativeAndroidMediaSession(false);
         return;
       }
       if (!('mediaSession' in navigator) || typeof navigator.mediaSession.setPositionState !== 'function') return;
@@ -7797,6 +7672,7 @@
                 onReady: () => {
                   clearTimeout(initTimer);
                   this.playerReady = true;
+                  try { this.player?.setPlaybackQuality?.('tiny'); } catch {}
                   resolve(this.player);
                 },
                 onStateChange: (ev) => this._handleStateChange(ev),
@@ -7827,6 +7703,7 @@
             const effVol = AppState.isMuted ? 0 : Math.round(Math.max(0, Math.min(1, computeMasterBoostGain())) * 100);
             if (!AppState.isMuted && typeof this.player?.unMute === 'function') this.player.unMute();
             if (typeof this.player?.setVolume === 'function') this.player.setVolume(effVol);
+            if (typeof this.player?.setPlaybackQuality === 'function') this.player.setPlaybackQuality('tiny');
           } catch {}
           const dur = this.getDuration();
           if (this.pendingResolve) {
@@ -7946,7 +7823,10 @@
             const vol = AppState.isMuted ? 0 : Math.round(Math.max(0, Math.min(1, computeMasterBoostGain())) * 100);
             player.setVolume(vol);
             if (typeof player.unMute === 'function' && !AppState.isMuted) player.unMute();
-            player.loadVideoById({ videoId, startSeconds: 0 });
+            player.loadVideoById({ videoId, startSeconds: 0, suggestedQuality: 'tiny' });
+            if (typeof player.setPlaybackQuality === 'function') {
+              try { player.setPlaybackQuality('tiny'); } catch {}
+            }
             if (typeof player.setPlaybackRate === 'function' && AppState.playbackRate) {
               try { player.setPlaybackRate(AppState.playbackRate); } catch {}
             }
@@ -7988,17 +7868,12 @@
             return;
           }
 
-          // Sinkronkan koreksi berkala ringan ke Origin Island / Dynamic Island (tiap 15 detik)
-          if (isRunningInNativeApk()) {
-            syncNativeMediaBridge(false);
-          }
-
-          // Hemat CPU/GPU penuh di latar belakang APK atau saat scroll aktif
+          // Hemat CPU/GPU penuh di latar belakang APK atau saat scroll aktif (tanpa spam JNI updateState!)
           if (window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
 
           updatePlaybackProgressUI(cur, total, false);
           updateMediaSessionPosition();
-        }, 300);
+        }, 400);
       },
 
       stopSyncLoop() {
@@ -9164,10 +9039,6 @@
         ) {
           executeDualDeckTransition();
           return;
-        }
-
-        if (!deckEl.paused && isRunningInNativeApk()) {
-          syncNativeAndroidMediaSession(false);
         }
 
         if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden || window.__sfIsScrolling) return;
@@ -15539,11 +15410,10 @@
           stage.classList.add('hidden');
           __sfStageCloseTimer = null;
           resetProgressRenderCache();
-          if (document.documentElement.classList.contains('sf-apk-mode')) {
-            stopVisualizerLoop();
-          }
+          stopVisualizerLoop();
         }, 380);
       }
+      stopVisualizerLoop();
       if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
     }
 

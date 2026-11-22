@@ -141,6 +141,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -170,8 +172,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @UnstableApi
 public class SpotyFlowPlaybackService extends MediaSessionService {
@@ -185,11 +193,28 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     private static volatile String pendingJsonPayload = null;
 
     private Handler mainHandler;
+    private ExecutorService artworkExecutor;
     private SpotyFlowRemotePlayer remotePlayer;
     private MediaSession mediaSession;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
     private boolean noisyReceiverRegistered = false;
+
+    // Diff-check state (anti redundant invalidateState() & zero UI overhead)
+    private boolean hasAppliedState = false;
+    private String lastTrackId = "";
+    private String lastTitle = "";
+    private String lastArtist = "";
+    private String lastAlbum = "";
+    private String lastCoverUrl = "";
+    private boolean lastPlaying = false;
+    private long lastDurationMs = 0L;
+    private float lastPlaybackRate = 1.0f;
+
+    // In-memory 256x256 JPEG artwork cache (anti re-download)
+    private String cachedCoverUrl = "";
+    private byte[] cachedArtworkBytes = null;
+    private String fetchingCoverUrl = "";
 
     private final BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
@@ -320,6 +345,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         super.onCreate();
         instance = this;
         mainHandler = new Handler(Looper.getMainLooper());
+        artworkExecutor = Executors.newSingleThreadExecutor();
 
         ensureNotificationChannels(this);
 
@@ -450,6 +476,10 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         isPlaying = false;
         updateWakeAndWifiLocks(false);
         unregisterBecomingNoisyReceiver();
+        if (artworkExecutor != null) {
+            artworkExecutor.shutdownNow();
+            artworkExecutor = null;
+        }
         if (mediaSession != null) {
             try {
                 mediaSession.release();
@@ -553,14 +583,44 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             float playbackRate = (float) obj.optDouble("playbackRate", 1.0);
             if (playbackRate <= 0.1f || playbackRate > 4.0f) playbackRate = 1.0f;
 
+            // Diff-check ketat: jika metadata, playing, durationMs, playbackRate SAMA dan posisi < 2.5s drift, SKIP invalidateState()!
+            long estPos = remotePlayer.getEstimatedPositionMs();
+            boolean sameMeta = hasAppliedState
+                    && trackId.equals(lastTrackId)
+                    && title.equals(lastTitle)
+                    && artist.equals(lastArtist)
+                    && album.equals(lastAlbum)
+                    && coverUrl.equals(lastCoverUrl)
+                    && playingNow == lastPlaying
+                    && durationMs == lastDurationMs
+                    && Math.abs(playbackRate - lastPlaybackRate) < 0.01f;
+            if (sameMeta && Math.abs(positionMs - estPos) < 2500L) {
+                return;
+            }
+
             boolean wasPlaying = isPlaying;
+            hasAppliedState = true;
+            lastTrackId = trackId;
+            lastTitle = title;
+            lastArtist = artist;
+            lastAlbum = album;
+            lastCoverUrl = coverUrl;
+            lastPlaying = playingNow;
+            lastDurationMs = durationMs;
+            lastPlaybackRate = playbackRate;
+
             isPlaying = playingNow;
             updateWakeAndWifiLocks(playingNow);
 
+            byte[] artForCover = coverUrl.equals(cachedCoverUrl) ? cachedArtworkBytes : null;
             remotePlayer.updateFromJs(
-                    trackId, title, artist, album, coverUrl,
+                    trackId, title, artist, album, coverUrl, artForCover,
                     playingNow, durationMs, positionMs, playbackRate
             );
+
+            if (!coverUrl.equals(cachedCoverUrl) && !coverUrl.equals(fetchingCoverUrl)) {
+                fetchAndCacheCoverAsync(coverUrl);
+            }
 
             if (mediaSession != null && (playingNow || wasPlaying)) {
                 try {
@@ -570,6 +630,90 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             }
         } catch (Throwable ignored) {
         }
+    }
+
+    /**
+     * Downloads cover artwork ONCE per URL on background thread, resizes to max 256x256 JPEG (~15 KB),
+     * caches in RAM, and triggers a single invalidateState() so Dynamic Island stays sharp with 0% UI lag.
+     */
+    private void fetchAndCacheCoverAsync(final String urlStr) {
+        if (urlStr == null || !urlStr.startsWith("http")) return;
+        if (artworkExecutor == null || artworkExecutor.isShutdown()) return;
+        fetchingCoverUrl = urlStr;
+
+        artworkExecutor.execute(() -> {
+            HttpURLConnection conn = null;
+            byte[] jpegBytes = null;
+            try {
+                URL url = new URL(urlStr);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(4000);
+                conn.setReadTimeout(4000);
+                conn.setInstanceFollowRedirects(true);
+                conn.setRequestProperty("User-Agent", "SpotyFlow-Android/12.2");
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    byte[] raw;
+                    try (InputStream is = conn.getInputStream();
+                         ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                        byte[] buf = new byte[8192];
+                        int n;
+                        int total = 0;
+                        while ((n = is.read(buf)) != -1) {
+                            total += n;
+                            if (total > 2000000) break;
+                            bos.write(buf, 0, n);
+                        }
+                        raw = bos.toByteArray();
+                    }
+                    if (raw.length > 64) {
+                        Bitmap decoded = BitmapFactory.decodeByteArray(raw, 0, raw.length);
+                        if (decoded != null) {
+                            int w = decoded.getWidth();
+                            int h = decoded.getHeight();
+                            Bitmap target = decoded;
+                            if (w > 256 || h > 256) {
+                                float scale = Math.min(256f / Math.max(1, w), 256f / Math.max(1, h));
+                                int nw = Math.max(1, Math.round(w * scale));
+                                int nh = Math.max(1, Math.round(h * scale));
+                                target = Bitmap.createScaledBitmap(decoded, nw, nh, true);
+                                if (target != decoded) {
+                                    decoded.recycle();
+                                }
+                            }
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            target.compress(Bitmap.CompressFormat.JPEG, 82, out);
+                            target.recycle();
+                            jpegBytes = out.toByteArray();
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+
+            final byte[] finalBytes = jpegBytes;
+            if (mainHandler != null) {
+                mainHandler.post(() -> {
+                    if (urlStr.equals(fetchingCoverUrl)) {
+                        fetchingCoverUrl = "";
+                    }
+                    if (finalBytes != null && finalBytes.length > 64) {
+                        cachedCoverUrl = urlStr;
+                        cachedArtworkBytes = finalBytes;
+                        if (remotePlayer != null && urlStr.equals(lastCoverUrl)) {
+                            remotePlayer.updateArtworkBytes(finalBytes);
+                            if (mediaSession != null && isPlaying) {
+                                try {
+                                    onUpdateNotification(mediaSession, true);
+                                } catch (Throwable ignored) {
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -583,6 +727,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         private String artist = "SpotyFlow";
         private String album = "SpotyFlow";
         private String coverUrl = "https://spotyflow.vercel.app/icon-512.png";
+        private byte[] artworkBytes = null;
         private boolean playing = false;
         private long durationMs = 210000L;
         private long anchorPosMs = 0L;
@@ -600,8 +745,12 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             super(looper);
         }
 
+        long getEstimatedPositionMs() {
+            return livePositionSupplier.get();
+        }
+
         void updateFromJs(
-                String trackId, String title, String artist, String album, String coverUrl,
+                String trackId, String title, String artist, String album, String coverUrl, byte[] artworkBytes,
                 boolean playing, long durationMs, long positionMs, float playbackRate
         ) {
             this.hasTrack = true;
@@ -610,11 +759,17 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             this.artist = artist;
             this.album = album;
             this.coverUrl = coverUrl;
+            this.artworkBytes = artworkBytes;
             this.playing = playing;
             this.durationMs = durationMs;
             this.anchorPosMs = positionMs;
             this.anchorRealtimeMs = SystemClock.elapsedRealtime();
             this.playbackRate = playbackRate;
+            invalidateState();
+        }
+
+        void updateArtworkBytes(byte[] bytes) {
+            this.artworkBytes = bytes;
             invalidateState();
         }
 
@@ -653,14 +808,17 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 String safeCover = (coverUrl != null && coverUrl.startsWith("http"))
                         ? coverUrl
                         : "https://spotyflow.vercel.app/icon-512.png";
-                MediaMetadata metadata = new MediaMetadata.Builder()
+                MediaMetadata.Builder metaBuilder = new MediaMetadata.Builder()
                         .setTitle(title)
                         .setArtist(artist)
                         .setAlbumTitle(album)
                         .setDisplayTitle(title)
                         .setSubtitle(artist)
-                        .setArtworkUri(Uri.parse(safeCover))
-                        .build();
+                        .setArtworkUri(Uri.parse(safeCover));
+                if (artworkBytes != null && artworkBytes.length > 0) {
+                    metaBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER);
+                }
+                MediaMetadata metadata = metaBuilder.build();
 
                 MediaItem mediaItem = new MediaItem.Builder()
                         .setMediaId(trackId)
@@ -837,9 +995,9 @@ public class MainActivity extends BridgeActivity {
             String ua = settings.getUserAgentString();
             if (ua == null) ua = "";
             if (!ua.contains("SpotyFlowApp/")) {
-                settings.setUserAgentString(ua + " SpotyFlowApp/5.1");
+                settings.setUserAgentString(ua + " SpotyFlowApp/5.2");
             }
-            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            // Biarkan default View.LAYER_TYPE_NONE agar Chromium memakai native hardware compositor tanpa double FBO
             webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
             webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             webView.addJavascriptInterface(new SpotyFlowMediaBridgeInterface(), "SpotyFlowMediaBridge");
@@ -1323,7 +1481,9 @@ function verifyPatchedProject() {
     [svc.includes('spotyflow_general') && svc.includes('spotyflow_playback') && svc.includes('spotyflow_music') && svc.includes('spotyflow_downloads'), 'Service missing 4 notification channels'],
     [svc.includes('PARTIAL_WAKE_LOCK') && svc.includes('ACTION_AUDIO_BECOMING_NOISY'), 'Service missing WakeLock or Noisy receiver'],
     [act.includes('"SpotyFlowMediaBridge"') && act.includes('sendMediaActionToJs') && act.includes('setMediaPlaybackRequiresUserGesture(false)') && act.includes('setDomStorageEnabled(true)'), 'MainActivity missing SpotyFlowMediaBridge or WebView settings'],
-    [act.includes('View.LAYER_TYPE_HARDWARE') && act.includes('View.SCROLLBARS_INSIDE_OVERLAY') && act.includes('View.OVER_SCROLL_NEVER'), 'MainActivity missing GPU hardware acceleration WebView flags'],
+    [!act.includes('LAYER_TYPE_HARDWARE'), 'MainActivity must NOT force LAYER_TYPE_HARDWARE (causes GPU double-compositing lag!)'],
+    [act.includes('View.SCROLLBARS_INSIDE_OVERLAY') && act.includes('View.OVER_SCROLL_NEVER'), 'MainActivity missing WebView scroll/overscroll flags'],
+    [svc.includes('cachedArtworkBytes') && svc.includes('createScaledBitmap') && svc.includes('Math.abs(positionMs - estPos) < 2500L'), 'Service missing diff-check debounce or 256x256 artwork cache'],
     [(manifest.match(/android:hardwareAccelerated="true"/g) || []).length >= 2, 'Manifest missing android:hardwareAccelerated="true" on <application> and <activity>'],
   ];
 

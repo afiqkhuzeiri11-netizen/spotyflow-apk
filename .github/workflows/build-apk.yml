@@ -90,13 +90,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android APK (v12.1.0 — 120FPS Smooth + Full YouTube + Origin Island)
+          name: SpotyFlow Android APK (v12.2.0 — Full Luxury GUI + Smooth Scroll + Origin Island)
           body: |
-            ### SpotyFlow Android APK (v12.1.0 — 60–120 FPS Smooth WebView + Full YouTube + Vivo Origin Island)
-            - **60–120 FPS Scroll & Touch Optimization**: `.sf-apk-mode` menonaktifkan `backdrop-filter` berat di WebView, virtualisasi `content-visibility: auto`, passive touch listeners + directional swipe lock (0ms scroll blocking), scroll-aware pause, throttle progress UI 300ms + IPC bridge 15 detik, dan GPU `LAYER_TYPE_HARDWARE` + `hardwareAccelerated="true"`.
-            - **Pemutar Utama YouTube Penuh (`SFYtFull`)**: mulai bunyi cepat (~1–2 detik) dengan durasi 100% FULL (3–5+ menit) & lirik sinkron penuh (anti preview 30 detik Deezer/iTunes).
-            - **Vivo Origin Island & Dynamic Island Resmi**: tetap menggunakan `appId: com.netease.cloudmusic` (nama & ikon **SpotyFlow**) + AndroidX Media3 `MediaSessionService` (`SimpleBasePlayer` + `ForwardingPlayer` + `DefaultMediaNotificationProvider`) + 4 kategori notifikasi persis Spotify.
-            - **Latar Belakang & Layar Terkunci Lancar**: `SpotyFlowWebView` override `onWindowVisibilityChanged` + Foreground Service Media3 + `PARTIAL_WAKE_LOCK` + `WifiLock` + auto-pause `ACTION_AUDIO_BECOMING_NOISY`.
+            ### SpotyFlow Android APK (v12.2.0 — Full Luxury Spotify GUI + Smooth WebView + Vivo Origin Island)
+            - **GUI Mewah 100% Utuh**: memulihkan tampilan asli SpotyFlow persis versi Web (tanpa pemaksaan flat/hilang blur dan tanpa `content-visibility: auto` yang membuat tinggi scroll loncat).
+            - **Scroll & Geser Mulus Tanpa Double-Compositing**: menghapus jebakan `LAYER_TYPE_HARDWARE` di WebView, zero Tailwind CDN class mutation saat scroll, passive touch listeners, kualitas video YouTube `'tiny'` agar decoder video ringan, throttle progress UI 400ms, dan visualizer mati total saat layar penuh tertutup.
+            - **Dynamic Island / Origin Island 0% Beban UI**: diff-check ketat pada `SpotyFlowPlaybackService` (skip `invalidateState()` jika drift < 2.5s), cache sampul 256×256 JPEG di memori (anti unduh ulang), dan 0 spam IPC berkala dari WebView.
+            - **Full YouTube (`SFYtFull`) + Latar Belakang & Layar Terkunci**: tetap utuh 100% di `com.netease.cloudmusic` (`SpotyFlow`).
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
