@@ -9,6 +9,10 @@
       }
     },
     {
+      "src": "public/SpotyFlow.apk",
+      "use": "@vercel/static"
+    },
+    {
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
@@ -30,13 +34,23 @@
   "routes": [
     {
       "src": "^/SpotyFlow\\.apk$",
-      "dest": "/server.js"
+      "dest": "/public/SpotyFlow.apk",
+      "headers": {
+        "Content-Type": "application/vnd.android.package-archive",
+        "Content-Disposition": "attachment; filename=\"SpotyFlow.apk\"",
+        "Cache-Control": "public, max-age=3600"
+      }
     },
     {
       "src": "^/(index\\.html|spotyflow\\.html)?$",
       "dest": "/server.js",
       "headers": {
         "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(self), geolocation=(), payment=(), usb=()",
         "Cache-Control": "no-cache, no-store, must-revalidate"
       }
     },

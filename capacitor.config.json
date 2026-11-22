@@ -8,8 +8,7 @@
   },
   "android": {
     "allowMixedContent": true,
-    "backgroundColor": "#050505",
-    "adjustMarginsForEdgeToEdge": "auto"
+    "backgroundColor": "#050505"
   },
   "plugins": {
     "SplashScreen": {

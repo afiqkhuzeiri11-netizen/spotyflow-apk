@@ -1,6 +1,6 @@
 {
   "name": "spotyflow-acoustic-studio",
-  "version": "10.0.0",
+  "version": "1.5.2",
   "description": "SpotyFlow Acoustic Studio - Vercel-Native Stateless Serverless & Desktop Music Studio with Dual-Deck Web Audio, Cloud Postgres Sync, Google OAuth & Gemini AI",
   "main": "electron/main.js",
   "scripts": {
@@ -51,12 +51,12 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
-    "@capacitor/haptics": "^7.0.0",
-    "@capacitor/splash-screen": "^7.0.0",
-    "@capacitor/status-bar": "^7.0.0",
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/splash-screen": "^6.0.3",
+    "@capacitor/status-bar": "^6.0.2",
     "@ffmpeg/core": "^0.12.6",
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@neondatabase/serverless": "^0.10.4",

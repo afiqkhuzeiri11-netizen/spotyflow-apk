@@ -69,8 +69,8 @@ function compileStaticTailwindCss() {
     process.exit(1);
   }
   const cssSize = fs.statSync(TAILWIND_OUT).size;
-  if (cssSize <= 10 * 1024) {
-    console.error(`[SpotyFlow APK Builder] ERROR: www/assets/tailwind.min.css terlalu kecil (${cssSize} bytes <= 10 KB)!`);
+  if (cssSize <= 15 * 1024) {
+    console.error(`[SpotyFlow APK Builder] ERROR: www/assets/tailwind.min.css terlalu kecil (${cssSize} bytes <= 15 KB)!`);
     process.exit(1);
   }
   console.log(`  + Compiled static Tailwind CSS: ${(cssSize / 1024).toFixed(1)} KB (${cssSize} bytes)`);

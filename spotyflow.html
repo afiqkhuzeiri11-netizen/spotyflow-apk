@@ -116,19 +116,22 @@
        60 FPS GPU-ACCELERATED MOTION SYSTEM (transform & opacity only)
        ===================================================================== */
 
-    /* 1. Fullscreen Stage Spring Open/Close & Apple Music Play/Pause Artwork Scale */
+    /* 1. Fullscreen Stage Spring Open/Close & Interactive Play/Pause Artwork Scale (60-120 FPS GPU) */
     #fullscreen-stage {
       transform: translate3d(0, 100%, 0);
       opacity: 0;
-      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+      transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease;
       will-change: transform, opacity;
     }
     #fullscreen-stage.sf-stage-open {
       transform: translate3d(0, 0, 0);
       opacity: 1;
     }
+    #fullscreen-stage.sf-stage-dragging {
+      transition: none !important;
+    }
     #fullscreen-stage #stage-vinyl-frame:not(.stage-vinyl-active) {
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+      transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 360ms ease;
       will-change: transform;
     }
     #fullscreen-stage.is-playing #stage-vinyl-frame:not(.stage-vinyl-active) {
@@ -136,8 +139,15 @@
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
     }
     #fullscreen-stage:not(.is-playing) #stage-vinyl-frame:not(.stage-vinyl-active) {
-      transform: scale(0.95);
+      transform: scale(0.93);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+    #stage-cover {
+      transition: opacity 180ms ease;
+      will-change: opacity;
+    }
+    #stage-cover.sf-cover-fading {
+      opacity: 0.25;
     }
     /* Smart crop for 4:3 / 16:9 letterboxed YouTube thumbnails inside square cover */
     #fullscreen-stage #stage-vinyl-frame:not(.stage-vinyl-active) #stage-cover.sf-yt-cover-crop {
@@ -436,7 +446,9 @@
       }
     }
     #stage-ken-burns-img {
-      filter: blur(28px) saturate(135%) brightness(0.55);
+      /* Pre-blurred via 64x64 micro-canvas (ZERO live fullscreen filter:blur GPU readback!) */
+      image-rendering: auto;
+      opacity: 0.92;
       animation: sfSpotifyKenBurns 24s ease-in-out infinite alternate;
       animation-play-state: running;
       will-change: transform;
@@ -459,9 +471,10 @@
     }
     #fullscreen-stage .synced-lyric-line {
       color: rgba(255, 255, 255, 0.25);
-      opacity: 1;
+      opacity: 0.72;
       transform: scale(1);
-      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), color 0.32s ease, opacity 0.32s ease, text-shadow 0.32s ease;
+      transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease, color 260ms ease;
+      will-change: transform, opacity;
     }
     #fullscreen-stage .synced-lyric-line.lyric-passed,
     #fullscreen-stage .synced-lyric-line.lyric-upcoming-near,
@@ -1281,6 +1294,13 @@
         </button>
 
         <div id="header-quick-menu" role="menu" class="hidden absolute right-0 top-[calc(100%+10px)] w-64 bg-[#141418]/95 backdrop-blur-2xl border border-white/12 rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.85)] p-2 z-50 space-y-1">
+          <button type="button" role="menuitem" onclick="closeHeaderQuickMenu(); openSettingsModal()" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl hover:bg-white/[0.08] text-xs font-bold text-white text-left transition-colors">
+            <span class="flex items-center gap-2.5 min-w-0">
+              <i data-lucide="settings" aria-hidden="true" class="w-4 h-4 text-[#1ED760] shrink-0"></i>
+              <span class="truncate">Pengaturan</span>
+            </span>
+            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v1.5.2</span>
+          </button>
           <button type="button" role="menuitem" onclick="closeHeaderQuickMenu(); openAiMoodDjModal()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/[0.08] text-xs font-bold text-[#E5C99B] text-left transition-colors">
             <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
             <span>AI Mood DJ (Buat Mix Instan)</span>
@@ -1729,7 +1749,7 @@
             <div class="flex items-center justify-between pt-1.5 gap-2">
               <span class="text-[11px] text-[#B3B3B3] shrink-0">Auto-Update OTA</span>
               <button type="button" id="console-app-version" onclick="SFAutoUpdate.checkNow(true)" class="font-mono text-[11px] font-bold text-white hover:text-[#1ED760] text-right truncate transition-colors">
-                v6.2.0 • Cek Update
+                v1.5.2 • Cek Update
               </button>
             </div>
           </div>
@@ -1989,7 +2009,7 @@
               <button type="button" onclick="setSleepTimer(30)" class="py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white hover:bg-white/15">30m</button>
               <button type="button" onclick="setSleepTimer(45)" class="py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white hover:bg-white/15">45m</button>
               <button type="button" onclick="setSleepTimer(60)" class="py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white hover:bg-white/15">60m</button>
-              <button type="button" data-i18n="endOfTrack" onclick="setSleepTimer('end')" class="py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white hover:bg-white/15">Akhir Lagu</button>
+              <button type="button" data-i18n="endOfTrack" onclick="setSleepTimer('end')" class="col-span-3 py-2 rounded-lg text-xs font-semibold bg-white/10 text-white hover:bg-white/15">Hentikan di akhir lagu ini</button>
             </div>
           </div>
         </section>
@@ -2067,8 +2087,8 @@
   <!-- =====================================================================
        MOBILE FLOATING GLASS MINI PLAYER & FLOATING PILL DOCK (Spatial Glass)
        ===================================================================== -->
-  <div id="mobile-mini-player" class="md:hidden fixed left-3 right-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-40 bg-[#16161A]/82 backdrop-blur-2xl rounded-2xl px-2.5 py-2 flex items-center gap-2.5 shadow-[0_18px_48px_rgba(0,0,0,0.75)] border border-white/15">
-    <button type="button" onclick="openFullscreenStage()" aria-label="Buka layar penuh" class="flex items-center gap-2.5 flex-1 min-w-0 text-left">
+  <div id="mobile-mini-player" style="transition: background-color 450ms ease;" class="md:hidden fixed left-3 right-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-40 bg-[#16161A]/82 backdrop-blur-2xl rounded-2xl px-2.5 py-2 flex items-center gap-2.5 shadow-[0_18px_48px_rgba(0,0,0,0.75)] border border-white/15">
+    <button type="button" id="mobile-mini-swipe-inner" onclick="openFullscreenStage()" aria-label="Buka layar penuh" class="flex items-center gap-2.5 flex-1 min-w-0 text-left" style="will-change: transform;">
       <div class="w-11 h-11 rounded-xl overflow-hidden bg-[#111113] border border-white/10 shrink-0 shadow-md">
         <img id="mobile-cover" src="/icon-192.png" onerror="this.src='/icon-192.png'" alt="" width="44" height="44" class="w-full h-full object-cover" referrerpolicy="no-referrer" />
       </div>
@@ -2083,11 +2103,11 @@
     <button type="button" id="mobile-like-btn" onclick="toggleLikeCurrent()" aria-label="Sukai lagu" title="Sukai lagu" class="sf-tap min-w-[38px] min-h-[38px] w-9 h-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-white active:bg-white/10 shrink-0 transition-colors">
       <i data-lucide="heart" aria-hidden="true" class="w-[18px] h-[18px]"></i>
     </button>
-    <button type="button" onclick="togglePlayPause()" id="mobile-play-btn" aria-label="Putar atau jeda" class="sf-tap min-w-[40px] min-h-[40px] w-10 h-10 rounded-full bg-white text-[#050505] flex items-center justify-center shrink-0 shadow-lg transition-transform">
+    <button type="button" onclick="togglePlayPause()" id="mobile-play-btn" aria-label="Putar atau jeda" class="sf-tap active:scale-90 min-w-[40px] min-h-[40px] w-10 h-10 rounded-full bg-white text-[#050505] flex items-center justify-center shrink-0 shadow-lg transition-transform duration-150">
       <i data-lucide="play" aria-hidden="true" class="w-5 h-5 fill-current ml-0.5"></i>
     </button>
     <div class="absolute bottom-0 left-3 right-3 h-[2px] bg-white/12 rounded-full overflow-hidden">
-      <div id="mobile-progress-bar" class="h-full bg-[#1ED760] w-0 transition-all duration-150"></div>
+      <div id="mobile-progress-bar" class="h-full w-full bg-[#1ED760] origin-left" style="transform: scaleX(0); will-change: transform;"></div>
     </div>
   </div>
 
@@ -2162,7 +2182,7 @@
           <i data-lucide="skip-back" aria-hidden="true" class="w-5 h-5 fill-current"></i>
         </button>
 
-        <button type="button" id="btn-play-pause" onclick="togglePlayPause()" aria-label="Putar atau jeda" title="Putar / Jeda (Spasi)" class="sf-tap w-9 h-9 rounded-full bg-white text-[#050505] flex items-center justify-center hover:scale-105 transition-transform shadow-md">
+        <button type="button" id="btn-play-pause" onclick="togglePlayPause()" aria-label="Putar atau jeda" title="Putar / Jeda (Spasi)" class="sf-tap active:scale-90 w-9 h-9 rounded-full bg-white text-[#050505] flex items-center justify-center hover:scale-105 transition-transform duration-150 shadow-md">
           <i data-lucide="play" aria-hidden="true" class="w-4 h-4 fill-current ml-0.5"></i>
         </button>
 
@@ -2469,6 +2489,10 @@
               <i data-lucide="book-open" aria-hidden="true" class="w-3 h-3 stroke-[1.7] text-[#E5C99B]"></i>
               <span>Makna</span>
             </button>
+            <button type="button" id="stage-share-lyrics-card-btn" onclick="openLyricsShareCardModal()" title="Bagikan Kartu Lirik Estetik HD" aria-label="Bagikan Kartu Lirik" class="px-2 py-0.5 rounded-full hover:bg-white/10 text-[10.5px] font-medium text-[#1ED760] hover:text-white inline-flex items-center gap-1 transition-colors">
+              <i data-lucide="share-2" aria-hidden="true" class="w-3 h-3 stroke-[1.75]"></i>
+              <span>Kartu</span>
+            </button>
             <button type="button" onclick="openLyricsCardModal()" class="px-2 py-0.5 rounded-full hover:bg-white/10 text-[10.5px] font-medium text-white/75 hover:text-white inline-flex items-center gap-1 transition-colors">
               <i data-lucide="image" aria-hidden="true" class="w-3 h-3 stroke-[1.7]"></i>
               <span>PNG</span>
@@ -2523,7 +2547,7 @@
         <button type="button" onclick="playPrev()" aria-label="Sebelumnya" class="sf-tap w-11 h-11 rounded-full flex items-center justify-center text-white/90 hover:text-white hover:bg-white/[0.06] transition-colors">
           <i data-lucide="skip-back" aria-hidden="true" class="w-6 h-6 fill-current"></i>
         </button>
-        <button type="button" onclick="togglePlayPause()" id="stage-play-pause" aria-label="Putar atau jeda" class="sf-tap w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white hover:scale-[1.04] text-black flex items-center justify-center shadow-[0_14px_40px_rgba(0,0,0,0.55)] transition-transform">
+        <button type="button" onclick="togglePlayPause()" id="stage-play-pause" aria-label="Putar atau jeda" class="sf-tap active:scale-90 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white hover:scale-[1.04] text-black flex items-center justify-center shadow-[0_14px_40px_rgba(0,0,0,0.55)] transition-transform duration-150">
           <i data-lucide="play" aria-hidden="true" class="w-6 h-6 fill-current ml-0.5"></i>
         </button>
         <button type="button" onclick="playNext()" aria-label="Berikutnya" class="sf-tap w-11 h-11 rounded-full flex items-center justify-center text-white/90 hover:text-white hover:bg-white/[0.06] transition-colors">
@@ -2754,6 +2778,7 @@
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
+    const APP_VERSION = '1.5.2';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -5009,7 +5034,12 @@
       const durInt = Math.floor(total);
       const durChanged = force || durInt !== __sfLastRenderedDurSec;
       const curText = secChanged ? formatTime(cur) : '';
-      if (secChanged) __sfLastRenderedSec = secInt;
+      if (secChanged) {
+        __sfLastRenderedSec = secInt;
+        if (secInt >= 20 && AppState.currentTrack && typeof recordWeeklyPlayIfEligible === 'function') {
+          recordWeeklyPlayIfEligible(AppState.currentTrack, total);
+        }
+      }
       if (durChanged) __sfLastRenderedDurSec = durInt;
 
       const stageEl = document.getElementById('fullscreen-stage');
@@ -5039,12 +5069,16 @@
           if (tc) tc.textContent = curText;
         }
         const mpb = document.getElementById('mobile-progress-bar');
-        if (mpb) mpb.style.width = `${pct}%`;
+        if (mpb) mpb.style.transform = `scaleX(${(pct / 100).toFixed(4)})`;
 
         const tvOverlay = document.getElementById('tv-overlay');
         if (tvOverlay && !tvOverlay.classList.contains('hidden')) {
           const tvBar = document.getElementById('tv-progress-fill');
-          if (tvBar) tvBar.style.width = `${pct}%`;
+          if (tvBar) {
+            tvBar.style.transformOrigin = 'left center';
+            tvBar.style.width = '100%';
+            tvBar.style.transform = `scaleX(${(pct / 100).toFixed(4)})`;
+          }
           if (secChanged) {
             const tvCur = document.getElementById('tv-time-current');
             if (tvCur) tvCur.textContent = curText;
@@ -5053,7 +5087,11 @@
         const carOverlay = document.getElementById('car-mode-overlay');
         if (carOverlay && !carOverlay.classList.contains('hidden')) {
           const carBar = document.getElementById('car-progress-fill');
-          if (carBar) carBar.style.width = `${pct}%`;
+          if (carBar) {
+            carBar.style.transformOrigin = 'left center';
+            carBar.style.width = '100%';
+            carBar.style.transform = `scaleX(${(pct / 100).toFixed(4)})`;
+          }
           if (secChanged) {
             const carCur = document.getElementById('car-time-current');
             if (carCur) carCur.textContent = curText;
@@ -5075,7 +5113,7 @@
     }
 
     function canRunVisualizerNow() {
-      if (!AppState.isPlaying || document.hidden || !analyserNode || AppState.dataSaver || IS_MOBILE_DEVICE) {
+      if (!AppState.isPlaying || document.hidden || window.__sfIsAppBackgrounded || window.__sfIsScrolling || !analyserNode || AppState.dataSaver || IS_MOBILE_DEVICE) {
         return false;
       }
       const stageHidden = document.getElementById('fullscreen-stage')?.classList.contains('hidden') !== false;
@@ -5740,6 +5778,7 @@
 
       if (!option || option === 0) {
         AppState.sleepMode = 'off';
+        AppState.sleepStopAtTrackEnd = false;
         AppState.sleepEndTimestamp = 0;
         if (pill) pill.classList.add('hidden');
         if (readout) readout.textContent = 'Mati';
@@ -5749,18 +5788,20 @@
 
       if (option === 'end') {
         AppState.sleepMode = 'end';
+        AppState.sleepStopAtTrackEnd = true;
         if (pill) {
           pill.classList.remove('hidden');
           pill.classList.add('flex');
-          document.getElementById('header-sleep-text').textContent = 'Akhir Lagu';
+          document.getElementById('header-sleep-text').textContent = 'Akhir lagu';
         }
-        if (readout) readout.textContent = 'Akhir Lagu';
-        showToast('Musik akan berhenti halus setelah lagu ini selesai.');
+        if (readout) readout.textContent = 'Akhir lagu';
+        showToast('Sleep Timer aktif: hentikan di akhir lagu ini.');
         return;
       }
 
       const minutes = Number(option);
       AppState.sleepMode = 'timer';
+      AppState.sleepStopAtTrackEnd = false;
       AppState.sleepEndTimestamp = Date.now() + minutes * 60 * 1000;
       if (pill) {
         pill.classList.remove('hidden');
@@ -7836,8 +7877,9 @@
           // 0 = ENDED
           if (!this.active) return;
           this.stopSyncLoop();
-          if (AppState.sleepMode === 'end') {
+          if (AppState.sleepStopAtTrackEnd || AppState.sleepMode === 'end') {
             AppState.sleepMode = 'off';
+            AppState.sleepStopAtTrackEnd = false;
             document.getElementById('header-sleep-pill')?.classList.add('hidden');
             const sr = document.getElementById('sleep-readout');
             if (sr) sr.textContent = 'Selesai';
@@ -7846,7 +7888,8 @@
             updatePlayPauseIcons();
             highlightPlayingTrackRows();
             updateSystemMediaSession(AppState.currentTrack);
-            showToast('Lagu selesai. Timer tidur menghentikan pemutaran.');
+            syncNativeMediaBridge(true);
+            showToast('Sleep Timer: pemutaran dihentikan di akhir lagu');
             return;
           }
           if (AppState.repeatMode === 'one') {
@@ -9148,15 +9191,18 @@
         if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         AppState.isResolving = false;
         stopVisualizerLoop();
-        if (AppState.sleepMode === 'end') {
+        if (AppState.sleepStopAtTrackEnd || AppState.sleepMode === 'end') {
           AppState.sleepMode = 'off';
+          AppState.sleepStopAtTrackEnd = false;
           document.getElementById('header-sleep-pill')?.classList.add('hidden');
-          document.getElementById('sleep-readout').textContent = 'Selesai';
+          const sr = document.getElementById('sleep-readout');
+          if (sr) sr.textContent = 'Selesai';
           AppState.isPlaying = false;
           updatePlayPauseIcons();
           highlightPlayingTrackRows();
           updateSystemMediaSession(AppState.currentTrack);
-          showToast('Lagu selesai. Timer tidur menghentikan pemutaran.');
+          syncNativeMediaBridge(true);
+          showToast('Sleep Timer: pemutaran dihentikan di akhir lagu');
           return;
         }
         if (!document.hidden && !isMobileDevice && !AppState.mobileBgBypass && DualDeckState.stagedUrl && AppState.repeatMode !== 'one') {
@@ -9297,10 +9343,20 @@
           const isWide = nw > 0 && nh > 0 && (nw / nh > 1.22);
           stageCoverEl.classList.toggle('sf-yt-cover-crop', isYtLetterbox || isWide);
         };
+        const prevSrc = stageCoverEl.getAttribute('data-sf-last-cover') || '';
+        if (prevSrc && prevSrc !== cover) {
+          stageCoverEl.classList.add('sf-cover-fading');
+          setTimeout(() => stageCoverEl.classList.remove('sf-cover-fading'), 180);
+        }
+        stageCoverEl.setAttribute('data-sf-last-cover', cover);
         stageCoverEl.src = cover;
       }
       const kenBurnsImg = document.getElementById('stage-ken-burns-img');
-      if (kenBurnsImg) kenBurnsImg.src = cover;
+      if (kenBurnsImg && typeof applyPreBlurredMicroCanvasBackdrop === 'function') {
+        applyPreBlurredMicroCanvasBackdrop(cover, kenBurnsImg);
+      } else if (kenBurnsImg) {
+        kenBurnsImg.src = cover;
+      }
       document.getElementById('stage-title').textContent = title;
       document.getElementById('stage-artist').textContent = artist;
       if (t && cover && typeof updateAmbientFromImage === 'function') {
@@ -9623,15 +9679,17 @@
     }
 
     const lyricManualScrollPauseUntil = {};
+    const lyricLastScrolledLineIdx = {};
 
     function bindLyricManualScrollPause(box) {
       if (!box || box.dataset.scrollPauseBound) return;
       box.dataset.scrollPauseBound = '1';
       const pause = () => {
-        lyricManualScrollPauseUntil[box.id] = Date.now() + 4500;
+        lyricManualScrollPauseUntil[box.id] = Date.now() + 3000;
       };
       box.addEventListener('wheel', pause, { passive: true });
       box.addEventListener('touchstart', pause, { passive: true });
+      box.addEventListener('touchmove', pause, { passive: true });
       box.addEventListener('pointerdown', pause, { passive: true });
     }
 
@@ -9639,11 +9697,14 @@
       if (!box || !activeEl) return;
       if (!force && (lyricManualScrollPauseUntil[box.id] || 0) > Date.now()) return;
       if (box.offsetParent === null) return;
-      if (typeof activeEl.scrollIntoView === 'function') {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-      } else {
-        const targetTop = Math.max(0, activeEl.offsetTop - box.clientHeight / 2 + activeEl.clientHeight / 2);
+      const lineIdx = activeEl.getAttribute('data-lyric-idx');
+      if (!force && lineIdx !== null && lyricLastScrolledLineIdx[box.id] === lineIdx) return;
+      if (lineIdx !== null) lyricLastScrolledLineIdx[box.id] = lineIdx;
+      const targetTop = Math.max(0, activeEl.offsetTop - box.clientHeight / 2 + activeEl.clientHeight / 2);
+      if (typeof box.scrollTo === 'function') {
         box.scrollTo({ top: targetTop, behavior: 'smooth' });
+      } else if (typeof activeEl.scrollIntoView === 'function') {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       }
     }
 
@@ -12287,6 +12348,7 @@
       const activeSource = ['all', 'youtube', 'deezer', 'itunes', 'audius'].includes(sourceOverride) ? sourceOverride : 'all';
 
       if (q) {
+        if (typeof saveSearchHistoryTerm === 'function') saveSearchHistoryTerm(q);
         const dedupKey = `${q.toLowerCase()}|${activeSource}|${tabOverride}`;
         if (__lastSearchInflight.key === dedupKey && Date.now() - __lastSearchInflight.at < 900) {
           return;
@@ -12307,6 +12369,8 @@
                 <h1 class="font-display font-extrabold text-2xl md:text-3xl text-white">Cari Semua Lagu, Album &amp; Artis</h1>
                 <p class="text-sm text-[#B3B3B3] mt-1">Pencarian multi-sumber mencakup Deezer, iTunes, YouTube, dan Audius (rilis resmi, DJ remix, viral, phonk, anime).</p>
               </div>
+
+              ${typeof renderSearchHistoryChipsHtml === 'function' ? renderSearchHistoryChipsHtml() : ''}
 
               <div class="flex flex-wrap gap-2">
                 ${['Mode Bantai ML', 'Tulus', 'Daft Punk', 'DJ Jedag Jedug', 'Phonk', 'Coldplay', 'The Weeknd', 'Taylor Swift', 'Mahalini', 'Nadin Amizah'].map((term) => {
@@ -13419,6 +13483,10 @@
                   <i data-lucide="pencil" aria-hidden="true" class="w-3.5 h-3.5"></i>
                   <span>${escapeHtml(t('editProfileBtn'))}</span>
                 </button>
+                <button type="button" onclick="openSettingsModal()" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold text-white inline-flex items-center gap-1.5 transition-colors">
+                  <i data-lucide="settings" aria-hidden="true" class="w-3.5 h-3.5 text-[#1ED760]"></i>
+                  <span>Pengaturan</span>
+                </button>
                 <button type="button" onclick="navigateTo('stats')" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold text-white inline-flex items-center gap-1.5 transition-colors">
                   <i data-lucide="bar-chart-3" aria-hidden="true" class="w-4 h-4 text-[#1ED760]"></i>
                   <span>${escapeHtml(t('navStats'))}</span>
@@ -13443,6 +13511,9 @@
               </div>
             </div>
           </div>
+
+          <!-- Ringkasan Minggu Ini (Mini Wrapped 7 Hari Terakhir) -->
+          ${typeof renderWeeklyMiniWrappedCardHtml === 'function' ? renderWeeklyMiniWrappedCardHtml() : ''}
 
           <!-- Keamanan Akun, Tautan WhatsApp/Google & Sesi Perangkat Aktif -->
           ${typeof renderAccountSecuritySection === 'function' ? renderAccountSecuritySection() : ''}
@@ -14071,6 +14142,8 @@
               <input id="import-playlist-json-input" type="file" accept="application/json,.json" class="hidden" onchange="importLocalPlaylistJson(event)" />
             </div>
           </div>
+
+          ${typeof renderWeeklyMiniWrappedCardHtml === 'function' ? renderWeeklyMiniWrappedCardHtml() : ''}
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <button type="button" onclick="navigateTo('liked')" class="bg-gradient-to-br from-[#2563EB] to-[#0E7490] border border-[#1ED760]/30 p-5 rounded-2xl text-left min-h-[132px] flex flex-col justify-between transition-all hover:brightness-110">
@@ -18045,6 +18118,9 @@
         const initialRoute = parseHashRoute(window.location.hash);
         navigateTo(initialRoute.view, initialRoute.param, true, Boolean(window.location.hash));
       }
+      setTimeout(() => {
+        if (typeof maybeShowWhatsNewV152Modal === 'function') maybeShowWhatsNewV152Modal();
+      }, 950);
     }
 
     let ownerWaPollTimerId = null;
@@ -20188,56 +20264,160 @@
     }
 
     /* =====================================================================
-       MOBILE MINI-PLAYER SWIPE GESTURE (Kiri = Berikutnya, Kanan = Sebelumnya)
-       & PWA INSTALL PROMPT
+       AXIS-LOCK GESTURE ENGINE (MINI-PLAYER & FULLSCREEN) — ANTI-BENTROK
        ===================================================================== */
     function initMobileMiniPlayerSwipe() {
       const mini = document.getElementById('mobile-mini-player');
-      if (!mini || mini.dataset.swipeBound) return;
-      mini.dataset.swipeBound = '1';
+      const miniInner = document.getElementById('mobile-mini-swipe-inner') || mini;
+      if (mini && !mini.dataset.swipeBound) {
+        mini.dataset.swipeBound = '1';
+        let startX = 0;
+        let startY = 0;
+        let lastDx = 0;
+        let lastDy = 0;
+        let axis = '';
+        let tracking = false;
+        let suppressNextClick = false;
 
-      let startX = 0;
-      let startY = 0;
-      let tracking = false;
+        mini.addEventListener('click', (e) => {
+          if (suppressNextClick) {
+            suppressNextClick = false;
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, true);
 
-      mini.addEventListener('touchstart', (e) => {
-        if (!e.touches || e.touches.length !== 1) return;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        tracking = true;
-        mini.style.transition = 'none';
-      }, { passive: true });
+        mini.addEventListener('touchstart', (e) => {
+          if (!e.touches || e.touches.length !== 1) return;
+          const target = e.target;
+          // Abaikan tombol aksi kecil (Like, Play, Device) & input range
+          const hitInteractive = target && target.closest('input, a, [data-no-swipe], #mobile-like-btn, #mobile-play-btn, button:not(#mobile-mini-swipe-inner)');
+          if (hitInteractive) return;
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          lastDx = 0;
+          lastDy = 0;
+          axis = '';
+          tracking = true;
+          miniInner.style.transition = 'none';
+        }, { passive: true });
 
-      mini.addEventListener('touchmove', (e) => {
-        if (!tracking || !e.touches || !e.touches.length) return;
-        const dx = e.touches[0].clientX - startX;
-        const dy = e.touches[0].clientY - startY;
-        const absDx = Math.abs(dx);
-        const absDy = Math.abs(dy);
-        if (absDy >= absDx && absDy > 8) {
+        mini.addEventListener('touchmove', (e) => {
+          if (!tracking || !e.touches || !e.touches.length) return;
+          const dx = e.touches[0].clientX - startX;
+          const dy = e.touches[0].clientY - startY;
+          lastDx = dx;
+          lastDy = dy;
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+          // Deadzone 12px agar tap normal tidak pernah terganggu
+          if (!axis) {
+            if (absDx < 12 && absDy < 12) return;
+            if (absDx > absDy * 1.5) axis = 'x';
+            else if (absDy > absDx * 1.5) axis = 'y';
+            else return;
+          }
+          if (axis === 'x') {
+            const clamped = Math.max(-120, Math.min(120, dx * 0.55));
+            miniInner.style.transform = `translate3d(${clamped.toFixed(1)}px, 0, 0)`;
+          } else if (axis === 'y' && dy < 0) {
+            const lift = Math.max(-28, dy * 0.35);
+            miniInner.style.transform = `translate3d(0, ${lift.toFixed(1)}px, 0)`;
+          }
+        }, { passive: true });
+
+        const finishMiniGesture = () => {
+          if (!tracking) return;
           tracking = false;
-          mini.style.transform = '';
-          return;
-        }
-        if (absDx > 16 && absDx > absDy * 1.5 && absDx < 110) {
-          mini.style.transform = `translate3d(${dx * 0.45}px, 0, 0)`;
-        }
-      }, { passive: true });
+          miniInner.style.transition = 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)';
+          miniInner.style.transform = 'translate3d(0, 0, 0)';
+          const minSwipeX = Math.max(65, Math.round((mini.clientWidth || 320) * 0.28));
+          if (axis === 'x' && Math.abs(lastDx) >= minSwipeX) {
+            suppressNextClick = true;
+            setTimeout(() => { suppressNextClick = false; }, 220);
+            if (lastDx < 0) playNext(true);
+            else playPrev();
+          } else if (axis === 'y' && lastDy <= -45) {
+            suppressNextClick = true;
+            setTimeout(() => { suppressNextClick = false; }, 220);
+            openFullscreenStage();
+          }
+          axis = '';
+        };
 
-      mini.addEventListener('touchend', (e) => {
-        if (!tracking) return;
-        tracking = false;
-        mini.style.transition = 'transform 0.18s ease';
-        mini.style.transform = '';
-        const touch = e.changedTouches && e.changedTouches[0];
-        if (!touch) return;
-        const dx = touch.clientX - startX;
-        const dy = touch.clientY - startY;
-        if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-          if (dx < 0) playNext();
-          else playPrev();
-        }
-      }, { passive: true });
+        mini.addEventListener('touchend', finishMiniGesture, { passive: true });
+        mini.addEventListener('touchcancel', finishMiniGesture, { passive: true });
+      }
+
+      // Fullscreen Stage Swipe-Down to Close (Axis-Lock + ScrollTop <= 2 Guard)
+      const stage = document.getElementById('fullscreen-stage');
+      if (stage && !stage.dataset.swipeDownBound) {
+        stage.dataset.swipeDownBound = '1';
+        let sX = 0;
+        let sY = 0;
+        let sDx = 0;
+        let sDy = 0;
+        let sAxis = '';
+        let sTracking = false;
+
+        stage.addEventListener('touchstart', (e) => {
+          if (!e.touches || e.touches.length !== 1 || stage.classList.contains('hidden')) return;
+          const target = e.target;
+          if (target && target.closest('input, button, a, [data-no-swipe], #stage-studio-sheet')) return;
+          // Cek apakah area scrollable yang disentuh sedang di posisi paling atas (scrollTop <= 2)
+          const scrollable = target && target.closest('#stage-lyrics-body, #stage-main-grid, #stage-queue-list');
+          if (scrollable && scrollable.scrollTop > 2) return;
+          sX = e.touches[0].clientX;
+          sY = e.touches[0].clientY;
+          sDx = 0;
+          sDy = 0;
+          sAxis = '';
+          sTracking = true;
+        }, { passive: true });
+
+        stage.addEventListener('touchmove', (e) => {
+          if (!sTracking || !e.touches || !e.touches.length) return;
+          const dx = e.touches[0].clientX - sX;
+          const dy = e.touches[0].clientY - sY;
+          sDx = dx;
+          sDy = dy;
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+          if (!sAxis) {
+            if (absDx < 12 && absDy < 12) return;
+            if (absDy > absDx * 1.5 && dy > 0) {
+              sAxis = 'y';
+              stage.classList.add('sf-stage-dragging');
+            } else {
+              sTracking = false;
+              return;
+            }
+          }
+          if (sAxis === 'y' && dy > 0) {
+            stage.style.transform = `translate3d(0, ${Math.round(dy)}px, 0)`;
+            stage.style.opacity = String(Math.max(0.55, 1 - dy / 560).toFixed(3));
+          }
+        }, { passive: true });
+
+        const finishStageSwipe = () => {
+          if (!sTracking) return;
+          sTracking = false;
+          stage.classList.remove('sf-stage-dragging');
+          const threshold = Math.max(110, Math.round(window.innerHeight * 0.25));
+          if (sAxis === 'y' && sDy >= threshold) {
+            stage.style.transform = '';
+            stage.style.opacity = '';
+            closeFullscreenStage();
+          } else {
+            stage.style.transform = '';
+            stage.style.opacity = '';
+          }
+          sAxis = '';
+        };
+
+        stage.addEventListener('touchend', finishStageSwipe, { passive: true });
+        stage.addEventListener('touchcancel', finishStageSwipe, { passive: true });
+      }
     }
 
     function isRunningInsideNativeApk() {
@@ -22244,6 +22424,123 @@
     async function updateAmbientFromImage(imageUrl, updateStage = true) {
       const rgb = await extractDominantColor(imageUrl);
       applyDominantRgb(rgb, updateStage);
+    }
+
+    // =========================================================================
+    // PRE-BLURRED 64x64 MICRO-CANVAS BACKDROP & DYNAMIC COVER TINT (MAX 40 CACHE)
+    // =========================================================================
+    const __sfPreBlurBackdropCache = new Map();
+    let __sfBackdropJobToken = 0;
+
+    function computeDarkCoverTintCss(r, g, b) {
+      // Clamp ke rentang gelap elegan agar teks putih & tombol Mini-Player selalu WCAG AA
+      const tr = Math.max(14, Math.min(72, Math.round(r * 0.38)));
+      const tg = Math.max(14, Math.min(72, Math.round(g * 0.38)));
+      const tb = Math.max(16, Math.min(82, Math.round(b * 0.42)));
+      return `rgba(${tr}, ${tg}, ${tb}, 0.94)`;
+    }
+
+    function applyCoverTintToMiniPlayer(tintCss) {
+      const safeTint = tintCss || 'rgba(22, 22, 26, 0.92)';
+      document.documentElement.style.setProperty('--sf-cover-tint', safeTint);
+      const mini = document.getElementById('mobile-mini-player');
+      if (mini) {
+        mini.style.backgroundColor = safeTint;
+        mini.style.backgroundImage = `linear-gradient(135deg, ${safeTint} 0%, rgba(16, 16, 20, 0.95) 100%)`;
+      }
+    }
+
+    function applyPreBlurredMicroCanvasBackdrop(coverUrl, targetImgEl) {
+      if (!targetImgEl) return;
+      const src = String(coverUrl || '').trim();
+      if (!src || src === '/icon-192.png' || src === '/icon-512.png') {
+        targetImgEl.src = '/icon-192.png';
+        applyCoverTintToMiniPlayer('rgba(22, 22, 26, 0.92)');
+        return;
+      }
+      const cached = __sfPreBlurBackdropCache.get(src);
+      if (cached) {
+        targetImgEl.src = cached.dataUrl;
+        applyCoverTintToMiniPlayer(cached.tintCss);
+        return;
+      }
+
+      const token = ++__sfBackdropJobToken;
+      const proxyUrl = /^https?:\/\//i.test(src)
+        ? `${API_BASE}/api/proxy-image?url=${encodeURIComponent(src)}`
+        : src;
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        if (token !== __sfBackdropJobToken) return;
+        try {
+          const size = 64;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) throw new Error('no ctx');
+
+          // Pass 1: downscale halus ke 24x24 untuk natural box-blur (100% kompatibel semua Android WebView!)
+          const tiny = document.createElement('canvas');
+          tiny.width = 20;
+          tiny.height = 20;
+          const tctx = tiny.getContext('2d', { willReadFrequently: true });
+          tctx.imageSmoothingEnabled = true;
+          tctx.imageSmoothingQuality = 'high';
+          tctx.drawImage(img, 0, 0, 20, 20);
+
+          // Ekstrak warna dominan gelap 1x dari micro-canvas
+          const pixels = tctx.getImageData(0, 0, 20, 20).data;
+          let sr = 0, sg = 0, sb = 0, cnt = 0;
+          for (let i = 0; i < pixels.length; i += 16) {
+            const pr = pixels[i], pg = pixels[i + 1], pb = pixels[i + 2];
+            const maxC = Math.max(pr, pg, pb);
+            const minC = Math.min(pr, pg, pb);
+            const sat = maxC - minC;
+            const weight = sat > 24 ? 2 : 1;
+            sr += pr * weight;
+            sg += pg * weight;
+            sb += pb * weight;
+            cnt += weight;
+          }
+          const avgR = cnt ? sr / cnt : 30;
+          const avgG = cnt ? sg / cnt : 30;
+          const avgB = cnt ? sb / cnt : 36;
+          const tintCss = computeDarkCoverTintCss(avgR, avgG, avgB);
+
+          // Pass 2: gambar ke 64x64 dengan blur lembut + saturate + gelap sinematik 1x saja!
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          try { ctx.filter = 'blur(3px) saturate(135%) brightness(0.58)'; } catch {}
+          ctx.drawImage(tiny, -6, -6, size + 12, size + 12);
+          try { ctx.filter = 'none'; } catch {}
+          // Lapisan gelap halus agar kontras teks & lirik selalu tajam
+          ctx.fillStyle = 'rgba(10, 10, 14, 0.22)';
+          ctx.fillRect(0, 0, size, size);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+          if (__sfPreBlurBackdropCache.size >= 40) {
+            const oldestKey = __sfPreBlurBackdropCache.keys().next().value;
+            if (oldestKey) __sfPreBlurBackdropCache.delete(oldestKey);
+          }
+          __sfPreBlurBackdropCache.set(src, { dataUrl, tintCss });
+          targetImgEl.src = dataUrl;
+          applyCoverTintToMiniPlayer(tintCss);
+        } catch {
+          targetImgEl.src = src;
+          const [r, g, b] = AppState.dominantRgb || [28, 28, 34];
+          applyCoverTintToMiniPlayer(computeDarkCoverTintCss(r, g, b));
+        }
+      };
+      img.onerror = () => {
+        if (token !== __sfBackdropJobToken) return;
+        targetImgEl.src = src;
+        const [r, g, b] = AppState.dominantRgb || [28, 28, 34];
+        applyCoverTintToMiniPlayer(computeDarkCoverTintCss(r, g, b));
+      };
+      img.src = proxyUrl;
     }
 
     function resetStickyHeader() {
@@ -28081,8 +28378,8 @@
 
     function exportFullStudioBackup() {
       const bundle = {
-        app: 'SpotyFlow X',
-        version: '10.0.0',
+        app: 'SpotyFlow',
+        version: '1.5.2',
         exportedAt: new Date().toISOString(),
         data: {
           likedTracks: AppState.likedTracks || [],
@@ -28274,6 +28571,848 @@
         }
       });
     }
+
+    /* =====================================================================
+       23. SPOTYFLOW v1.5.2 MAJOR UPDATE MODULE
+           - Smart Search History Chips (sf_search_history, max 12)
+           - Weekly Mini Wrapped (7 Hari Terakhir, sf_weekly_plays_v1, max 300)
+           - Lyrics Share Card HD (1080x1350, Anti Tainted Canvas, 4 Styles)
+           - 4-Group Structured Settings + APK Assistant + Safe Cache Manager
+           - Modal "Apa yang Baru di SpotyFlow v1.5.2" (Auto 1x)
+       ===================================================================== */
+
+    // --- 23A. SMART SEARCH HISTORY CHIPS (max 12, XSS-safe) ---
+    const SF_SEARCH_HISTORY_KEY = 'sf_search_history';
+
+    function loadSearchHistoryList() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(SF_SEARCH_HISTORY_KEY) || '[]');
+        return Array.isArray(raw) ? raw.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 12) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveSearchHistoryTerm(term) {
+      const clean = String(term || '').trim().slice(0, 80);
+      if (!clean || clean.length < 2) return;
+      const list = loadSearchHistoryList().filter((x) => x.toLowerCase() !== clean.toLowerCase());
+      list.unshift(clean);
+      safeStorageSet(SF_SEARCH_HISTORY_KEY, JSON.stringify(list.slice(0, 12)));
+    }
+
+    function removeSearchHistoryTerm(term) {
+      const target = String(term || '').trim().toLowerCase();
+      const list = loadSearchHistoryList().filter((x) => x.toLowerCase() !== target);
+      safeStorageSet(SF_SEARCH_HISTORY_KEY, JSON.stringify(list));
+      if (AppState.currentView === 'search') renderSearchView('');
+    }
+
+    function clearAllSearchHistory() {
+      try { localStorage.removeItem(SF_SEARCH_HISTORY_KEY); } catch {}
+      showToast('Riwayat pencarian berhasil dihapus.');
+      if (AppState.currentView === 'search') renderSearchView('');
+    }
+
+    function renderSearchHistoryChipsHtml() {
+      const items = loadSearchHistoryList();
+      if (!items.length) return '';
+      return `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-zinc-400">Riwayat Pencarian Terakhir</p>
+            <button type="button" onclick="clearAllSearchHistory()" class="text-[11px] font-semibold text-zinc-400 hover:text-white transition-colors">Hapus semua</button>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            ${items.map((term) => {
+              const safeAttr = escapeJsAttr(term);
+              return `
+                <span class="inline-flex items-center rounded-full bg-white/[0.08] border border-white/10 pl-3 pr-1.5 py-1 gap-1.5 text-xs text-white">
+                  <button type="button" onclick="triggerQuickSearch('${safeAttr}')" class="font-semibold hover:text-[#1ED760] transition-colors max-w-[180px] truncate">${escapeHtml(term)}</button>
+                  <button type="button" onclick="removeSearchHistoryTerm('${safeAttr}')" aria-label="Hapus riwayat ${escapeHtml(term)}" class="w-4 h-4 rounded-full hover:bg-white/15 flex items-center justify-center text-zinc-400 hover:text-white leading-none">&times;</button>
+                </span>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 23B. WEEKLY MINI WRAPPED (LAZY COMPUTE, 7 HARI TERAKHIR, MAX 300) ---
+    const SF_WEEKLY_PLAYS_KEY = 'sf_weekly_plays_v1';
+    let __sfLastWeeklyLoggedKey = '';
+
+    function recordWeeklyPlayIfEligible(track, durationSec = 0) {
+      if (!track || !track.id) return;
+      const playSessionKey = `${track.id}:${AppState.currentQueueIndex}`;
+      if (__sfLastWeeklyLoggedKey === playSessionKey) return;
+      __sfLastWeeklyLoggedKey = playSessionKey;
+      try {
+        const list = JSON.parse(localStorage.getItem(SF_WEEKLY_PLAYS_KEY) || '[]');
+        const arr = Array.isArray(list) ? list : [];
+        const dur = Math.max(30, Math.min(900, Math.round(Number(durationSec || track.duration || 180))));
+        arr.push({
+          ts: Date.now(),
+          id: String(track.id).slice(0, 64),
+          title: String(track.title || 'Tanpa Judul').slice(0, 100),
+          artist: String(track.artist?.name || track.artist || 'Artis').slice(0, 80),
+          durationSec: dur,
+        });
+        safeStorageSet(SF_WEEKLY_PLAYS_KEY, JSON.stringify(arr.slice(-300)));
+      } catch {}
+    }
+
+    function computeWeeklyMiniWrapped() {
+      const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      let rows = [];
+      try {
+        const raw = JSON.parse(localStorage.getItem(SF_WEEKLY_PLAYS_KEY) || '[]');
+        if (Array.isArray(raw)) rows = raw.filter((r) => r && Number(r.ts) >= cutoff);
+      } catch {}
+      if (!rows.length) return null;
+
+      let totalSec = 0;
+      const trackCounts = new Map();
+      const artistCounts = new Map();
+      for (const r of rows) {
+        totalSec += Math.max(20, Number(r.durationSec || 180));
+        const tk = String(r.title || '').trim();
+        if (tk) {
+          const prevT = trackCounts.get(tk) || { title: tk, artist: String(r.artist || ''), count: 0 };
+          prevT.count += 1;
+          trackCounts.set(tk, prevT);
+        }
+        const ak = String(r.artist || '').trim();
+        if (ak) {
+          artistCounts.set(ak, (artistCounts.get(ak) || 0) + 1);
+        }
+      }
+      const topTrack = Array.from(trackCounts.values()).sort((a, b) => b.count - a.count)[0] || null;
+      const topArtistEntry = Array.from(artistCounts.entries()).sort((a, b) => b[1] - a[1])[0] || null;
+      return {
+        playsCount: rows.length,
+        totalMinutes: Math.max(1, Math.round(totalSec / 60)),
+        topTrack,
+        topArtist: topArtistEntry ? { name: topArtistEntry[0], count: topArtistEntry[1] } : null,
+      };
+    }
+
+    function renderWeeklyMiniWrappedCardHtml() {
+      const w = computeWeeklyMiniWrapped();
+      const tint = getComputedStyle(document.documentElement).getPropertyValue('--sf-cover-tint').trim() || 'rgba(26, 38, 32, 0.92)';
+      if (!w) {
+        return `
+          <section class="rounded-2xl p-4 sm:p-5 border border-white/10" style="background: linear-gradient(135deg, ${tint} 0%, rgba(18, 18, 22, 0.96) 100%);">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <p class="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1ED760]">MINI WRAPPED</p>
+              <span class="font-mono text-[10px] text-white/50">7 Hari Terakhir</span>
+            </div>
+            <h2 class="font-display font-extrabold text-base sm:text-lg text-white">Ringkasan Minggu Ini (7 Hari Terakhir)</h2>
+            <p class="text-xs text-white/70 mt-1">Putar beberapa lagu minggu ini untuk melihat Mini Wrapped-mu!</p>
+          </section>
+        `;
+      }
+      return `
+        <section class="rounded-2xl p-4 sm:p-5 border border-white/12 shadow-lg space-y-3" style="background: linear-gradient(135deg, ${tint} 0%, rgba(16, 16, 20, 0.96) 100%);">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <p class="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1ED760]">MINI WRAPPED</p>
+              <h2 class="font-display font-extrabold text-base sm:text-lg text-white">Ringkasan Minggu Ini (7 Hari Terakhir)</h2>
+            </div>
+            <span class="font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/10 text-white shrink-0">${w.playsCount} putar</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="rounded-xl bg-black/30 border border-white/10 p-3">
+              <p class="text-[10.5px] font-semibold text-white/60">Total Menit Dengar</p>
+              <p class="font-display font-extrabold text-2xl text-[#1ED760] mt-0.5 tabular-nums">${w.totalMinutes} <span class="text-xs font-semibold text-white/70">mnt</span></p>
+            </div>
+            <div class="rounded-xl bg-black/30 border border-white/10 p-3 min-w-0">
+              <p class="text-[10.5px] font-semibold text-white/60">Lagu Paling Sering Diputar</p>
+              <p class="font-bold text-sm text-white truncate mt-0.5">${escapeHtml(w.topTrack?.title || '-')}</p>
+              <p class="text-[11px] text-white/60 truncate">${escapeHtml(w.topTrack?.artist || '')}${w.topTrack ? ` • ${w.topTrack.count}x` : ''}</p>
+            </div>
+            <div class="rounded-xl bg-black/30 border border-white/10 p-3 min-w-0">
+              <p class="text-[10.5px] font-semibold text-white/60">Artis Teratas Minggu Ini</p>
+              <p class="font-bold text-sm text-white truncate mt-0.5">${escapeHtml(w.topArtist?.name || '-')}</p>
+              <p class="text-[11px] text-white/60 truncate">${w.topArtist ? `${w.topArtist.count}x diputar minggu ini` : ''}</p>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // --- 23C. KARTU BERBAGI LIRIK ESTETIK HD (1080x1350, ANTI TAINTED CANVAS) ---
+    const LyricsShareState = {
+      lines: [],
+      selectedIndices: [],
+      style: 'cover',
+      coverImg: null,
+      coverSrcLoaded: '',
+    };
+
+    function getCurrentShareableLyricLines() {
+      const lyr = AppState.currentLyrics || {};
+      if (Array.isArray(lyr.syncedLines) && lyr.syncedLines.length) {
+        return lyr.syncedLines.map((l) => String(l.text || '').trim()).filter(Boolean);
+      }
+      if (lyr.plainLyrics) {
+        return String(lyr.plainLyrics).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function openLyricsShareCardModal() {
+      const tr = AppState.currentTrack;
+      if (!tr) return showToast('Putar lagu terlebih dahulu.');
+      const allLines = getCurrentShareableLyricLines();
+      if (!allLines.length) return showToast('Lirik belum tersedia untuk lagu ini.');
+
+      LyricsShareState.lines = allLines;
+      const activeIdx = Math.max(0, Math.min(allLines.length - 1, Number(AppState.currentLyrics?.activeIndex || 0)));
+      const start = Math.max(0, Math.min(allLines.length - 1, activeIdx));
+      const defaultPicked = [];
+      for (let i = start; i < Math.min(allLines.length, start + 3); i++) defaultPicked.push(i);
+      LyricsShareState.selectedIndices = defaultPicked.length ? defaultPicked : [0];
+      LyricsShareState.style = 'cover';
+
+      const coverUrl = getCover(tr, 'big');
+      const loadCoverForShare = () => {
+        if (!coverUrl || LyricsShareState.coverSrcLoaded === coverUrl) {
+          renderLyricsShareCanvas();
+          return;
+        }
+        LyricsShareState.coverImg = null;
+        LyricsShareState.coverSrcLoaded = coverUrl;
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          LyricsShareState.coverImg = img;
+          renderLyricsShareCanvas();
+        };
+        img.onerror = () => {
+          LyricsShareState.coverImg = null;
+          renderLyricsShareCanvas();
+        };
+        img.src = /^https?:\/\//i.test(coverUrl)
+          ? `${API_BASE}/api/proxy-image?url=${encodeURIComponent(coverUrl)}`
+          : coverUrl;
+      };
+
+      openCustomModal(`
+        <div class="space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h3 class="font-display font-extrabold text-lg text-white">Bagikan Kartu Lirik</h3>
+              <p class="text-[11px] text-zinc-400">Pilih 1–4 baris lirik &amp; gaya kartu (HD 1080×1350)</p>
+            </div>
+            <button type="button" onclick="closeCustomModal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80">
+              <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div class="flex justify-center">
+            <canvas id="sf-lyrics-share-canvas" width="1080" height="1350" class="w-full max-w-[260px] aspect-[4/5] rounded-2xl shadow-2xl border border-white/10 bg-[#121212]"></canvas>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            ${[
+              { id: 'cover', label: 'Warna Sampul' },
+              { id: 'spotify', label: 'Hitam Spotify' },
+              { id: 'cream', label: 'Krem Editorial' },
+              { id: 'night', label: 'Gradien Malam' },
+            ].map((st) => `
+              <button type="button" data-lsc-style="${st.id}" onclick="setLyricsShareStyle('${st.id}')" class="lsc-style-btn py-1.5 px-2 rounded-xl text-[11px] font-bold transition-colors ${st.id === 'cover' ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-white/80 hover:bg-white/15'}">${escapeHtml(st.label)}</button>
+            `).join('')}
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-zinc-300">Pilih Baris Lirik (1–4 baris)</span>
+              <span id="lsc-count-label" class="font-mono text-[10.5px] text-[#1ED760]">${LyricsShareState.selectedIndices.length}/4 dipilih</span>
+            </div>
+            <div id="lsc-lines-picker" class="max-h-36 overflow-y-auto studio-scroll space-y-1 pr-1"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button type="button" onclick="downloadLyricsSharePng()" class="py-2.5 px-3 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 transition-colors">
+              <i data-lucide="download" aria-hidden="true" class="w-4 h-4 text-[#1ED760]"></i>
+              <span>Simpan PNG</span>
+            </button>
+            <button type="button" onclick="shareLyricsShareCard()" class="py-2.5 px-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-xs font-extrabold text-black inline-flex items-center justify-center gap-1.5 transition-colors">
+              <i data-lucide="share-2" aria-hidden="true" class="w-4 h-4"></i>
+              <span>Bagikan</span>
+            </button>
+          </div>
+        </div>
+      `);
+
+      renderLyricsShareLinePicker();
+      renderLyricsShareCanvas();
+      loadCoverForShare();
+    }
+
+    function renderLyricsShareLinePicker() {
+      const box = document.getElementById('lsc-lines-picker');
+      const cnt = document.getElementById('lsc-count-label');
+      if (cnt) cnt.textContent = `${LyricsShareState.selectedIndices.length}/4 dipilih`;
+      if (!box) return;
+      const selSet = new Set(LyricsShareState.selectedIndices);
+      box.innerHTML = LyricsShareState.lines.map((line, idx) => {
+        const active = selSet.has(idx);
+        return `
+          <button type="button" onclick="toggleLyricsShareLine(${idx})" class="w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors ${active ? 'bg-[#1ED760]/20 border border-[#1ED760]/50 text-white font-semibold' : 'bg-white/[0.04] hover:bg-white/10 border border-transparent text-zinc-400'}">
+            ${escapeHtml(line)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleLyricsShareLine(idx) {
+      const list = [...LyricsShareState.selectedIndices];
+      const pos = list.indexOf(idx);
+      if (pos >= 0) {
+        if (list.length <= 1) return showToast('Pilih minimal 1 baris lirik.');
+        list.splice(pos, 1);
+      } else {
+        if (list.length >= 4) return showToast('Maksimal 4 baris lirik per kartu.');
+        list.push(idx);
+        list.sort((a, b) => a - b);
+      }
+      LyricsShareState.selectedIndices = list;
+      renderLyricsShareLinePicker();
+      renderLyricsShareCanvas();
+    }
+
+    function setLyricsShareStyle(styleId) {
+      LyricsShareState.style = styleId || 'cover';
+      document.querySelectorAll('.lsc-style-btn').forEach((btn) => {
+        const active = btn.getAttribute('data-lsc-style') === LyricsShareState.style;
+        btn.className = active
+          ? 'lsc-style-btn py-1.5 px-2 rounded-xl text-[11px] font-bold bg-[#1ED760] text-black transition-colors'
+          : 'lsc-style-btn py-1.5 px-2 rounded-xl text-[11px] font-bold bg-white/10 text-white/80 hover:bg-white/15 transition-colors';
+      });
+      renderLyricsShareCanvas();
+    }
+
+    function wrapCanvasLines(ctx, text, maxWidth, maxLines = 12) {
+      const words = String(text || '').split(/\s+/).filter(Boolean);
+      const out = [];
+      let cur = '';
+      for (const w of words) {
+        const next = cur ? `${cur} ${w}` : w;
+        if (ctx.measureText(next).width > maxWidth && cur) {
+          out.push(cur);
+          cur = w;
+          if (out.length >= maxLines) break;
+        } else {
+          cur = next;
+        }
+      }
+      if (cur && out.length < maxLines) out.push(cur);
+      return out;
+    }
+
+    function renderLyricsShareCanvas() {
+      const canvas = document.getElementById('sf-lyrics-share-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const W = 1080, H = 1350;
+      const tr = AppState.currentTrack || { title: 'SpotyFlow', artist: { name: 'Artis' } };
+      const [dr, dg, db] = AppState.dominantRgb || [34, 84, 61];
+      const st = LyricsShareState.style;
+
+      let fg = '#FFFFFF';
+      let subFg = 'rgba(255,255,255,0.72)';
+      let wmFg = 'rgba(255,255,255,0.52)';
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      if (st === 'spotify') {
+        bgGrad.addColorStop(0, '#1A1A1F');
+        bgGrad.addColorStop(1, '#09090B');
+      } else if (st === 'cream') {
+        bgGrad.addColorStop(0, '#F5EFE4');
+        bgGrad.addColorStop(1, '#E6DCCB');
+        fg = '#141416';
+        subFg = 'rgba(20,20,22,0.70)';
+        wmFg = 'rgba(20,20,22,0.52)';
+      } else if (st === 'night') {
+        bgGrad.addColorStop(0, '#172554');
+        bgGrad.addColorStop(0.55, '#0F172A');
+        bgGrad.addColorStop(1, '#050814');
+      } else {
+        bgGrad.addColorStop(0, `rgb(${Math.max(24, Math.min(130, Math.round(dr * 0.72)))}, ${Math.max(24, Math.min(130, Math.round(dg * 0.72)))}, ${Math.max(28, Math.min(140, Math.round(db * 0.76)))})`);
+        bgGrad.addColorStop(1, `rgb(${Math.max(12, Math.round(dr * 0.25))}, ${Math.max(12, Math.round(dg * 0.25))}, ${Math.max(15, Math.round(db * 0.28))})`);
+      }
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Header: Rounded shadowed album cover + title + artist
+      const pad = 92;
+      const artSize = 148;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.42)';
+      ctx.shadowBlur = 32;
+      ctx.shadowOffsetY = 14;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') ctx.roundRect(pad, pad, artSize, artSize, 26);
+      else ctx.rect(pad, pad, artSize, artSize);
+      ctx.clip();
+      if (LyricsShareState.coverImg) {
+        ctx.drawImage(LyricsShareState.coverImg, pad, pad, artSize, artSize);
+      } else {
+        const fbGrad = ctx.createLinearGradient(pad, pad, pad + artSize, pad + artSize);
+        fbGrad.addColorStop(0, '#1ED760');
+        fbGrad.addColorStop(1, '#0F5132');
+        ctx.fillStyle = fbGrad;
+        ctx.fillRect(pad, pad, artSize, artSize);
+        ctx.fillStyle = '#050505';
+        ctx.font = '800 68px "Plus Jakarta Sans", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('♪', pad + artSize / 2, pad + artSize / 2 + 4);
+      }
+      ctx.restore();
+
+      const textX = pad + artSize + 36;
+      const maxMetaW = W - textX - pad;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = fg;
+      ctx.font = '800 42px "Plus Jakarta Sans", system-ui, sans-serif';
+      const titleLines = wrapCanvasLines(ctx, String(tr.title || 'SpotyFlow'), maxMetaW, 2);
+      ctx.fillText(titleLines[0] || '', textX, pad + 64);
+      if (titleLines[1]) ctx.fillText(titleLines[1], textX, pad + 114);
+      ctx.fillStyle = subFg;
+      ctx.font = '600 32px "Plus Jakarta Sans", system-ui, sans-serif';
+      const artistStr = String(tr.artist?.name || tr.artist || 'Artis').slice(0, 42);
+      ctx.fillText(artistStr, textX, pad + (titleLines[1] ? 156 : 114));
+
+      // Center Lyric Quote
+      const pickedLines = LyricsShareState.selectedIndices.map((i) => LyricsShareState.lines[i]).filter(Boolean);
+      const fontSize = pickedLines.length >= 4 ? 54 : pickedLines.length === 3 ? 60 : 68;
+      const lineHeight = Math.round(fontSize * 1.34);
+      ctx.font = `800 ${fontSize}px "Plus Jakarta Sans", system-ui, sans-serif`;
+      ctx.fillStyle = fg;
+      const wrappedAll = [];
+      for (const pl of pickedLines) {
+        const wLines = wrapCanvasLines(ctx, pl, W - pad * 2, 4);
+        wLines.forEach((wl) => wrappedAll.push(wl));
+      }
+      const totalH = wrappedAll.length * lineHeight;
+      let y = Math.max(pad + artSize + 140, Math.round((H - totalH) / 2) + 40);
+      for (const wl of wrappedAll) {
+        if (y > H - 170) break;
+        ctx.fillText(wl, pad, y);
+        y += lineHeight;
+      }
+
+      // Subtle Brand Watermark
+      ctx.fillStyle = wmFg;
+      ctx.font = '700 30px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillText('SpotyFlow', pad, H - 86);
+      ctx.font = '600 24px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('HI-FI LYRICS', W - pad, H - 86);
+      ctx.textAlign = 'left';
+    }
+
+    function exportLyricsShareBlob() {
+      return new Promise((resolve) => {
+        const canvas = document.getElementById('sf-lyrics-share-canvas');
+        if (!canvas) return resolve(null);
+        try {
+          canvas.toBlob((blob) => resolve(blob), 'image/png', 0.96);
+        } catch {
+          // Anti-tainted fallback: re-render tanpa gambar eksternal jika browser taint
+          LyricsShareState.coverImg = null;
+          renderLyricsShareCanvas();
+          try {
+            canvas.toBlob((blob) => resolve(blob), 'image/png', 0.96);
+          } catch {
+            resolve(null);
+          }
+        }
+      });
+    }
+
+    async function downloadLyricsSharePng() {
+      const blob = await exportLyricsShareBlob();
+      if (!blob) return showToast('Gagal membuat gambar kartu lirik.', 'error');
+      const url = URL.createObjectURL(blob);
+      try {
+        const a = document.createElement('a');
+        const safeName = String(AppState.currentTrack?.title || 'spotyflow').replace(/[^a-z0-9-_]+/gi, '-').slice(0, 36);
+        a.href = url;
+        a.download = `spotyflow-lyrics-${safeName || 'card'}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast('Kartu lirik HD berhasil disimpan!', 'sparkles');
+      } finally {
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+    }
+
+    async function shareLyricsShareCard() {
+      const blob = await exportLyricsShareBlob();
+      if (!blob) return showToast('Gagal menyiapkan kartu lirik.', 'error');
+      const file = new File([blob], 'spotyflow-lyrics.png', { type: 'image/png' });
+      try {
+        if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+          await navigator.share({
+            title: `${AppState.currentTrack?.title || 'SpotyFlow'} — Lirik`,
+            text: `Dengarkan di SpotyFlow`,
+            files: [file],
+          });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+      // Fallback otomatis ke unduh PNG jika navigator.share tidak mendukung file
+      const url = URL.createObjectURL(blob);
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'spotyflow-lyrics.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast('Kartu lirik HD diunduh — siap dibagikan!', 'sparkles');
+      } finally {
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+    }
+
+    // --- 23D. SAFE WHITELIST CACHE MANAGER (ZERO PERMANENT DATA LOSS) ---
+    const SF_SAFE_CACHE_PREFIXES = [
+      'sf_lyrics_',
+      'sf_ai_lyrics_',
+      'sf_romanize_',
+      'sf_search_cache_',
+      'sf_meta_cache_',
+      'sf_cover_cache_',
+    ];
+
+    function isSafeTemporaryCacheKey(key) {
+      const k = String(key || '');
+      return SF_SAFE_CACHE_PREFIXES.some((prefix) => k.startsWith(prefix));
+    }
+
+    function formatBytesReadable(bytes) {
+      const b = Math.max(0, Number(bytes) || 0);
+      if (b < 1024) return `${b} B`;
+      if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+      return `${(b / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function getStorageCacheSummary() {
+      let tempBytes = 0;
+      let permBytes = 0;
+      let tempKeys = 0;
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k) continue;
+          const v = localStorage.getItem(k) || '';
+          const sz = (k.length + v.length) * 2;
+          if (isSafeTemporaryCacheKey(k)) {
+            tempBytes += sz;
+            tempKeys += 1;
+          } else {
+            permBytes += sz;
+          }
+        }
+      } catch {}
+      return { tempBytes, permBytes, tempKeys };
+    }
+
+    function refreshStorageSummaryUI() {
+      const sum = getStorageCacheSummary();
+      const tempEl = document.getElementById('settings-cache-temp-size');
+      const permEl = document.getElementById('settings-cache-perm-size');
+      const btnLabel = document.getElementById('settings-clear-cache-btn-label');
+      if (tempEl) tempEl.textContent = `${formatBytesReadable(sum.tempBytes)} (${sum.tempKeys} entri)`;
+      if (permEl) permEl.textContent = formatBytesReadable(sum.permBytes);
+      if (btnLabel) btnLabel.textContent = `Bersihkan Cache (${formatBytesReadable(sum.tempBytes)})`;
+    }
+
+    function clearSpotyFlowTemporaryCache() {
+      // WHITELIST KETAT: HANYA hapus key cache sementara! DILARANG memanggil localStorage.clear()!
+      const toDelete = [];
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && isSafeTemporaryCacheKey(k)) toDelete.push(k);
+        }
+        toDelete.forEach((k) => {
+          try { localStorage.removeItem(k); } catch {}
+        });
+      } catch {}
+      try {
+        if (AppState.lyricsCache && typeof AppState.lyricsCache.clear === 'function') AppState.lyricsCache.clear();
+        else if (AppState.lyricsCache && typeof AppState.lyricsCache === 'object') AppState.lyricsCache = {};
+        if (AppState.lyricsRomanizeCache) AppState.lyricsRomanizeCache = {};
+        if (typeof __sfPreBlurBackdropCache !== 'undefined' && __sfPreBlurBackdropCache.clear) __sfPreBlurBackdropCache.clear();
+      } catch {}
+      try {
+        if (window.SpotyFlowMediaBridge && typeof window.SpotyFlowMediaBridge.clearHttpCache === 'function') {
+          window.SpotyFlowMediaBridge.clearHttpCache();
+        }
+      } catch {}
+      refreshStorageSummaryUI();
+      showToast('Cache berhasil dibersihkan! Playlist & akun kamu tetap aman.', 'sparkles');
+    }
+
+    // --- 23E. ASISTEN LAYAR MATI & DYNAMIC ISLAND (KHUSUS MODE APK) ---
+    function isApkAssistantEnvironment() {
+      try {
+        return Boolean(
+          window.SpotyFlowMediaBridge ||
+          window.Capacitor?.isNativePlatform?.() ||
+          /SpotyFlowApp\//i.test(navigator.userAgent || '')
+        );
+      } catch {
+        return false;
+      }
+    }
+
+    function readApkSystemStatusSafe() {
+      try {
+        if (window.SpotyFlowMediaBridge && typeof window.SpotyFlowMediaBridge.getSystemStatus === 'function') {
+          const raw = window.SpotyFlowMediaBridge.getSystemStatus();
+          const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          if (parsed && typeof parsed === 'object') {
+            return {
+              notificationsEnabled: Boolean(parsed.notificationsEnabled),
+              batteryOptimizedIgnored: Boolean(parsed.batteryOptimizedIgnored),
+              sdkInt: Number(parsed.sdkInt || 0),
+              available: true,
+            };
+          }
+        }
+      } catch {}
+      return { notificationsEnabled: false, batteryOptimizedIgnored: false, sdkInt: 0, available: false };
+    }
+
+    function renderApkSystemAssistantInnerHtml() {
+      const st = readApkSystemStatusSafe();
+      return `
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold text-white">Asisten Layar Mati &amp; Dynamic Island</p>
+            <p class="text-[10.5px] text-zinc-400">Status izin Android native${st.sdkInt ? ` (API ${st.sdkInt})` : ''}</p>
+          </div>
+          <button type="button" onclick="refreshApkSystemAssistantUI()" class="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-[10.5px] font-semibold text-white">Periksa Ulang</button>
+        </div>
+        <div class="space-y-2 pt-1">
+          <div class="flex items-center justify-between gap-2 bg-black/30 rounded-xl px-3 py-2 border border-white/[0.06]">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-white">Izin Notifikasi &amp; Dynamic Island</p>
+              <span class="inline-block mt-0.5 font-mono text-[10px] font-bold px-2 py-0.5 rounded-full ${st.notificationsEnabled ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'}">${st.notificationsEnabled ? 'Aktif' : 'Perlu Izin'}</span>
+            </div>
+            ${st.notificationsEnabled ? '' : `<button type="button" onclick="try{window.SpotyFlowMediaBridge?.openNotificationSettings?.()}catch{}" class="px-3 py-1.5 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-[11px] font-extrabold shrink-0">Aktifkan</button>`}
+          </div>
+          <div class="flex items-center justify-between gap-2 bg-black/30 rounded-xl px-3 py-2 border border-white/[0.06]">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-white">Pengecualian Penghemat Baterai</p>
+              <span class="inline-block mt-0.5 font-mono text-[10px] font-bold px-2 py-0.5 rounded-full ${st.batteryOptimizedIgnored ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'}">${st.batteryOptimizedIgnored ? 'Tidak Dibatasi (Aman)' : 'Dibatasi OS'}</span>
+            </div>
+            ${st.batteryOptimizedIgnored ? '' : `<button type="button" onclick="try{window.SpotyFlowMediaBridge?.openBatterySettings?.()}catch{}" class="px-3 py-1.5 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-[11px] font-extrabold shrink-0">Atur Sekarang</button>`}
+          </div>
+        </div>
+        <p class="text-[10.5px] text-zinc-400 leading-relaxed">Jika lagu sempat berhenti saat layar mati, pastikan Baterai disetel ke 'Tidak Dibatasi' agar sistem HP tidak menidurkan SpotyFlow.</p>
+      `;
+    }
+
+    function refreshApkSystemAssistantUI() {
+      const box = document.getElementById('settings-apk-assistant-card');
+      if (box) box.innerHTML = renderApkSystemAssistantInnerHtml();
+    }
+
+    window.addEventListener('focus', () => {
+      if (document.getElementById('settings-apk-assistant-card')) refreshApkSystemAssistantUI();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && document.getElementById('settings-apk-assistant-card')) refreshApkSystemAssistantUI();
+    });
+
+    // --- 23F. PENGATURAN 4 GRUP TERSTRUKTUR (v1.5.2) ---
+    function openSettingsModal() {
+      const sum = getStorageCacheSummary();
+      const isApk = isApkAssistantEnvironment();
+      const isDataSaver = Boolean(AppState.dataSaver);
+      const isCanvasOn = AppState.canvasMotion !== false;
+      const isAutoAi = AppState.autoAiLyrics !== false;
+      const cfSec = Number(AppState.crossfadeSeconds || 0);
+      const accent = AppState.accentColor || '#1ED760';
+
+      openCustomModal(`
+        <div class="space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <p class="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1ED760]">SPOTYFLOW v${APP_VERSION}</p>
+              <h3 class="font-display font-extrabold text-xl text-white">Pengaturan</h3>
+            </div>
+            <button type="button" onclick="closeCustomModal()" aria-label="Tutup pengaturan" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80">
+              <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- GRUP 1: PEMUTARAN & AUDIO -->
+          <section class="rounded-2xl bg-white/[0.04] border border-white/10 p-3.5 space-y-2.5">
+            <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-[#1ED760]">1. Pemutaran &amp; Audio</p>
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Penghemat Kuota (Data Saver)</p>
+                <p class="text-[10.5px] text-zinc-400">Hemat data audio &amp; nonaktifkan visualizer berat</p>
+              </div>
+              <button type="button" onclick="toggleDataSaver(); openSettingsModal();" class="px-3 py-1 rounded-full text-[11px] font-bold ${isDataSaver ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-zinc-300'}">${isDataSaver ? 'Aktif' : 'Nonaktif'}</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.07]">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Crossfade &amp; Normalisasi Volume</p>
+                <p class="text-[10.5px] text-zinc-400">Crossfade saat ini: ${cfSec}s • Loudness &amp; EQ 5-Band</p>
+              </div>
+              <button type="button" onclick="closeCustomModal(); openRightPanelTab('console')" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-bold text-white shrink-0">Buka Audio Studio</button>
+            </div>
+          </section>
+
+          <!-- GRUP 2: TAMPILAN & LIRIK -->
+          <section class="rounded-2xl bg-white/[0.04] border border-white/10 p-3.5 space-y-2.5">
+            <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-[#1ED760]">2. Tampilan &amp; Lirik</p>
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Mode Canvas (Latar Sinematik)</p>
+                <p class="text-[10.5px] text-zinc-400">Pre-blurred micro-canvas GPU 60–120 FPS</p>
+              </div>
+              <button type="button" onclick="if(typeof toggleCanvasMotionMode==='function'){toggleCanvasMotionMode();} openSettingsModal();" class="px-3 py-1 rounded-full text-[11px] font-bold ${isCanvasOn ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-zinc-300'}">${isCanvasOn ? 'Aktif' : 'Standar'}</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.07]">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Auto AI Lirik &amp; Romanisasi</p>
+                <p class="text-[10.5px] text-zinc-400">Otomatis susun lirik sinkron jika belum tersedia</p>
+              </div>
+              <button type="button" onclick="AppState.autoAiLyrics = (AppState.autoAiLyrics === false); savePrefs(); openSettingsModal();" class="px-3 py-1 rounded-full text-[11px] font-bold ${isAutoAi ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-zinc-300'}">${isAutoAi ? 'Aktif' : 'Nonaktif'}</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.07]">
+              <span class="text-xs font-semibold text-white">Warna Aksen</span>
+              <div class="flex items-center gap-1.5">
+                ${['#1ED760', '#38BDF8', '#F59E0B', '#EC4899', '#A78BFA'].map((hex) => `
+                  <button type="button" onclick="if(typeof setAccentColor==='function'){setAccentColor('${hex}');} openSettingsModal();" aria-label="Warna aksen ${hex}" class="w-6 h-6 rounded-full border-2 ${accent.toLowerCase() === hex.toLowerCase() ? 'border-white scale-110' : 'border-transparent'} transition-transform" style="background-color:${hex};"></button>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+
+          <!-- GRUP 3: DATA & PENYIMPANAN -->
+          <section class="rounded-2xl bg-white/[0.04] border border-white/10 p-3.5 space-y-2.5">
+            <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-[#1ED760]">3. Data &amp; Penyimpanan</p>
+            <div class="rounded-xl bg-black/30 border border-white/[0.06] p-3 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-zinc-400">Cache Sementara (Lirik/Meta)</span>
+                <span id="settings-cache-temp-size" class="font-mono font-bold text-amber-300">${formatBytesReadable(sum.tempBytes)} (${sum.tempKeys} entri)</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-zinc-400">Data Permanen (Akun, Playlist, EQ)</span>
+                <span id="settings-cache-perm-size" class="font-mono font-bold text-emerald-300">${formatBytesReadable(sum.permBytes)}</span>
+              </div>
+              <button type="button" onclick="clearSpotyFlowTemporaryCache()" class="w-full mt-1 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 transition-colors">
+                <i data-lucide="trash-2" aria-hidden="true" class="w-3.5 h-3.5 text-[#1ED760]"></i>
+                <span id="settings-clear-cache-btn-label">Bersihkan Cache (${formatBytesReadable(sum.tempBytes)})</span>
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openFullBackupModal()" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white inline-flex items-center justify-center gap-1.5">
+                <i data-lucide="hard-drive-download" aria-hidden="true" class="w-3.5 h-3.5 text-[#1ED760]"></i>
+                <span>Cadangkan (.json)</span>
+              </button>
+              <button type="button" onclick="if(typeof syncUserLibraryToCloud==='function'){syncUserLibraryToCloud(true); showToast('Sinkronisasi Cloud dimulai...');}" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white inline-flex items-center justify-center gap-1.5">
+                <i data-lucide="cloud" aria-hidden="true" class="w-3.5 h-3.5 text-[#1ED760]"></i>
+                <span>Cloud Sync</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- GRUP 4: SISTEM & PEMBARUAN (v1.5.2) -->
+          <section class="rounded-2xl bg-white/[0.04] border border-white/10 p-3.5 space-y-2.5">
+            <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-[#1ED760]">4. Sistem &amp; Pembaruan (v${APP_VERSION})</p>
+            ${isApk ? `<div id="settings-apk-assistant-card" class="rounded-xl bg-white/[0.04] border border-white/10 p-3 space-y-2">${renderApkSystemAssistantInnerHtml()}</div>` : ''}
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="SFAutoUpdate.checkNow(true)" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white inline-flex items-center justify-center gap-1.5">
+                <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5 text-[#1ED760]"></i>
+                <span>Cek Pembaruan</span>
+              </button>
+              <button type="button" onclick="openWhatsNewV152Modal(true)" class="py-2 px-3 rounded-xl bg-[#1ED760]/15 hover:bg-[#1ED760]/25 border border-[#1ED760]/30 text-xs font-bold text-[#1ED760] inline-flex items-center justify-center gap-1.5">
+                <i data-lucide="sparkles" aria-hidden="true" class="w-3.5 h-3.5"></i>
+                <span>Apa yang Baru</span>
+              </button>
+            </div>
+            <p class="text-center font-mono text-[10.5px] text-zinc-500 pt-1">SpotyFlow v${APP_VERSION} • Build Produksi 60–120 FPS</p>
+          </section>
+        </div>
+      `);
+    }
+
+    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v1.5.2" (AUTO 1X) ---
+    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_1_5_2';
+
+    function dismissWhatsNewV152Modal() {
+      safeStorageSet(SF_SEEN_WHATS_NEW_KEY, '1');
+      closeCustomModal();
+    }
+
+    function openWhatsNewV152Modal(manual = false) {
+      if (!manual && localStorage.getItem(SF_SEEN_WHATS_NEW_KEY) === '1') return;
+      openCustomModal(`
+        <div class="space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] border border-[#1ED760]/35">MAJOR UPDATE</span>
+              <h3 class="font-display font-extrabold text-xl text-white mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
+            </div>
+            <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80 shrink-0">
+              <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <ul class="space-y-2 text-xs text-zinc-200 leading-relaxed">
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span>Mesin UI Statis &amp; Build Produksi (scroll &amp; animasi musik super mulus 60–120 FPS)</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span>Transisi Keluar-Masuk Tanpa Jeda &amp; Pemutaran Layar Mati Lebih Stabil</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span>Gestur Mini-Player &amp; Fullscreen (Geser ganti lagu &amp; buka/tutup layar penuh)</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span>Dynamic Tint Mini-Player &amp; Mode Berkendara</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span>Kartu Berbagi Lirik Estetik, Sleep Timer Akhir Lagu &amp; Mini Wrapped Mingguan</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span>Pencarian Lebih Pintar, Asisten Layar Mati APK &amp; Pembersih Cache 1-Klik</span></li>
+          </ul>
+          <button type="button" onclick="dismissWhatsNewV152Modal()" class="w-full py-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-sm font-extrabold transition-colors shadow-lg">
+            Mulai Mendengarkan
+          </button>
+        </div>
+      `);
+    }
+
+    function maybeShowWhatsNewV152Modal() {
+      try {
+        if (localStorage.getItem(SF_SEEN_WHATS_NEW_KEY) === '1') return;
+        const authOverlay = document.getElementById('auth-gate-overlay');
+        if (authOverlay && !authOverlay.classList.contains('hidden')) return;
+        const modalOverlay = document.getElementById('custom-modal-overlay');
+        if (modalOverlay && !modalOverlay.classList.contains('hidden')) return;
+        openWhatsNewV152Modal(false);
+      } catch {}
+    }
+
+    // Hook refresh Asisten APK saat kembali dari pengaturan Android via __sfSetAppBackgrounded(false)
+    (function hookApkAssistantOnForegroundReturn() {
+      const origBgFn = window.__sfSetAppBackgrounded;
+      if (typeof origBgFn === 'function') {
+        window.__sfSetAppBackgrounded = function (isBg) {
+          origBgFn(isBg);
+          if (!isBg && document.getElementById('settings-apk-assistant-card')) {
+            setTimeout(() => refreshApkSystemAssistantUI(), 180);
+          }
+        };
+      }
+    })();
   </script>
 </body>
 </html>

@@ -39,17 +39,32 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '10.0.0';
-const NATIVE_APK_VERSION_CODE = 3;
+const VERSION = '1.5.2';
+const NATIVE_APK_VERSION_CODE = 152;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const IS_PROD = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  process.env.SESSION_SECRET ||
-  crypto.createHash('sha256').update(`spotyflow-stateless-${process.env.VERCEL_PROJECT_ID || 'local'}`).digest('hex');
+const JWT_SECRET = (() => {
+  const explicit = String(process.env.JWT_SECRET || process.env.SESSION_SECRET || '').trim();
+  if (explicit.length >= 24) return explicit;
+  const highEntropySeed = String(
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.RESEND_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    ''
+  ).trim();
+  if (highEntropySeed) {
+    if (IS_PROD) {
+      console.warn('[SpotyFlow Security] JWT_SECRET belum disetel eksplisit; menggunakan derivasi HMAC dari secret server.');
+    }
+    return crypto.createHmac('sha256', highEntropySeed).update('spotyflow-jwt-signing-v2').digest('hex');
+  }
+  console.warn('[SpotyFlow Security] Menggunakan ephemeral random JWT_SECRET (setel JWT_SECRET di environment produksi).');
+  return crypto.randomBytes(32).toString('hex');
+})();
 
 const ACCESS_COOKIE = 'sf_access_token';
 const REFRESH_COOKIE = 'sf_refresh_token';
@@ -104,11 +119,29 @@ const APP_BUILD_ID = (() => {
 // 1. UTILITAS KEAMANAN, HTTP TIMEOUT, & NORMALISASI TEKS
 // =========================================================================
 
+function isTrustedSpotyFlowHost(rawHost) {
+  const host = String(rawHost || '').split(',')[0].trim().toLowerCase();
+  if (!host || /[\s/\\@?#]/.test(host)) return false;
+  if (host === 'spotyflow.vercel.app') return true;
+  if (/^spotyflow(?:-[a-z0-9-]+)?\.vercel\.app$/i.test(host)) return true;
+  const vercelUrlHost = String(process.env.VERCEL_URL || '').trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0];
+  if (vercelUrlHost && host === vercelUrlHost) return true;
+  if (!process.env.VERCEL && /^(localhost|127\.0\.0\.1)(:\d{1,5})?$/i.test(host)) return true;
+  return false;
+}
+
 function getSelfBaseUrl(req) {
-  const proto = String(req?.headers?.['x-forwarded-proto'] || req?.protocol || 'https').split(',')[0].trim() || 'https';
-  const host = String(req?.headers?.['x-forwarded-host'] || req?.headers?.host || '').split(',')[0].trim();
-  if (host) return `${proto}://${host}`;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  const explicitBase = String(process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
+  if (explicitBase && isSafePublicUrl(explicitBase, true)) return explicitBase;
+  const rawHost = String(req?.headers?.['x-forwarded-host'] || req?.headers?.host || '').split(',')[0].trim();
+  if (isTrustedSpotyFlowHost(rawHost)) {
+    const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(rawHost);
+    return `${isLocal ? 'http' : 'https'}://${rawHost}`;
+  }
+  const vercelUrl = String(process.env.VERCEL_URL || '').trim().replace(/^https?:\/\//, '').split('/')[0];
+  if (vercelUrl && /^[a-z0-9.-]+\.vercel\.app$/i.test(vercelUrl)) {
+    return `https://${vercelUrl}`;
+  }
   return 'https://spotyflow.vercel.app';
 }
 
@@ -314,13 +347,10 @@ async function callYtmPython(req, params = {}, timeoutMs = 3500) {
   const startedAt = Date.now();
   try {
     const customBase = String(process.env.YTM_PYTHON_BASE_URL || '').trim().replace(/\/+$/, '');
-    let baseUrl = customBase;
+    let baseUrl = customBase && isSafePublicUrl(customBase, true) ? customBase : '';
     if (!baseUrl) {
       if (!process.env.VERCEL) return null;
-      const host = String(req?.headers?.['x-forwarded-host'] || req?.headers?.host || '').trim();
-      if (!host) return null;
-      const proto = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host) ? 'http' : 'https';
-      baseUrl = `${proto}://${host}`;
+      baseUrl = getSelfBaseUrl(req);
     }
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(params || {})) {
@@ -402,7 +432,7 @@ function signAccessToken(user) {
       type: 'access',
     },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { algorithm: 'HS256', expiresIn: '7d' }
   );
 }
 
@@ -418,7 +448,7 @@ function signRefreshToken(user) {
       type: 'refresh',
     },
     JWT_SECRET,
-    { expiresIn: '30d' }
+    { algorithm: 'HS256', expiresIn: '30d' }
   );
 }
 
@@ -436,20 +466,21 @@ function setAuthCookies(res, accessToken, refreshToken) {
 }
 
 function clearAuthCookies(res) {
-  res.clearCookie(ACCESS_COOKIE, { path: '/' });
-  res.clearCookie(REFRESH_COOKIE, { path: '/' });
+  res.clearCookie(ACCESS_COOKIE, { path: '/', httpOnly: true, secure: IS_PROD, sameSite: 'lax' });
+  res.clearCookie(REFRESH_COOKIE, { path: '/', httpOnly: true, secure: IS_PROD, sameSite: 'lax' });
 }
 
 function extractUserFromReq(req) {
   const authHeader = String(req.headers.authorization || '');
   const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   const token = bearer || req.cookies?.[ACCESS_COOKIE] || '';
-  if (!token) return null;
+  if (!token || token.length > 2048) return null;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    if (!decoded || decoded.type !== 'access' || !decoded.sub) return null;
     return {
-      id: decoded.sub,
-      displayName: decoded.name || 'Pengguna SpotyFlow',
+      id: String(decoded.sub),
+      displayName: String(decoded.name || 'Pengguna SpotyFlow').slice(0, 48),
       email: decoded.email || null,
       avatarUrl: decoded.avatar || null,
       provider: decoded.provider || 'guest',
@@ -1794,6 +1825,7 @@ async function callGeminiText(prompt, timeoutMs = 7000) {
 // =========================================================================
 
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
 const ALLOWED_NATIVE_ORIGINS = new Set([
@@ -1803,55 +1835,96 @@ const ALLOWED_NATIVE_ORIGINS = new Set([
   'https://spotyflow.vercel.app',
 ]);
 
+function isAllowedCorsOrigin(origin) {
+  if (!origin) return true;
+  if (ALLOWED_NATIVE_ORIGINS.has(origin)) return true;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/i.test(origin)) return true;
+  if (/^https:\/\/spotyflow(?:-[a-z0-9-]+)?\.vercel\.app$/i.test(origin)) return true;
+  return false;
+}
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      if (ALLOWED_NATIVE_ORIGINS.has(origin)) return callback(null, true);
-      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) return callback(null, true);
-      if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return callback(null, true);
-      return callback(null, true);
+      if (isAllowedCorsOrigin(origin)) return callback(null, true);
+      return callback(null, false);
     },
     credentials: true,
     exposedHeaders: ['Content-Length', 'Content-Type', 'X-Audio-Duration', 'X-Audio-Bitrate'],
   })
 );
 
+const SPOTYFLOW_HTML_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://accounts.google.com https://www.youtube.com https://s.ytimg.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' https: data: blob:",
+  "media-src 'self' https: blob: data:",
+  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com",
+  "connect-src 'self' https: wss:",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+  "form-action 'self'",
+  'upgrade-insecure-requests',
+].join('; ');
+
 app.use((_req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=(), usb=()');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   next();
 });
 
+function getTrustedClientIp(req) {
+  const vercelIp = String(req.headers['x-vercel-forwarded-for'] || '').split(',')[0].trim();
+  if (vercelIp) return vercelIp;
+  const realIp = String(req.headers['x-real-ip'] || '').trim();
+  if (realIp) return realIp;
+  const fwd = String(req.headers['x-forwarded-for'] || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (fwd.length) return process.env.VERCEL ? fwd[fwd.length - 1] : fwd[0];
+  return String(req.ip || req.socket?.remoteAddress || '127.0.0.1').trim();
+}
+
 // Unified Lightweight Per-IP Rate Limiter Registry (Auto-cleanup every 5 minutes)
 const rateLimiterStores = [];
-function createIpRateLimiter({ maxReq = 20, windowMs = 60 * 1000, label = 'API' } = {}) {
+function createIpRateLimiter({ maxReq = 20, windowMs = 60 * 1000, label = 'API', keyFn = null } = {}) {
   const store = new Map();
   rateLimiterStores.push({ store, windowMs });
   return function ipRateLimiter(req, res, next) {
-    const rawIp = String(req.headers['x-forwarded-for'] || req.ip || '127.0.0.1').split(',')[0].trim();
+    const baseIp = getTrustedClientIp(req);
+    const key = typeof keyFn === 'function' ? String(keyFn(req, baseIp) || baseIp) : baseIp;
     const now = Date.now();
-    if (store.size > 2000) {
+    if (store.size > 3000) {
       for (const [k, v] of store.entries()) {
         if (now - v.windowStart > windowMs) store.delete(k);
       }
     }
-    let entry = store.get(rawIp);
+    let entry = store.get(key);
     if (!entry || now - entry.windowStart > windowMs) {
       entry = { count: 0, windowStart: now };
     }
     entry.count += 1;
-    store.set(rawIp, entry);
+    store.set(key, entry);
 
     res.setHeader('X-RateLimit-Limit', String(maxReq));
     res.setHeader('X-RateLimit-Remaining', String(Math.max(0, maxReq - entry.count)));
 
     if (entry.count > maxReq) {
+      res.setHeader('Retry-After', String(Math.max(1, Math.ceil((entry.windowStart + windowMs - now) / 1000))));
       return res.status(429).json({
         ok: false,
-        error: `Terlalu banyak permintaan ${label} (maksimal ${maxReq}/menit). Silakan tunggu sebentar.`,
+        error: `Terlalu banyak permintaan ${label}. Silakan tunggu sebentar.`,
       });
     }
     next();
@@ -1868,15 +1941,32 @@ const _rateLimitCleanupTimer = setInterval(() => {
 }, 5 * 60 * 1000);
 if (typeof _rateLimitCleanupTimer.unref === 'function') _rateLimitCleanupTimer.unref();
 
+const globalApiRateLimiter = createIpRateLimiter({ maxReq: 180, windowMs: 60 * 1000, label: 'API SpotyFlow' });
+const authRateLimiterMiddleware = createIpRateLimiter({ maxReq: 25, windowMs: 5 * 60 * 1000, label: 'Autentikasi' });
+const otpRequestRateLimiter = createIpRateLimiter({
+  maxReq: 5,
+  windowMs: 10 * 60 * 1000,
+  label: 'Permintaan OTP',
+  keyFn: (req, ip) => `${ip}:${String(req.body?.email || '').trim().toLowerCase().slice(0, 80)}`,
+});
+const otpVerifyRateLimiter = createIpRateLimiter({ maxReq: 8, windowMs: 10 * 60 * 1000, label: 'Verifikasi OTP' });
 const aiRateLimiterMiddleware = createIpRateLimiter({ maxReq: 15, windowMs: 60 * 1000, label: 'AI' });
 const importRateLimiterMiddleware = createIpRateLimiter({ maxReq: 12, windowMs: 60 * 1000, label: 'Impor Playlist' });
 const romanizeRateLimiterMiddleware = createIpRateLimiter({ maxReq: 20, windowMs: 60 * 1000, label: 'Romanisasi Lirik' });
 const transcribeRateLimiter = createIpRateLimiter({ maxReq: 10, windowMs: 60 * 1000, label: 'Transkripsi Lirik AI' });
 const jamRateLimiterMiddleware = createIpRateLimiter({ maxReq: 60, windowMs: 60 * 1000, label: 'Dengar Bareng (Jam)' });
 
+app.use('/api', globalApiRateLimiter);
+app.use('/api/ai', aiRateLimiterMiddleware);
+app.use('/api/search/by-lyrics', aiRateLimiterMiddleware);
 app.use('/api/playlist/import', importRateLimiterMiddleware);
 app.use('/api/lyrics/romanize', romanizeRateLimiterMiddleware);
 app.use('/api/jam', jamRateLimiterMiddleware);
+app.use('/api/v1/jam', jamRateLimiterMiddleware);
+app.use('/api/auth/google', authRateLimiterMiddleware);
+app.use('/api/auth/guest', authRateLimiterMiddleware);
+app.use('/api/auth/refresh', authRateLimiterMiddleware);
+app.use('/api/auth/apk-bridge', authRateLimiterMiddleware);
 
 app.use(cookieParser());
 const defaultJsonParser = express.json({ limit: '2mb' });
@@ -1896,7 +1986,6 @@ app.use(optionalAuth);
 
 app.get('/api/health', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  const pool = getCloudDbPool();
   res.json({
     ok: true,
     version: VERSION,
@@ -1904,10 +1993,6 @@ app.get('/api/health', (_req, res) => {
     serverless: Boolean(process.env.VERCEL),
     googleConfigured: Boolean(getGoogleClientId()),
     emailOtpReady: isEmailOtpReady(),
-    geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
-    dbConfigured: Boolean(pool),
-    dbDriver: cloudDbDriver,
-    circuitBreaker: getCircuitBreakerSnapshot(),
   });
 });
 
@@ -1919,16 +2004,26 @@ app.get('/api/download-apk', (_req, res) => {
   return res.redirect(302, apkUrl);
 });
 
-app.get('/api/app-version', (_req, res) => {
+app.get(['/api/app-version', '/api/app/version'], (_req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.json({
     ok: true,
+    version: VERSION,
     webVersion: VERSION,
+    versionCode: NATIVE_APK_VERSION_CODE,
     buildId: APP_BUILD_ID,
     latestNativeVersionCode: NATIVE_APK_VERSION_CODE,
     minNativeVersionCode: 1,
     apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
     otaEnabled: true,
+    releaseNotes: [
+      'Mesin UI Statis Tailwind + Build Release Produksi 60–120 FPS',
+      'Pre-Blurred Micro-Canvas Backdrop & Animasi Musik GPU Compositor',
+      'Zero-Pause Keluar/Masuk APK & Pemutaran Layar Mati Stabil',
+      'Axis-Lock Gesture Engine, Dynamic Tint Mini-Player & Mode Berkendara',
+      'Kartu Berbagi Lirik Estetik HD, Sleep Timer Akhir Lagu & Mini Wrapped Mingguan',
+      'Asisten Layar Mati APK, Pembersih Cache 1-Klik Aman & Pengaturan 4 Grup',
+    ],
     updatedAt: new Date().toISOString(),
   });
 });
@@ -2208,8 +2303,77 @@ app.get('/api/auth/apk-bridge/poll', async (req, res) => {
   return res.status(200).json({ ok: true, status: 'pending' });
 });
 
-// Email OTP Stateless HMAC/JWT via Resend + Cek DNS MX (ZERO OTP di response JSON)
-app.post('/api/auth/email/request-otp', async (req, res) => {
+// Email OTP Anti-Brute-Force (Single-Use JTI + Max 5 Attempts + Rate Limit + MX DNS)
+const OTP_MAX_ATTEMPTS = 5;
+const otpChallengesMem = new Map();
+let otpChallengesTableReady = false;
+
+async function ensureOtpChallengesTable(pool) {
+  if (!pool || otpChallengesTableReady) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS otp_challenges (
+      jti TEXT PRIMARY KEY,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      used BOOLEAN NOT NULL DEFAULT FALSE,
+      expires_at TIMESTAMPTZ NOT NULL
+    )
+  `);
+  otpChallengesTableReady = true;
+}
+
+async function registerOtpChallenge(jti, expiresAtMs) {
+  if (otpChallengesMem.size > 2000) {
+    const now = Date.now();
+    for (const [k, v] of otpChallengesMem.entries()) {
+      if (!v || v.expiresAt <= now) otpChallengesMem.delete(k);
+    }
+  }
+  otpChallengesMem.set(jti, { attempts: 0, used: false, expiresAt: expiresAtMs });
+  const pool = getCloudDbPool();
+  if (pool) {
+    try {
+      await ensureOtpChallengesTable(pool);
+      await pool.query('DELETE FROM otp_challenges WHERE expires_at < NOW()').catch(() => {});
+      await pool.query(
+        'INSERT INTO otp_challenges (jti, attempts, used, expires_at) VALUES ($1, 0, FALSE, to_timestamp($2 / 1000.0)) ON CONFLICT (jti) DO NOTHING',
+        [jti, expiresAtMs]
+      );
+    } catch {}
+  }
+}
+
+async function checkAndIncrementOtpAttempt(jti, markUsed = false) {
+  const pool = getCloudDbPool();
+  if (pool) {
+    try {
+      await ensureOtpChallengesTable(pool);
+      const r = await pool.query('SELECT attempts, used, expires_at FROM otp_challenges WHERE jti = $1 LIMIT 1', [jti]);
+      const row = r.rows?.[0];
+      if (row) {
+        if (row.used || new Date(row.expires_at).getTime() <= Date.now()) return { blocked: true, reason: 'used_or_expired' };
+        if (Number(row.attempts || 0) >= OTP_MAX_ATTEMPTS) return { blocked: true, reason: 'max_attempts' };
+        if (markUsed) {
+          await pool.query('UPDATE otp_challenges SET used = TRUE WHERE jti = $1', [jti]);
+        } else {
+          await pool.query('UPDATE otp_challenges SET attempts = attempts + 1 WHERE jti = $1', [jti]);
+        }
+        return { blocked: false };
+      }
+    } catch {}
+  }
+  const mem = otpChallengesMem.get(jti);
+  if (mem) {
+    if (mem.used || mem.expiresAt <= Date.now()) return { blocked: true, reason: 'used_or_expired' };
+    if (mem.attempts >= OTP_MAX_ATTEMPTS) return { blocked: true, reason: 'max_attempts' };
+    if (markUsed) mem.used = true;
+    else mem.attempts += 1;
+    return { blocked: false };
+  }
+  otpChallengesMem.set(jti, { attempts: markUsed ? 0 : 1, used: markUsed, expiresAt: Date.now() + 5 * 60 * 1000 });
+  return { blocked: false };
+}
+
+app.post('/api/auth/email/request-otp', otpRequestRateLimiter, async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
     return res.status(400).json({ error: 'Format alamat email tidak valid.' });
@@ -2229,14 +2393,17 @@ app.post('/api/auth/email/request-otp', async (req, res) => {
   }
 
   const otp = String(crypto.randomInt(100000, 1000000));
+  const jti = crypto.randomBytes(12).toString('hex');
+  await registerOtpChallenge(jti, Date.now() + 5 * 60 * 1000);
   const challengeToken = jwt.sign(
     {
       purpose: 'email_otp',
+      jti,
       email,
       otpHash: hashOtp(email, otp),
     },
     JWT_SECRET,
-    { expiresIn: '5m' }
+    { algorithm: 'HS256', expiresIn: '5m' }
   );
 
   try {
@@ -2277,7 +2444,7 @@ app.post('/api/auth/email/request-otp', async (req, res) => {
   }
 });
 
-app.post('/api/auth/email/verify-otp', (req, res) => {
+app.post('/api/auth/email/verify-otp', otpVerifyRateLimiter, async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const otp = String(req.body?.otp || '').replace(/\D+/g, '');
   const challengeToken = String(req.body?.challengeToken || '').trim();
@@ -2287,14 +2454,23 @@ app.post('/api/auth/email/verify-otp', (req, res) => {
   }
 
   try {
-    const payload = jwt.verify(challengeToken, JWT_SECRET);
-    if (payload.purpose !== 'email_otp' || payload.email !== email) {
+    const payload = jwt.verify(challengeToken, JWT_SECRET, { algorithms: ['HS256'] });
+    if (payload.purpose !== 'email_otp' || payload.email !== email || !payload.jti) {
       return res.status(401).json({ error: 'Token tantangan OTP tidak cocok dengan email.' });
     }
 
     const expectedBuf = Buffer.from(String(payload.otpHash || ''), 'hex');
     const actualBuf = Buffer.from(hashOtp(email, otp), 'hex');
-    if (expectedBuf.length !== actualBuf.length || !crypto.timingSafeEqual(expectedBuf, actualBuf)) {
+    const matches = expectedBuf.length === actualBuf.length && crypto.timingSafeEqual(expectedBuf, actualBuf);
+    const attemptState = await checkAndIncrementOtpAttempt(String(payload.jti), matches);
+    if (attemptState.blocked) {
+      const msg =
+        attemptState.reason === 'max_attempts'
+          ? 'Batas percobaan OTP tercapai. Silakan minta kode OTP baru.'
+          : 'Kode OTP sudah digunakan atau kedaluwarsa. Minta kode baru.';
+      return res.status(attemptState.reason === 'max_attempts' ? 429 : 401).json({ error: msg });
+    }
+    if (!matches) {
       return res.status(401).json({ error: 'Kode OTP salah. Periksa kembali kotak masuk email Anda.' });
     }
 
@@ -2352,7 +2528,7 @@ app.post('/api/auth/refresh', (req, res) => {
   const token = String(req.body?.refreshToken || req.cookies?.[REFRESH_COOKIE] || '').trim();
   if (!token) return res.status(401).json({ error: 'Refresh token tidak ditemukan.' });
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     if (decoded.type !== 'refresh') throw new Error('Invalid token type');
     const user = {
       id: decoded.sub,
@@ -2870,10 +3046,49 @@ app.get('/api/audio/resolve', async (req, res) => {
   }
 });
 
-// STREAMING FULL-DURATION: Redirect 302 untuk URL eksternal langsung, SoundCloud fMP4 (scId), atau Bounded HTTP 206 Range (videoId)
+// Allowlist domain CDN audio resmi (Anti-Open-Redirect pada /api/audio/stream & /api/audio/proxy)
+const ALLOWED_AUDIO_STREAM_DOMAINS = [
+  'googlevideo.com',
+  'youtube.com',
+  'ytimg.com',
+  'dzcdn.net',
+  'mzstatic.com',
+  'apple.com',
+  'audius.co',
+  'sndcdn.com',
+  'soundcloud.com',
+  'saavncdn.com',
+  'jiosaavn.com',
+  'r4fo.com',
+  'darkness.services',
+  'drgns.space',
+  'nadeko.net',
+  'nerdvpn.de',
+  'yewtu.be',
+  'jing.rocks',
+  'tux.pizza',
+  'spotyflow.vercel.app',
+];
+
+function isAllowedAudioStreamDomain(rawUrl) {
+  if (!isSafePublicUrl(rawUrl, true)) return false;
+  try {
+    const u = new URL(String(rawUrl));
+    if (u.protocol !== 'https:') return false;
+    const host = u.hostname.toLowerCase();
+    return ALLOWED_AUDIO_STREAM_DOMAINS.some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
+// STREAMING FULL-DURATION: Redirect 302 tervalidasi (Anti-Open-Redirect), SoundCloud fMP4 (scId), atau Bounded HTTP 206 Range (videoId)
 app.get('/api/audio/stream', async (req, res) => {
   const directUrl = String(req.query.url || '').trim();
-  if (directUrl && isSafePublicUrl(directUrl)) {
+  if (directUrl) {
+    if (!isAllowedAudioStreamDomain(directUrl)) {
+      return res.status(403).json({ error: 'Domain URL audio tidak termasuk dalam daftar putih resmi.' });
+    }
     return res.redirect(302, directUrl);
   }
 
@@ -2893,7 +3108,7 @@ app.get('/api/audio/stream', async (req, res) => {
       return await streamIosInnertubeBoundedRange(req, res, videoId, qualityMode);
     } catch {
       const stream = await raceDirectAudioByVideoId(videoId, 2600, qualityMode);
-      if (stream?.url && isSafePublicUrl(stream.url)) {
+      if (stream?.url && isSafePublicUrl(stream.url, true)) {
         return res.redirect(302, stream.url);
       }
     }
@@ -2904,8 +3119,8 @@ app.get('/api/audio/stream', async (req, res) => {
 
 app.get('/api/audio/proxy', (req, res) => {
   const targetUrl = String(req.query.url || '').trim();
-  if (!isSafePublicUrl(targetUrl)) {
-    return res.status(400).json({ error: 'URL audio tidak valid.' });
+  if (!isAllowedAudioStreamDomain(targetUrl)) {
+    return res.status(403).json({ error: 'Domain audio tidak diizinkan (Anti-Open-Redirect).' });
   }
   return res.redirect(302, targetUrl);
 });
@@ -3442,7 +3657,7 @@ app.get('/api/search/suggest', async (req, res) => {
   return res.json({ tracks, artists, albums });
 });
 
-// Proxy Gambar Anti-SSRF Ketat (Hanya HTTPS + Strict Domain Whitelist Sampul Musik, CORS *, cache 24 jam)
+// Proxy Gambar Anti-SSRF Ketat (Hanya HTTPS + Strict Domain Whitelist Sampul Musik + Anti-SVG-XSS + Cap 5 MB)
 const ALLOWED_IMAGE_PROXY_DOMAINS = [
   'i.ytimg.com',
   'ytimg.com',
@@ -3458,7 +3673,21 @@ const ALLOWED_IMAGE_PROXY_DOMAINS = [
   'audius.co',
   'theaudiodb.com',
   'wikimedia.org',
+  'sndcdn.com',
+  'saavncdn.com',
+  'jiosaavn.com',
+  'spotyflow.vercel.app',
 ];
+
+const SAFE_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/avif',
+]);
+const MAX_PROXY_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function isAllowedProxyImageDomain(rawUrl) {
   if (!isSafePublicUrl(rawUrl, true)) return false;
@@ -3483,22 +3712,47 @@ app.get('/api/proxy-image', async (req, res) => {
     });
   }
   try {
-    const upstream = await fetch(url, {
-      headers: { 'User-Agent': UA, Accept: 'image/*,*/*;q=0.8' },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(4500),
-    });
-    if (upstream.url && !isAllowedProxyImageDomain(upstream.url)) {
-      return res.status(403).json({ error: 'Redirect gambar mengarah ke domain tidak diizinkan.' });
+    let currentUrl = url;
+    let upstream = null;
+    for (let hop = 0; hop <= 2; hop += 1) {
+      upstream = await fetch(currentUrl, {
+        headers: { 'User-Agent': UA, Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif;q=0.8' },
+        redirect: 'manual',
+        signal: AbortSignal.timeout(4500),
+      });
+      if (upstream.status >= 300 && upstream.status < 400) {
+        const loc = upstream.headers.get('location');
+        if (upstream.body) upstream.body.cancel().catch(() => {});
+        if (!loc || hop === 2) {
+          return res.status(403).json({ error: 'Redirect gambar ditolak.' });
+        }
+        const resolved = new URL(loc, currentUrl).toString();
+        if (!isAllowedProxyImageDomain(resolved)) {
+          return res.status(403).json({ error: 'Redirect gambar mengarah ke domain tidak diizinkan.' });
+        }
+        currentUrl = resolved;
+        continue;
+      }
+      break;
     }
-    if (!upstream.ok) return res.status(upstream.status).end();
-    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
-    if (!contentType.toLowerCase().startsWith('image/')) {
-      return res.status(415).json({ error: 'Respons bukan file gambar.' });
+    if (!upstream || !upstream.ok) return res.status(upstream?.status || 502).end();
+    const rawCt = String(upstream.headers.get('content-type') || 'image/jpeg').split(';')[0].trim().toLowerCase();
+    if (!SAFE_IMAGE_MIME_TYPES.has(rawCt)) {
+      if (upstream.body) upstream.body.cancel().catch(() => {});
+      return res.status(415).json({ error: 'Format gambar tidak didukung atau tidak aman.' });
+    }
+    const declaredLen = Number(upstream.headers.get('content-length') || 0);
+    if (declaredLen > MAX_PROXY_IMAGE_BYTES) {
+      if (upstream.body) upstream.body.cancel().catch(() => {});
+      return res.status(413).json({ error: 'Ukuran file gambar melebihi batas maksimal 5 MB.' });
     }
     const buf = Buffer.from(await upstream.arrayBuffer());
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Type', contentType);
+    if (buf.length > MAX_PROXY_IMAGE_BYTES) {
+      return res.status(413).json({ error: 'Ukuran file gambar melebihi batas maksimal 5 MB.' });
+    }
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Type', rawCt);
     res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
     return res.status(200).send(buf);
   } catch {
@@ -5672,27 +5926,7 @@ app.post('/api/ai/music-personality', async (req, res) => {
   });
 });
 
-app.post('/api/ai/mood-playlist', async (req, res) => {
-  const mood = String(req.body?.mood || req.body?.prompt || 'chill').trim();
-  const lower = mood.toLowerCase();
-  let query = mood;
-  if (/fokus|kerja|belajar|coding/i.test(lower)) query = 'lofi acoustic focus study chill';
-  else if (/santai malam|late night|tidur/i.test(lower)) query = 'late night chill acoustic NIKI Joji';
-  else if (/semangat|gym|olahraga|workout/i.test(lower)) query = 'workout upbeat energy pop rock phonk';
-  else if (/galau|hujan|sedih/i.test(lower)) query = 'galau indonesia Tulus Mahalini Hindia';
-  else if (/nongkrong|cafe|kopi/i.test(lower)) query = 'indie pop chill cafe vibes';
-  else if (/road trip|perjalanan|mobil/i.test(lower)) query = 'road trip sing along hits Coldplay Sheila On 7';
-
-  const result = await runMultiSourceSearch(query, 'all', 18, 0);
-  return res.json({
-    ok: true,
-    mood,
-    playlistName: `Mix ${mood.slice(0, 36)}`,
-    title: `Mix ${mood.slice(0, 36)}`,
-    description: `Racikan AI DJ SpotyFlow untuk suasana ${mood}.`,
-    tracks: result.tracks.slice(0, 16),
-  });
-});
+// (Duplikat /api/ai/mood-playlist lama dihapus agar route Gemini v10 dengan aiRateLimiterMiddleware aktif penuh)
 
 app.post('/api/ai/song-meaning', async (req, res) => {
   const title = String(req.body?.title || '').trim();
@@ -6073,6 +6307,8 @@ async function ensureJamRoomsTable(pool) {
     CREATE TABLE IF NOT EXISTS jam_rooms (
       code TEXT PRIMARY KEY,
       host_name TEXT NOT NULL,
+      host_id TEXT DEFAULT '',
+      host_token_hash TEXT DEFAULT '',
       track JSONB,
       is_playing BOOLEAN DEFAULT FALSE,
       current_time_sec DOUBLE PRECISION DEFAULT 0,
@@ -6081,6 +6317,8 @@ async function ensureJamRoomsTable(pool) {
       updated_at BIGINT NOT NULL
     )
   `);
+  await pool.query(`ALTER TABLE jam_rooms ADD COLUMN IF NOT EXISTS host_id TEXT DEFAULT '';`).catch(() => {});
+  await pool.query(`ALTER TABLE jam_rooms ADD COLUMN IF NOT EXISTS host_token_hash TEXT DEFAULT '';`).catch(() => {});
   jamDbTableReady = true;
 }
 
@@ -6092,17 +6330,33 @@ function generateJamRoomCode() {
   return out;
 }
 
+function hashHostToken(token) {
+  return crypto.createHash('sha256').update(String(token || '')).digest('hex');
+}
+
+function sanitizePublicJamRoom(room) {
+  if (!room) return null;
+  const { hostTokenHash, hostId, ...pub } = room;
+  return pub;
+}
+
 async function saveJamRoomState(room) {
+  if (jamRooms.size > 500) {
+    const oldest = jamRooms.keys().next().value;
+    if (oldest) jamRooms.delete(oldest);
+  }
   jamRooms.set(room.code, room);
   const pool = getCloudDbPool();
   if (!pool) return 'memory';
   try {
     await ensureJamRoomsTable(pool);
     await pool.query(
-      `INSERT INTO jam_rooms (code, host_name, track, is_playing, current_time_sec, listeners_count, last_reaction, updated_at)
-       VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7::jsonb, $8)
+      `INSERT INTO jam_rooms (code, host_name, host_id, host_token_hash, track, is_playing, current_time_sec, listeners_count, last_reaction, updated_at)
+       VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10)
        ON CONFLICT (code) DO UPDATE SET
          host_name = EXCLUDED.host_name,
+         host_id = COALESCE(NULLIF(jam_rooms.host_id, ''), EXCLUDED.host_id),
+         host_token_hash = COALESCE(NULLIF(jam_rooms.host_token_hash, ''), EXCLUDED.host_token_hash),
          track = EXCLUDED.track,
          is_playing = EXCLUDED.is_playing,
          current_time_sec = EXCLUDED.current_time_sec,
@@ -6112,6 +6366,8 @@ async function saveJamRoomState(room) {
       [
         room.code,
         room.hostName,
+        String(room.hostId || ''),
+        String(room.hostTokenHash || ''),
         JSON.stringify(room.track || null),
         Boolean(room.isPlaying),
         Number(room.currentTime || 0),
@@ -6134,7 +6390,7 @@ async function loadJamRoomState(code) {
     try {
       await ensureJamRoomsTable(pool);
       const q = await pool.query(
-        'SELECT code, host_name, track, is_playing, current_time_sec, listeners_count, last_reaction, updated_at FROM jam_rooms WHERE code = $1',
+        'SELECT code, host_name, host_id, host_token_hash, track, is_playing, current_time_sec, listeners_count, last_reaction, updated_at FROM jam_rooms WHERE code = $1',
         [cleanCode]
       );
       if (q.rows && q.rows[0]) {
@@ -6142,6 +6398,8 @@ async function loadJamRoomState(code) {
         const room = {
           code: r.code,
           hostName: r.host_name,
+          hostId: String(r.host_id || ''),
+          hostTokenHash: String(r.host_token_hash || ''),
           track: r.track || null,
           isPlaying: Boolean(r.is_playing),
           currentTime: Number(r.current_time_sec || 0),
@@ -6165,9 +6423,12 @@ app.post('/api/jam/create', async (req, res) => {
   const code = generateJamRoomCode();
   const hostName = String(req.user?.displayName || req.body?.hostName || 'Host SpotyFlow').trim().slice(0, 40) || 'Host SpotyFlow';
   const curSec = Math.max(0, Number(req.body?.currentTime ?? req.body?.positionSec ?? 0) || 0);
+  const hostToken = crypto.randomBytes(16).toString('hex');
   const room = {
     code,
     hostName,
+    hostId: req.user?.id ? String(req.user.id) : '',
+    hostTokenHash: hashHostToken(hostToken),
     track: req.body?.track || null,
     isPlaying: Boolean(req.body?.isPlaying),
     currentTime: curSec,
@@ -6180,7 +6441,8 @@ app.post('/api/jam/create', async (req, res) => {
   res.status(201).json({
     ok: true,
     code,
-    room,
+    hostToken,
+    room: sanitizePublicJamRoom(room),
     storage,
     note: storage === 'postgres'
       ? 'Tersinkron lintas server via PostgreSQL.'
@@ -6192,18 +6454,12 @@ app.post('/api/jam/update', async (req, res) => {
   const code = String(req.body?.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 12);
   if (!code) return res.status(400).json({ ok: false, error: 'Kode room Jam wajib diisi.' });
   const loaded = await loadJamRoomState(code);
-  const prev = loaded.room || {
-    code,
-    hostName: String(req.body?.hostName || 'Host SpotyFlow'),
-    track: null,
-    isPlaying: false,
-    currentTime: 0,
-    listenersCount: 1,
-    lastReaction: null,
-    updatedAt: Date.now(),
-  };
-
   const action = String(req.body?.action || 'sync').toLowerCase();
+
+  if (!loaded.room) {
+    return res.status(404).json({ ok: false, error: 'Room Jam tidak ditemukan atau sudah berakhir.' });
+  }
+  const prev = loaded.room;
   const updated = { ...prev };
 
   if (action === 'join') {
@@ -6214,10 +6470,21 @@ app.post('/api/jam/update', async (req, res) => {
     updated.lastReaction = {
       id: crypto.randomBytes(4).toString('hex'),
       emoji: String(req.body.emoji).slice(0, 8),
-      sender: String(req.body?.sender || req.user?.displayName || 'Tamu').slice(0, 28),
+      sender: String(req.user?.displayName || req.body?.sender || 'Tamu').slice(0, 28),
       ts: Date.now(),
     };
   } else {
+    // Verifikasi kepemilikan Host untuk mencegah pembajakan pemutaran room (Anti-IDOR)
+    const callerHostToken = String(req.body?.hostToken || req.headers['x-jam-host-token'] || '').trim();
+    const tokenMatches = Boolean(
+      prev.hostTokenHash &&
+      callerHostToken &&
+      crypto.timingSafeEqual(Buffer.from(prev.hostTokenHash, 'hex'), Buffer.from(hashHostToken(callerHostToken), 'hex'))
+    );
+    const ownerMatches = Boolean(prev.hostId && req.user?.id && String(req.user.id) === String(prev.hostId));
+    if ((prev.hostId || prev.hostTokenHash) && !ownerMatches && !tokenMatches) {
+      return res.status(403).json({ ok: false, error: 'Hanya Host room yang dapat mengubah lagu atau posisi pemutaran.' });
+    }
     if (req.body?.track !== undefined) updated.track = req.body.track;
     if (typeof req.body?.isPlaying === 'boolean') updated.isPlaying = req.body.isPlaying;
     if (req.body?.currentTime !== undefined || req.body?.positionSec !== undefined) {
@@ -6225,12 +6492,12 @@ app.post('/api/jam/update', async (req, res) => {
       updated.currentTime = sec;
       updated.positionSec = sec;
     }
-    if (req.body?.hostName) updated.hostName = String(req.body.hostName).slice(0, 40);
+    if (req.body?.hostName) updated.hostName = String(req.user?.displayName || req.body.hostName).slice(0, 40);
     updated.updatedAt = Date.now();
   }
 
   const storage = await saveJamRoomState(updated);
-  res.json({ ok: true, room: updated, storage });
+  res.json({ ok: true, room: sanitizePublicJamRoom(updated), storage });
 });
 
 app.get('/api/jam/state', async (req, res) => {
@@ -6255,42 +6522,61 @@ app.get('/api/jam/state', async (req, res) => {
     ok: true,
     storage,
     room: {
-      ...room,
+      ...sanitizePublicJamRoom(room),
       effectiveTime: Number(effectiveTime.toFixed(2)),
     },
   });
 });
 
 app.post('/api/v1/jam/create', (req, res) => {
+  if (jamRooms.size > 500) {
+    const oldest = jamRooms.keys().next().value;
+    if (oldest) jamRooms.delete(oldest);
+  }
   const code = `SF-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+  const hostToken = crypto.randomBytes(16).toString('hex');
   const room = {
     code,
-    hostName: req.user?.displayName || String(req.body?.hostName || 'Host SpotyFlow'),
+    hostName: req.user?.displayName || String(req.body?.hostName || 'Host SpotyFlow').slice(0, 40),
+    hostId: req.user?.id ? String(req.user.id) : '',
+    hostTokenHash: hashHostToken(hostToken),
     track: req.body?.track || null,
     isPlaying: Boolean(req.body?.isPlaying),
     positionSec: Number(req.body?.positionSec || 0),
     updatedAt: Date.now(),
   };
   jamRooms.set(code, room);
-  res.status(201).json({ ok: true, code, room });
+  res.status(201).json({ ok: true, code, hostToken, room: sanitizePublicJamRoom(room) });
 });
 
 app.post('/api/v1/jam/join', (req, res) => {
-  const code = String(req.body?.code || '').trim().toUpperCase();
-  const room = jamRooms.get(code) || { code, hostName: 'SpotyFlow Jam', track: null, isPlaying: false, positionSec: 0 };
+  const code = String(req.body?.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 12);
+  const found = jamRooms.get(code);
+  const room = found ? sanitizePublicJamRoom(found) : { code, hostName: 'SpotyFlow Jam', track: null, isPlaying: false, positionSec: 0 };
   res.json({ ok: true, code, room });
 });
 
 app.get('/api/v1/jam/state', (req, res) => {
-  const code = String(req.query.code || '').trim().toUpperCase();
-  const room = jamRooms.get(code) || null;
+  const code = String(req.query.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 12);
+  const room = sanitizePublicJamRoom(jamRooms.get(code) || null);
   res.json({ ok: Boolean(room), room });
 });
 
 app.post('/api/v1/jam/sync', (req, res) => {
-  const code = String(req.body?.code || '').trim().toUpperCase();
+  const code = String(req.body?.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 12);
   if (!code) return res.status(400).json({ error: 'Kode Jam tidak valid.' });
-  const prev = jamRooms.get(code) || { code };
+  const prev = jamRooms.get(code);
+  if (!prev) return res.status(404).json({ error: 'Room Jam tidak ditemukan.' });
+  const callerHostToken = String(req.body?.hostToken || req.headers['x-jam-host-token'] || '').trim();
+  const tokenMatches = Boolean(
+    prev.hostTokenHash &&
+    callerHostToken &&
+    crypto.timingSafeEqual(Buffer.from(prev.hostTokenHash, 'hex'), Buffer.from(hashHostToken(callerHostToken), 'hex'))
+  );
+  const ownerMatches = Boolean(prev.hostId && req.user?.id && String(req.user.id) === String(prev.hostId));
+  if ((prev.hostId || prev.hostTokenHash) && !ownerMatches && !tokenMatches) {
+    return res.status(403).json({ error: 'Hanya Host room yang dapat menyinkronkan pemutaran.' });
+  }
   const updated = {
     ...prev,
     track: req.body?.track ?? prev.track ?? null,
@@ -6299,7 +6585,7 @@ app.post('/api/v1/jam/sync', (req, res) => {
     updatedAt: Date.now(),
   };
   jamRooms.set(code, updated);
-  res.json({ ok: true, room: updated });
+  res.json({ ok: true, room: sanitizePublicJamRoom(updated) });
 });
 
 app.post('/api/v1/connect/transfer', (_req, res) => {
@@ -6518,11 +6804,14 @@ app.get('/api/social/blend/list', async (_req, res) => {
 });
 
 app.post('/api/social/blend/save', jamRateLimiterMiddleware, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ ok: false, error: 'Silakan masuk terlebih dahulu untuk menyimpan SpotyFlow Blend.' });
+  }
   const b = req.body && typeof req.body === 'object' ? req.body : {};
   const entry = {
-    id: `bld_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    id: `bld_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
     title: String(b.title || 'SpotyFlow Blend').trim().slice(0, 80),
-    ownerName: String(b.ownerName || req.user?.displayName || 'SpotyFlow').trim().slice(0, 48),
+    ownerName: String(req.user.displayName || 'SpotyFlow').trim().slice(0, 48),
     partnerName: String(b.partnerName || '').trim().slice(0, 48),
     score: Math.max(1, Math.min(100, Math.round(Number(b.score) || 85))),
     tracks: Array.isArray(b.tracks) ? b.tracks.slice(0, 30) : [],
@@ -6545,7 +6834,7 @@ app.post('/api/social/blend/save', jamRateLimiterMiddleware, async (req, res) =>
 
 app.get('/api/artwork', (req, res) => {
   const raw = String(req.query.u || '').trim();
-  if (isSafePublicUrl(raw)) return res.redirect(302, raw);
+  if (isAllowedProxyImageDomain(raw)) return res.redirect(302, raw);
   return res.redirect(302, '/icon-192.png');
 });
 
@@ -6578,12 +6867,15 @@ app.get('/api/tracks/:trackId/comments', async (req, res) => {
 });
 
 app.post('/api/tracks/:trackId/comments', jamRateLimiterMiddleware, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ ok: false, error: 'Silakan masuk terlebih dahulu untuk mengirim komentar.' });
+  }
   const tid = String(req.params.trackId || '').trim().slice(0, 120);
-  const text = String(req.body?.text || '').trim().slice(0, 280);
+  const text = String(req.body?.text || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 280);
   if (!tid || !text) return res.status(400).json({ error: 'Komentar kosong.' });
   const comment = {
-    id: `cmt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-    author: String(req.body?.author || req.user?.displayName || 'Pendengar SpotyFlow').trim().slice(0, 48),
+    id: `cmt_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
+    author: String(req.user.displayName || 'Pendengar SpotyFlow').trim().slice(0, 48),
     text,
     timestampSec: Math.max(0, Number(req.body?.timestampSec || 0)),
     createdAt: new Date().toISOString(),
@@ -6861,11 +7153,13 @@ async function ensureSharedPlaylistsTable(pool) {
       description TEXT DEFAULT '',
       cover TEXT DEFAULT '',
       owner_name TEXT DEFAULT 'Pendengar SpotyFlow',
+      owner_id TEXT DEFAULT '',
       collaborative BOOLEAN DEFAULT TRUE,
       tracks JSONB NOT NULL DEFAULT '[]'::jsonb,
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await pool.query(`ALTER TABLE shared_playlists ADD COLUMN IF NOT EXISTS owner_id TEXT DEFAULT '';`).catch(() => {});
   sharedPlaylistsTableReady = true;
 }
 
@@ -6911,7 +7205,7 @@ async function getSharedPlaylistByCode(rawCode) {
   try {
     await ensureSharedPlaylistsTable(pool);
     const r = await pool.query(
-      'SELECT code, name, description, cover, owner_name, collaborative, tracks, updated_at FROM shared_playlists WHERE code = $1 LIMIT 1',
+      'SELECT code, name, description, cover, owner_name, owner_id, collaborative, tracks, updated_at FROM shared_playlists WHERE code = $1 LIMIT 1',
       [code]
     );
     const row = r.rows?.[0];
@@ -6922,6 +7216,7 @@ async function getSharedPlaylistByCode(rawCode) {
       description: row.description || '',
       cover: row.cover || '',
       ownerName: row.owner_name || 'SpotyFlow',
+      ownerId: String(row.owner_id || ''),
       collaborative: Boolean(row.collaborative),
       tracks: Array.isArray(row.tracks) ? row.tracks : [],
       updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : new Date().toISOString(),
@@ -6931,6 +7226,12 @@ async function getSharedPlaylistByCode(rawCode) {
   } catch {
     return null;
   }
+}
+
+function sanitizePublicSharedPlaylist(pl) {
+  if (!pl) return null;
+  const { ownerId, ...pub } = pl;
+  return pub;
 }
 
 async function saveSharedPlaylistRecord(pl) {
@@ -6944,17 +7245,18 @@ async function saveSharedPlaylistRecord(pl) {
   try {
     await ensureSharedPlaylistsTable(pool);
     await pool.query(
-      `INSERT INTO shared_playlists (code, name, description, cover, owner_name, collaborative, tracks, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, NOW())
+      `INSERT INTO shared_playlists (code, name, description, cover, owner_name, owner_id, collaborative, tracks, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, NOW())
        ON CONFLICT (code) DO UPDATE SET
          name = EXCLUDED.name,
          description = EXCLUDED.description,
          cover = EXCLUDED.cover,
          owner_name = EXCLUDED.owner_name,
+         owner_id = COALESCE(NULLIF(shared_playlists.owner_id, ''), EXCLUDED.owner_id),
          collaborative = EXCLUDED.collaborative,
          tracks = EXCLUDED.tracks,
          updated_at = NOW()`,
-      [pl.code, pl.name, pl.description, pl.cover, pl.ownerName, pl.collaborative, JSON.stringify(pl.tracks)]
+      [pl.code, pl.name, pl.description, pl.cover, pl.ownerName, String(pl.ownerId || ''), pl.collaborative, JSON.stringify(pl.tracks)]
     );
     return 'postgres';
   } catch {
@@ -6966,15 +7268,32 @@ app.post('/api/playlists/share', jamRateLimiterMiddleware, async (req, res) => {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const name = String(body.name || 'Playlist SpotyFlow').trim().slice(0, 80);
   const description = String(body.description || '').trim().slice(0, 220);
-  const ownerName = String(body.ownerName || req.user?.displayName || 'Pendengar SpotyFlow').trim().slice(0, 48);
+  const ownerName = String(req.user?.displayName || body.ownerName || 'Pendengar SpotyFlow').trim().slice(0, 48);
   const collaborative = body.collaborative !== false;
   const rawTracks = Array.isArray(body.tracks) ? body.tracks.slice(0, 100) : [];
   const tracks = rawTracks.map(sanitizeSharedTrack).filter(Boolean);
   const coverRaw = String(body.cover || tracks[0]?.album?.cover_big || '/icon-512.png').trim();
-  const cover = isSafePublicUrl(coverRaw) || coverRaw.startsWith('/') ? coverRaw.slice(0, 500) : '/icon-512.png';
+  const cover = isAllowedProxyImageDomain(coverRaw) || coverRaw.startsWith('/') ? coverRaw.slice(0, 500) : '/icon-512.png';
 
   const existingCode = String(body.code || '').trim().toUpperCase();
-  const code = /^PL-[A-Z0-9]{4,12}$/.test(existingCode) ? existingCode : generateSharedPlaylistCode();
+  let code = generateSharedPlaylistCode();
+  let ownerId = req.user?.id ? String(req.user.id) : '';
+  if (/^PL-[A-Z0-9]{4,12}$/.test(existingCode)) {
+    const existingPl = await getSharedPlaylistByCode(existingCode);
+    if (existingPl) {
+      // Anti-IDOR: hanya pemilik sah playlist yang boleh menimpa playlist bersama yang sudah ada
+      if (!req.user?.id || !existingPl.ownerId || String(req.user.id) !== String(existingPl.ownerId)) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Anda tidak memiliki izin mengubah playlist bersama milik pengguna lain.',
+        });
+      }
+      code = existingCode;
+      ownerId = existingPl.ownerId;
+    } else {
+      code = existingCode;
+    }
+  }
 
   const pl = {
     code,
@@ -6982,6 +7301,7 @@ app.post('/api/playlists/share', jamRateLimiterMiddleware, async (req, res) => {
     description,
     cover,
     ownerName,
+    ownerId,
     collaborative,
     tracks,
     updatedAt: new Date().toISOString(),
@@ -6993,7 +7313,7 @@ app.post('/api/playlists/share', jamRateLimiterMiddleware, async (req, res) => {
     code,
     storage,
     shareUrl: `${baseUrl}/share/playlist/${encodeURIComponent(code)}`,
-    playlist: pl,
+    playlist: sanitizePublicSharedPlaylist(pl),
   });
 });
 
@@ -7003,7 +7323,7 @@ app.get('/api/playlists/shared/:code', async (req, res) => {
   if (!pl) {
     return res.status(404).json({ ok: false, error: 'Playlist bersama tidak ditemukan atau sudah kedaluwarsa.' });
   }
-  return res.json({ ok: true, playlist: pl });
+  return res.json({ ok: true, playlist: sanitizePublicSharedPlaylist(pl) });
 });
 
 app.post('/api/playlists/shared/:code/tracks', jamRateLimiterMiddleware, async (req, res) => {
@@ -7028,7 +7348,7 @@ app.post('/api/playlists/shared/:code/tracks', jamRateLimiterMiddleware, async (
         String(t.artist?.name || '').toLowerCase() === incoming.artist.name.toLowerCase())
   );
   if (exists) {
-    return res.json({ ok: true, duplicate: true, playlist: pl });
+    return res.json({ ok: true, duplicate: true, playlist: sanitizePublicSharedPlaylist(pl) });
   }
   if (pl.tracks.length >= 150) {
     return res.status(400).json({ ok: false, error: 'Batas maksimal 150 lagu per playlist kolaboratif tercapai.' });
@@ -7039,7 +7359,7 @@ app.post('/api/playlists/shared/:code/tracks', jamRateLimiterMiddleware, async (
   }
   pl.updatedAt = new Date().toISOString();
   await saveSharedPlaylistRecord(pl);
-  return res.json({ ok: true, added: incoming, playlist: pl });
+  return res.json({ ok: true, added: incoming, playlist: sanitizePublicSharedPlaylist(pl) });
 });
 
 function resolveExistingFile(candidates) {
@@ -7076,6 +7396,7 @@ function loadMainHtmlString() {
 
 function sendCompressedHtml(req, res, htmlString = null) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Content-Security-Policy', SPOTYFLOW_HTML_CSP);
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Vary', 'Accept-Encoding');
@@ -7102,20 +7423,20 @@ function injectDynamicOgHtml(rawHtml, { title, description, image, targetHash })
   const safeTitle = escapeHtmlMeta(title || 'SpotyFlow | Modern Hi-Fi Music Studio');
   const safeDesc = escapeHtmlMeta(description || 'Dengarkan musik Hi-Fi durasi penuh di SpotyFlow.');
   const safeImg = escapeHtmlMeta(image || '/icon-512.png');
-  const safeHashJson = JSON.stringify(String(targetHash || '#/home'));
+  const safeHashJson = JSON.stringify(String(targetHash || '#/home')).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 
   let out = rawHtml
-    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`)
-    .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${safeDesc}" />`)
-    .replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${safeTitle}" />`)
-    .replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${safeDesc}" />`)
-    .replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${safeImg}" />`)
-    .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${safeTitle}" />`)
-    .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${safeDesc}" />`)
-    .replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${safeImg}" />`);
+    .replace(/<title>[\s\S]*?<\/title>/i, () => `<title>${safeTitle}</title>`)
+    .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, () => `<meta name="description" content="${safeDesc}" />`)
+    .replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, () => `<meta property="og:title" content="${safeTitle}" />`)
+    .replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, () => `<meta property="og:description" content="${safeDesc}" />`)
+    .replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, () => `<meta property="og:image" content="${safeImg}" />`)
+    .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, () => `<meta name="twitter:title" content="${safeTitle}" />`)
+    .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, () => `<meta name="twitter:description" content="${safeDesc}" />`)
+    .replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, () => `<meta name="twitter:image" content="${safeImg}" />`);
 
   const redirectScript = `<script>if(!window.location.hash){window.history.replaceState(null,'','/'+${safeHashJson});}</script>`;
-  out = out.replace('</head>', `${redirectScript}\n</head>`);
+  out = out.replace('</head>', () => `${redirectScript}\n</head>`);
   return out;
 }
 
@@ -7246,7 +7567,9 @@ app.use(
 app.use((err, _req, res, _next) => {
   console.error('[SpotyFlow Serverless Error]', err?.message || err);
   if (!res.headersSent) {
-    res.status(err?.status || 500).json({ error: err?.message || 'Terjadi kesalahan internal server.' });
+    const status = Number(err?.status || err?.statusCode || 500);
+    const safeMsg = status >= 500 ? 'Terjadi kesalahan internal server.' : (err?.message || 'Permintaan tidak valid.');
+    res.status(status).json({ error: safeMsg });
   }
 });
 

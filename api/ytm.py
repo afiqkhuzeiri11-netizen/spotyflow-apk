@@ -126,8 +126,8 @@ def handle_search(query: str, limit: int):
             {"ok": True, "query": query, "tracks": tracks},
             "public, s-maxage=300, stale-while-revalidate=60",
         )
-    except Exception as exc:
-        return 200, {"ok": False, "tracks": [], "error": str(exc)[:200]}, "no-store"
+    except Exception:
+        return 200, {"ok": False, "tracks": [], "error": "Gagal memproses pencarian YouTube Music."}, "no-store"
 
 
 def handle_related(video_id: str, limit: int):
@@ -152,8 +152,8 @@ def handle_related(video_id: str, limit: int):
             {"ok": True, "tracks": tracks, "lyricsBrowseId": lyrics_browse_id},
             "public, s-maxage=600, stale-while-revalidate=60",
         )
-    except Exception as exc:
-        return 200, {"ok": False, "tracks": [], "lyricsBrowseId": None, "error": str(exc)[:200]}, "no-store"
+    except Exception:
+        return 200, {"ok": False, "tracks": [], "lyricsBrowseId": None, "error": "Gagal memuat lagu terkait."}, "no-store"
 
 
 def handle_lyrics(video_id: str):
@@ -187,8 +187,8 @@ def handle_lyrics(video_id: str):
             },
             "public, s-maxage=3600, stale-while-revalidate=300",
         )
-    except Exception as exc:
-        return 200, {"ok": False, "mode": "none", "plainLyrics": "", "error": str(exc)[:200]}, "no-store"
+    except Exception:
+        return 200, {"ok": False, "mode": "none", "plainLyrics": "", "error": "Lirik tidak tersedia saat ini."}, "no-store"
 
 
 def handle_playlist(playlist_id: str, limit: int):
@@ -215,8 +215,8 @@ def handle_playlist(playlist_id: str, limit: int):
             {"ok": True, "name": name, "cover": cover, "tracks": tracks},
             "public, s-maxage=300, stale-while-revalidate=60",
         )
-    except Exception as exc:
-        return 200, {"ok": False, "name": "", "cover": "", "tracks": [], "error": str(exc)[:220]}, "no-store"
+    except Exception:
+        return 200, {"ok": False, "name": "", "cover": "", "tracks": [], "error": "Gagal memuat playlist YouTube Music."}, "no-store"
 
 
 def handle_stream(video_id: str, quality: str = "high"):
@@ -285,19 +285,40 @@ def handle_stream(video_id: str, quality: str = "high"):
             },
             "no-store",
         )
-    except Exception as exc:
-        return 200, {"ok": False, "error": str(exc)[:240]}, "no-store"
+    except Exception:
+        return 200, {"ok": False, "error": "Stream audio tidak tersedia saat ini."}, "no-store"
+
+
+ALLOWED_ORIGIN_RE = re.compile(
+    r"^(https://spotyflow(?:-[a-z0-9-]+)?\.vercel\.app|https?://(localhost|127\.0\.0\.1)(:\d{1,5})?|capacitor://localhost)$",
+    re.IGNORECASE,
+)
 
 
 class handler(BaseHTTPRequestHandler):
+    def _resolve_cors_origin(self):
+        origin = str(self.headers.get("Origin") or "").strip()
+        if origin and ALLOWED_ORIGIN_RE.match(origin):
+            return origin
+        return ""
+
+    def _send_security_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+        allowed_origin = self._resolve_cors_origin()
+        if allowed_origin:
+            self.send_header("Access-Control-Allow-Origin", allowed_origin)
+            self.send_header("Vary", "Origin")
+            self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
     def _send_json(self, status_code: int, payload: dict, cache_control: str = "no-store"):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self._send_security_headers()
         self.send_header("Cache-Control", cache_control)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -305,9 +326,7 @@ class handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self._send_security_headers()
         self.end_headers()
 
     def do_GET(self):

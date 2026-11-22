@@ -973,6 +973,7 @@ import android.webkit.WebView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -1292,6 +1293,64 @@ public class MainActivity extends BridgeActivity {
         }
 
         @JavascriptInterface
+        public String getSystemStatus() {
+            try {
+                boolean notifEnabled = NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled();
+                boolean batteryIgnored = true;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                    batteryIgnored = pm != null && pm.isIgnoringBatteryOptimizations(getPackageName());
+                }
+                JSONObject obj = new JSONObject();
+                obj.put("notificationsEnabled", notifEnabled);
+                obj.put("batteryOptimizedIgnored", batteryIgnored);
+                obj.put("sdkInt", Build.VERSION.SDK_INT);
+                return obj.toString();
+            } catch (Throwable e) {
+                return "{\\"notificationsEnabled\\":false,\\"batteryOptimizedIgnored\\":false,\\"sdkInt\\":" + Build.VERSION.SDK_INT + "}";
+            }
+        }
+
+        @JavascriptInterface
+        public void openNotificationSettings() {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                        intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                    } else {
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.setData(Uri.parse("package:" + getPackageName()));
+                    }
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Exception ignored) {
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void openBatterySettings() {
+            runOnUiThread(() -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+                try {
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    try {
+                        Intent fallback = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                        fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(fallback);
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void clearHttpCache() {
             runOnUiThread(() -> {
                 try {
@@ -1322,14 +1381,14 @@ public class MainActivity extends BridgeActivity {
 function patchVariablesGradle() {
   if (!fs.existsSync(VARIABLES_GRADLE)) return;
   let content = fs.readFileSync(VARIABLES_GRADLE, 'utf8');
-  content = content.replace(/compileSdkVersion\s*=\s*\d+/, 'compileSdkVersion = 35');
-  content = content.replace(/targetSdkVersion\s*=\s*\d+/, 'targetSdkVersion = 35');
+  content = content.replace(/compileSdkVersion\s*=\s*\d+/, 'compileSdkVersion = 34');
+  content = content.replace(/targetSdkVersion\s*=\s*\d+/, 'targetSdkVersion = 34');
   content = content.replace(/minSdkVersion\s*=\s*\d+/, (m) => {
     const val = parseInt(m.replace(/\D+/g, ''), 10);
-    return val < 23 ? 'minSdkVersion = 23' : m;
+    return val < 24 ? 'minSdkVersion = 24' : m;
   });
   fs.writeFileSync(VARIABLES_GRADLE, content, 'utf8');
-  console.log('  + Patched android/variables.gradle (compileSdk=35, targetSdk=35, minSdk>=23)');
+  console.log('  + Patched android/variables.gradle (compileSdk=34, targetSdk=34, minSdk>=24)');
 }
 
 function patchBuildGradle() {
@@ -1348,17 +1407,29 @@ function patchBuildGradle() {
     content = content.replace(/applicationId\s+["'][^"']+["']/, `applicationId "${APP_ID}"`);
   }
 
-  // Ensure Java 21 compileOptions inside android { ... } (required by Capacitor 7 + SDK 35)
-  if (!content.includes('JavaVersion.VERSION_21')) {
+  // Official SpotyFlow v1.5.2 versionCode 152 & versionName "1.5.2"
+  if (/versionCode\s+\d+/.test(content)) {
+    content = content.replace(/versionCode\s+\d+/, 'versionCode 152');
+  } else {
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 152');
+  }
+  if (/versionName\s+["'][^"']+["']/.test(content)) {
+    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "1.5.2"');
+  } else {
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "1.5.2"');
+  }
+
+  // Ensure Java 17 compileOptions inside android { ... } (proven Capacitor 6 + Gradle 8 + SDK 34 stack)
+  if (!content.includes('JavaVersion.VERSION_17')) {
     if (/compileOptions\s*\{/.test(content)) {
       content = content.replace(
         /compileOptions\s*\{[\s\S]*?\}/,
-        `compileOptions {\n        sourceCompatibility JavaVersion.VERSION_21\n        targetCompatibility JavaVersion.VERSION_21\n    }`
+        `compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`
       );
     } else {
       content = content.replace(
         /android\s*\{/,
-        `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_21\n        targetCompatibility JavaVersion.VERSION_21\n    }`
+        `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`
       );
     }
   }
@@ -1373,14 +1444,14 @@ function patchBuildGradle() {
     content = content.replace(/android\s*\{/, `android {\n    buildTypes {\n        ${releaseBlock}\n    }`);
   }
 
-  // Remove unused heavy ExoPlayer or old Media3 1.4.x dependencies if present
-  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-(?:exoplayer|common|session):1\.4\.[^"']*["']\s*$/gm, '');
+  // Remove unused heavy ExoPlayer or incompatible Media3 1.5.x dependencies if present
+  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-(?:exoplayer|common|session):1\.5\.[^"']*["']\s*$/gm, '');
   content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-exoplayer:[^"']+["']\s*$/gm, '');
 
-  // Add lightweight AndroidX Media3 1.5.1 (common + session) + Guava for SDK 35
+  // Add lightweight AndroidX Media3 1.4.1 (common + session) + Guava for Capacitor 6 / SDK 34
   const requiredDeps = [
-    'implementation "androidx.media3:media3-common:1.5.1"',
-    'implementation "androidx.media3:media3-session:1.5.1"',
+    'implementation "androidx.media3:media3-common:1.4.1"',
+    'implementation "androidx.media3:media3-session:1.4.1"',
     'implementation "com.google.guava:guava:32.1.3-android"',
   ];
   const missingDeps = requiredDeps.filter((dep) => {
@@ -1395,7 +1466,7 @@ function patchBuildGradle() {
   }
 
   fs.writeFileSync(BUILD_GRADLE, content, 'utf8');
-  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, Media3 1.5.1, Guava, Java 21, Production release buildType)`);
+  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, v1.5.2/152, Media3 1.4.1, Guava, Java 17, Production release buildType)`);
 }
 
 function patchAndroidManifest() {
@@ -1601,19 +1672,21 @@ function verifyPatchedProject() {
 
   const pkgDecl = `package ${APP_ID};`;
   const checks = [
-    [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 35') && variablesGradle.includes('targetSdkVersion = 35')), 'variables.gradle missing compileSdk/targetSdk = 35'],
+    [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 34') && variablesGradle.includes('targetSdkVersion = 34')), 'variables.gradle missing compileSdk/targetSdk = 34'],
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('androidx.media3:media3-common:1.5.1'), 'build.gradle missing media3-common:1.5.1'],
-    [gradle.includes('androidx.media3:media3-session:1.5.1'), 'build.gradle missing media3-session:1.5.1'],
+    [gradle.includes('versionCode 152') && gradle.includes('versionName "1.5.2"'), 'build.gradle missing versionCode 152 / versionName "1.5.2"'],
+    [gradle.includes('androidx.media3:media3-common:1.4.1'), 'build.gradle missing media3-common:1.4.1'],
+    [gradle.includes('androidx.media3:media3-session:1.4.1'), 'build.gradle missing media3-session:1.4.1'],
     [!gradle.includes('media3-exoplayer'), 'build.gradle should NOT include heavy media3-exoplayer'],
     [gradle.includes('com.google.guava:guava:32.1.3-android'), 'build.gradle missing guava'],
-    [gradle.includes('JavaVersion.VERSION_21'), 'build.gradle missing Java 21'],
+    [gradle.includes('JavaVersion.VERSION_17'), 'build.gradle missing Java 17'],
     [gradle.includes('minifyEnabled false') && gradle.includes('shrinkResources false') && gradle.includes('signingConfig signingConfigs.debug'), 'build.gradle missing production release buildType config'],
     [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
     [capLayout.includes(`<${APP_ID}.SpotyFlowWebView`), `capacitor_bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
     [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
-    [svc.includes('serviceStarted') && act.includes('isActivityInForeground'), 'Service/MainActivity missing Android 15 foreground service promotion guard'],
+    [svc.includes('serviceStarted') && act.includes('isActivityInForeground'), 'Service/MainActivity missing foreground service promotion guard'],
+    [act.includes('getSystemStatus()') && act.includes('openNotificationSettings()') && act.includes('openBatterySettings()') && act.includes('clearHttpCache()'), 'MainActivity missing 4 native utility bridge methods'],
     [webv.includes('onWindowVisibilityChanged') && webv.includes('dispatchWindowVisibilityChanged') && webv.includes('onVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing full background visibility & pause overrides'],
     [manifest.includes('android:appCategory="audio"'), 'Manifest missing appCategory="audio"'],
     [manifest.includes('android:launchMode="singleTask"'), 'Manifest missing launchMode="singleTask" on MainActivity'],
@@ -1640,7 +1713,7 @@ function verifyPatchedProject() {
       process.exit(1);
     }
   }
-  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} Capacitor 7 + SDK 35 + Media3 1.5.1 + Origin Island checks)`);
+  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} SpotyFlow v1.5.2 Capacitor 6 + SDK 34 + Media3 1.4.1 + Release + Origin Island checks)`);
 }
 
 function main() {
@@ -1648,13 +1721,13 @@ function main() {
     if (!fs.existsSync(ANDROID_DIR)) {
       throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
     }
-    console.log(`[SpotyFlow Media3 Patcher] Injecting Capacitor 7 + SDK 35 + Media3 1.5.1 (appId=${APP_ID})...`);
+    console.log(`[SpotyFlow Media3 Patcher] Injecting SpotyFlow v1.5.2 (Capacitor 6 + SDK 34 + Media3 1.4.1 + Release, appId=${APP_ID})...`);
     patchVariablesGradle();
     patchBuildGradle();
     patchAndroidManifest();
     writeJavaAndResSources();
     verifyPatchedProject();
-    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle / Java 21 Release!');
+    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle 8 / Java 17 Release v1.5.2!');
   } catch (err) {
     console.error('[SpotyFlow Media3 Patcher] ERROR:', err?.message || err);
     process.exit(1);
