@@ -5055,100 +5055,103 @@
     }
 
     function updateSystemMediaSession(track = AppState.currentTrack) {
-      if (!track || !('mediaSession' in navigator)) return;
+      if (!track) return;
       const safeArtworkUrl = resolveSafeMediaArtworkUrl(track);
       const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
       const artistName = typeof track.artist === 'string' ? track.artist : (track.artist?.name || 'SpotyFlow');
       const isCurrentlyPlaying = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
         ? Boolean(AppState.isPlaying)
-        : !audio.paused;
+        : Boolean(audio && !audio.paused);
 
-      try {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: String(track.title || 'SpotyFlow'),
-          artist: String(artistName || 'SpotyFlow'),
-          album: String(albumTitle || 'SpotyFlow'),
-          artwork: [
-            { src: safeArtworkUrl, sizes: '512x512', type: 'image/png' },
-            { src: safeArtworkUrl, sizes: '192x192', type: 'image/png' },
-          ],
-        });
-      } catch {}
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: String(track.title || 'SpotyFlow'),
+            artist: String(artistName || 'SpotyFlow'),
+            album: String(albumTitle || 'SpotyFlow'),
+            artwork: [
+              { src: safeArtworkUrl, sizes: '512x512', type: 'image/png' },
+              { src: safeArtworkUrl, sizes: '192x192', type: 'image/png' },
+            ],
+          });
+        } catch {}
 
-      try {
-        navigator.mediaSession.playbackState = isCurrentlyPlaying ? 'playing' : 'paused';
-      } catch {}
+        try {
+          navigator.mediaSession.playbackState = isCurrentlyPlaying ? 'playing' : 'paused';
+        } catch {}
 
-      try {
-        navigator.mediaSession.setActionHandler('play', () => {
-          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-            SFYtFull.play();
-          } else if (audio.paused) {
-            audio.play().catch(() => playCurrentQueueItem());
-          }
-        });
-      } catch {}
-      try {
-        navigator.mediaSession.setActionHandler('pause', () => {
-          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-            SFYtFull.pause();
-          } else if (!audio.paused) {
-            audio.pause();
-          }
-        });
-      } catch {}
-      try {
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
-          playPrev();
-        });
-      } catch {}
-      try {
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
-          playNext();
-        });
-      } catch {}
-      try {
-        navigator.mediaSession.setActionHandler('seekbackward', (d) => {
-          const offset = d?.seekOffset || 10;
-          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-            SFYtFull.seekTo(Math.max(0, SFYtFull.getCurrentTime() - offset));
-          } else {
-            audio.currentTime = Math.max(0, (audio.currentTime || 0) - offset);
-          }
-          updateMediaSessionPosition();
-        });
-      } catch {}
-      try {
-        navigator.mediaSession.setActionHandler('seekforward', (d) => {
-          const offset = d?.seekOffset || 10;
-          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-            const maxDur = SFYtFull.getDuration() || 9999;
-            SFYtFull.seekTo(Math.min(maxDur, SFYtFull.getCurrentTime() + offset));
-          } else {
-            const maxDur = Number.isFinite(audio.duration) ? audio.duration : 9999;
-            audio.currentTime = Math.min(maxDur, (audio.currentTime || 0) + offset);
-          }
-          updateMediaSessionPosition();
-        });
-      } catch {}
-      try {
-        navigator.mediaSession.setActionHandler('seekto', (d) => {
-          if (typeof d?.seekTime === 'number' && Number.isFinite(d.seekTime)) {
+        try {
+          navigator.mediaSession.setActionHandler('play', () => {
             if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-              const maxDur = SFYtFull.getDuration() || d.seekTime;
-              SFYtFull.seekTo(Math.max(0, Math.min(maxDur, d.seekTime)));
+              SFYtFull.play();
+            } else if (audio.paused) {
+              audio.play().catch(() => playCurrentQueueItem());
+            }
+          });
+        } catch {}
+        try {
+          navigator.mediaSession.setActionHandler('pause', () => {
+            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+              SFYtFull.pause();
+            } else if (!audio.paused) {
+              audio.pause();
+            }
+          });
+        } catch {}
+        try {
+          navigator.mediaSession.setActionHandler('previoustrack', () => {
+            playPrev();
+          });
+        } catch {}
+        try {
+          navigator.mediaSession.setActionHandler('nexttrack', () => {
+            playNext();
+          });
+        } catch {}
+        try {
+          navigator.mediaSession.setActionHandler('seekbackward', (d) => {
+            const offset = d?.seekOffset || 10;
+            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+              SFYtFull.seekTo(Math.max(0, SFYtFull.getCurrentTime() - offset));
             } else {
-              const maxDur = Number.isFinite(audio.duration) ? audio.duration : d.seekTime;
-              audio.currentTime = Math.max(0, Math.min(maxDur, d.seekTime));
+              audio.currentTime = Math.max(0, (audio.currentTime || 0) - offset);
             }
             updateMediaSessionPosition();
-          }
-        });
-      } catch {}
+          });
+        } catch {}
+        try {
+          navigator.mediaSession.setActionHandler('seekforward', (d) => {
+            const offset = d?.seekOffset || 10;
+            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+              const maxDur = SFYtFull.getDuration() || 9999;
+              SFYtFull.seekTo(Math.min(maxDur, SFYtFull.getCurrentTime() + offset));
+            } else {
+              const maxDur = Number.isFinite(audio.duration) ? audio.duration : 9999;
+              audio.currentTime = Math.min(maxDur, (audio.currentTime || 0) + offset);
+            }
+            updateMediaSessionPosition();
+          });
+        } catch {}
+        try {
+          navigator.mediaSession.setActionHandler('seekto', (d) => {
+            if (typeof d?.seekTime === 'number' && Number.isFinite(d.seekTime)) {
+              if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+                const maxDur = SFYtFull.getDuration() || d.seekTime;
+                SFYtFull.seekTo(Math.max(0, Math.min(maxDur, d.seekTime)));
+              } else {
+                const maxDur = Number.isFinite(audio.duration) ? audio.duration : d.seekTime;
+                audio.currentTime = Math.max(0, Math.min(maxDur, d.seekTime));
+              }
+              updateMediaSessionPosition();
+            }
+          });
+        } catch {}
 
-      updateMediaSessionPosition();
+        updateMediaSessionPosition();
+      }
 
       // Sinkronkan ke Capacitor Native MediaSessionCompat + MediaStyle Foreground Service (Dynamic Island bawaan HP & Background Audio)
+      // WAJIB dijalankan meskipun navigator.mediaSession tidak tersedia di Android WebView!
       try {
         const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
         if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && nativeMedia && typeof nativeMedia.updatePlayback === 'function') {
@@ -5179,6 +5182,7 @@
     }
 
     let __nativeMediaListenerBound = false;
+    let __nativeMediaSyncTimer = null;
     function initNativeCapacitorMediaBridge() {
       if (__nativeMediaListenerBound) return;
       try {
@@ -5196,6 +5200,7 @@
                 audio.play().catch(() => playCurrentQueueItem());
               }
             } else if (action === 'pause' || action === 'noisy') {
+              window.__sfUserPauseTs = Date.now();
               if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
                 SFYtFull.pause();
               } else if (audio && !audio.paused) {
@@ -5217,6 +5222,22 @@
             }
           } catch {}
         });
+        nativeMedia.addListener('authReturn', ({ nonce } = {}) => {
+          try {
+            if (typeof pollNativeApkGoogleAuthOnce === 'function') {
+              pollNativeApkGoogleAuthOnce(nonce || '');
+            }
+          } catch {}
+        });
+        if (!__nativeMediaSyncTimer) {
+          __nativeMediaSyncTimer = setInterval(() => {
+            try {
+              if (AppState.currentTrack && (AppState.isPlaying || (audio && !audio.paused))) {
+                updateSystemMediaSession(AppState.currentTrack);
+              }
+            } catch {}
+          }, 5000);
+        }
       } catch {}
     }
 
@@ -5233,9 +5254,14 @@
       updateSystemMediaSession(AppState.currentTrack);
     }
 
+    window.addEventListener('blur', () => {
+      window.__sfLastBgAt = Date.now();
+    });
+
     document.addEventListener('visibilitychange', () => {
       document.documentElement.classList.toggle('sf-tab-hidden', document.hidden);
       if (document.hidden) {
+        window.__sfLastBgAt = Date.now();
         stopVisualizerLoop();
         if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
         saveListeningStats(true);
@@ -7358,6 +7384,17 @@
         } else if (st === 2) {
           // 2 = PAUSED
           if (!this.active) return;
+          // Proteksi background APK: jika YouTube embed menjeda sepihak saat layar dikunci / tekan Home (bukan klik user), langsung lanjutkan!
+          const userPausedRecently = Date.now() - Number(window.__sfUserPauseTs || 0) < 1800;
+          const bgRecently = document.hidden || (Date.now() - Number(window.__sfLastBgAt || 0) < 3500);
+          if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && AppState.isPlaying && !userPausedRecently && bgRecently) {
+            setTimeout(() => {
+              try {
+                if (this.active && AppState.isPlaying) this.play();
+              } catch {}
+            }, 180);
+            return;
+          }
           AppState.isPlaying = false;
           this.lastTickMs = 0;
           updatePlayPauseIcons();
@@ -8036,9 +8073,11 @@
       }
       if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
         if (SFYtFull.isPlaying()) {
+          window.__sfUserPauseTs = Date.now();
           SFYtFull.pause();
           AppState.isPlaying = false;
         } else {
+          window.__sfUserPauseTs = 0;
           applyMasterVolumeGain(false);
           SFYtFull.play();
           AppState.isPlaying = true;
@@ -8066,6 +8105,7 @@
           if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
         }).catch(() => playCurrentQueueItem());
       } else {
+        window.__sfUserPauseTs = Date.now();
         cancelActiveCrossfade(false);
         audio.pause();
         AppState.isPlaying = false;
@@ -17506,6 +17546,14 @@
     }
 
     function enterAuthenticatedApp(forceHome = false) {
+      // Jika dibuka di Chrome dengan ?apk_auth=<nonce> dan pengguna sudah login akun non-tamu, langsung serahkan sesi ke APK
+      if (!IS_NATIVE_APK && typeof getPendingWebApkAuthNonce === 'function') {
+        const pendingNonce = getPendingWebApkAuthNonce();
+        if (pendingNonce && AuthState.isAuthenticated && AuthState.user && !AuthState.user.isGuest) {
+          completeWebApkAuthBridge('');
+        }
+      }
+
       unlockAppFromAuthGate();
       initCloudRealtime();
       renderSocialPanel();
@@ -17906,6 +17954,133 @@
       setAuthGateAlert('Untuk login Google OAuth 2.0 penuh, buka SpotyFlow melalui URL HTTPS Vercel atau gunakan tombol Lanjut sebagai Tamu di bawah.', 'info');
     }
 
+    let __sfNativeApkAuthNonce = '';
+    let __sfNativeApkAuthPollTimer = null;
+    let __sfNativeApkAuthInFlight = false;
+
+    function getPendingWebApkAuthNonce() {
+      try {
+        const p = new URLSearchParams(window.location.search || '');
+        const n = String(p.get('apk_auth') || '').trim();
+        return /^[a-f0-9]{32}$/.test(n) ? n : '';
+      } catch {
+        return '';
+      }
+    }
+
+    async function completeWebApkAuthBridge(idToken = '') {
+      const nonce = getPendingWebApkAuthNonce();
+      if (!nonce || IS_NATIVE_APK) return false;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (AuthState.accessToken) {
+          headers.Authorization = `Bearer ${AuthState.accessToken}`;
+        }
+        const res = await fetch(`${API_BASE}/api/auth/apk-bridge/complete`, {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ nonce, credential: idToken || '', idToken: idToken || '' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) return false;
+
+        try {
+          const cleanUrl = window.location.pathname + (window.location.hash || '');
+          window.history.replaceState({}, '', cleanUrl);
+        } catch {}
+
+        showToast('Login Google berhasil! Mengembalikan ke aplikasi SpotyFlow...');
+        const deepLink = data.deepLink || `spotyflow://auth-done?nonce=${nonce}`;
+        setTimeout(() => {
+          try { window.location.href = deepLink; } catch {}
+        }, 250);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function stopNativeApkGoogleAuthPoller() {
+      if (__sfNativeApkAuthPollTimer) {
+        clearInterval(__sfNativeApkAuthPollTimer);
+        __sfNativeApkAuthPollTimer = null;
+      }
+      __sfNativeApkAuthInFlight = false;
+    }
+
+    async function pollNativeApkGoogleAuthOnce(overrideNonce = '') {
+      const nonce = String(overrideNonce || __sfNativeApkAuthNonce || '').trim();
+      if (!nonce || __sfNativeApkAuthInFlight) return false;
+      __sfNativeApkAuthInFlight = true;
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/apk-bridge/poll?nonce=${encodeURIComponent(nonce)}`, {
+          method: 'GET',
+          cache: 'no-store',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data && data.status === 'ready' && data.accessToken && data.user) {
+          stopNativeApkGoogleAuthPoller();
+          __sfNativeApkAuthNonce = '';
+          if (AuthState.googleLinkMode && AuthState.isAuthenticated) {
+            closeCustomModal();
+          }
+          await completeUserLogin(data);
+          return true;
+        }
+        if (data && (data.status === 'expired' || data.status === 'invalid')) {
+          stopNativeApkGoogleAuthPoller();
+          __sfNativeApkAuthNonce = '';
+        }
+      } catch {} finally {
+        __sfNativeApkAuthInFlight = false;
+      }
+      return false;
+    }
+
+    async function handleNativeApkGoogleLogin(isLinkMode = false) {
+      AuthState.googleLinkMode = Boolean(isLinkMode);
+      stopNativeApkGoogleAuthPoller();
+      setAuthGateAlert('Membuka Chrome untuk login Google resmi SpotyFlow...', 'info');
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/apk-bridge/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceName: CloudLive.deviceName || 'SpotyFlow Android' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.nonce || !data.loginUrl) {
+          throw new Error(data.error || 'Gagal menyiapkan sesi Login Google.');
+        }
+        __sfNativeApkAuthNonce = data.nonce;
+
+        const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
+        if (nativeMedia && typeof nativeMedia.openExternalUrl === 'function') {
+          await nativeMedia.openExternalUrl({ url: data.loginUrl });
+        } else {
+          window.open(data.loginUrl, '_blank', 'noopener');
+        }
+
+        setAuthGateAlert('Pilih akun Google Anda di Chrome — SpotyFlow akan otomatis login saat kembali.', 'info');
+        const startedAt = Date.now();
+        __sfNativeApkAuthPollTimer = setInterval(() => {
+          if (Date.now() - startedAt > 240000) {
+            stopNativeApkGoogleAuthPoller();
+            return;
+          }
+          pollNativeApkGoogleAuthOnce();
+        }, 1600);
+      } catch (err) {
+        setAuthGateAlert(err.message || 'Gagal membuka Chrome untuk login Google.', 'error');
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && IS_NATIVE_APK && __sfNativeApkAuthNonce) {
+        pollNativeApkGoogleAuthOnce();
+      }
+    });
+
     async function initGoogleSignInButton(slotId = 'google-signin-btn-slot', isLinkMode = false) {
       const slot = document.getElementById(slotId);
       const uncfg = document.getElementById('google-unconfigured-note');
@@ -17919,6 +18094,26 @@
       }
       if (uncfg && !isLinkMode) uncfg.classList.add('hidden');
       AuthState.googleLinkMode = isLinkMode;
+
+      // Mode APK Android Native: gunakan Chrome Browser OAuth Handoff (anti-403 disallowed_useragent WebView Google)
+      if (IS_NATIVE_APK) {
+        slot.innerHTML = `
+          <button type="button" onclick="handleNativeApkGoogleLogin(${isLinkMode ? 'true' : 'false'})" class="w-full max-w-[300px] h-11 px-4 rounded-full bg-white hover:bg-slate-100 text-[#0F172A] text-xs font-bold flex items-center justify-center gap-2.5 shadow-md transition-colors">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/>
+            </svg>
+            <span>${isLinkMode ? 'Tautkan dengan Google' : 'Masuk dengan Google'}</span>
+          </button>
+        `;
+        return;
+      }
+
+      if (!isLinkMode && getPendingWebApkAuthNonce()) {
+        setAuthGateAlert('Login dengan akun Google di sini untuk otomatis menyambungkan ke aplikasi SpotyFlow Android.', 'info');
+      }
 
       if (window.location.protocol === 'file:') {
         slot.innerHTML = `
@@ -18004,6 +18199,9 @@
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || `Login Google gagal (HTTP ${res.status}).`);
         await completeUserLogin(data);
+        if (!IS_NATIVE_APK && getPendingWebApkAuthNonce()) {
+          await completeWebApkAuthBridge(idToken);
+        }
       } catch (err) {
         setAuthGateAlert(err.message || 'Gagal masuk dengan Google.', 'error');
       }

@@ -1915,7 +1915,7 @@ app.get('/api/download-apk', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   const apkUrl =
     String(process.env.LATEST_APK_URL || '').trim() ||
-    'https://github.com/AFIQPUTRI/SpotyFlow/releases/latest/download/SpotyFlow.apk';
+    'https://github.com/afiqkhuzeiri11-netizen/spotyflow-apk/releases/latest/download/SpotyFlow.apk';
   return res.redirect(302, apkUrl);
 });
 
@@ -1927,7 +1927,7 @@ app.get('/api/app-version', (_req, res) => {
     buildId: APP_BUILD_ID,
     latestNativeVersionCode: NATIVE_APK_VERSION_CODE,
     minNativeVersionCode: 1,
-    apkUrl: 'https://spotyflow.vercel.app/SpotyFlow.apk',
+    apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
     otaEnabled: true,
     updatedAt: new Date().toISOString(),
   });
@@ -2021,6 +2021,191 @@ app.post('/api/auth/google', async (req, res) => {
     }
     return res.status(401).json({ error: 'Token Google tidak valid atau gagal diverifikasi oleh Google.' });
   }
+});
+
+// =========================================================================
+// 2B. APK NATIVE GOOGLE AUTH HANDOFF BRIDGE (Chrome System Browser -> Deep Link)
+//     Menghindari blokir 403 disallowed_useragent WebView Google secara resmi
+// =========================================================================
+const APK_AUTH_TTL_MS = 5 * 60 * 1000;
+const apkAuthMemStore = new Map();
+let apkAuthTableReady = false;
+
+async function ensureApkAuthTable(pool) {
+  if (!pool || apkAuthTableReady) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS apk_auth_sessions (
+      nonce TEXT PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT 'pending',
+      payload JSONB,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  apkAuthTableReady = true;
+}
+
+function pruneApkAuthMem() {
+  const now = Date.now();
+  for (const [k, v] of apkAuthMemStore.entries()) {
+    if (!v || v.expiresAt <= now) apkAuthMemStore.delete(k);
+  }
+}
+
+app.post('/api/auth/apk-bridge/start', async (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  pruneApkAuthMem();
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const expiresAt = Date.now() + APK_AUTH_TTL_MS;
+  apkAuthMemStore.set(nonce, { status: 'pending', payload: null, expiresAt });
+
+  const pool = getCloudDbPool();
+  if (pool) {
+    try {
+      await ensureApkAuthTable(pool);
+      await pool.query('DELETE FROM apk_auth_sessions WHERE expires_at < NOW()').catch(() => {});
+      await pool.query(
+        `INSERT INTO apk_auth_sessions (nonce, status, payload, expires_at)
+         VALUES ($1, 'pending', NULL, to_timestamp($2 / 1000.0))`,
+        [nonce, expiresAt]
+      );
+    } catch {
+      // fallback memory store
+    }
+  }
+
+  return res.status(200).json({
+    ok: true,
+    nonce,
+    loginUrl: `https://spotyflow.vercel.app/?apk_auth=${nonce}`,
+    expiresInSec: Math.round(APK_AUTH_TTL_MS / 1000),
+  });
+});
+
+app.post('/api/auth/apk-bridge/complete', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const nonce = String(req.body?.nonce || '').trim();
+  if (!/^[a-f0-9]{32}$/.test(nonce)) {
+    return res.status(400).json({ error: 'Kode sesi APK tidak valid.' });
+  }
+
+  const credential = String(req.body?.credential || req.body?.idToken || '').trim();
+  let verifiedUser = null;
+
+  // Jalur 1: Verifikasi langsung Google ID Token baru dari Chrome
+  if (credential && credential.length >= 20) {
+    const expectedClientId = getGoogleClientId();
+    try {
+      const infoResp = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
+        { signal: AbortSignal.timeout(6500), headers: { Accept: 'application/json' } }
+      );
+      const info = await infoResp.json().catch(() => ({}));
+      const aud = String(info?.aud || '').trim();
+      const email = String(info?.email || '').trim().toLowerCase();
+      const emailVerified = String(info?.email_verified || '').toLowerCase() === 'true';
+      if (infoResp.ok && aud === expectedClientId && emailVerified && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        verifiedUser = {
+          id: `google_${info.sub || crypto.createHash('sha256').update(email).digest('hex').slice(0, 16)}`,
+          displayName: String(info.name || email.split('@')[0]).trim(),
+          email,
+          avatarUrl: isSafePublicUrl(info.picture) ? info.picture : null,
+          provider: 'google',
+          isGuest: false,
+        };
+      }
+    } catch {
+      // fall through to Bearer check
+    }
+  }
+
+  // Jalur 2: Pengguna sudah login Google / akun terverifikasi di Chrome
+  if (!verifiedUser) {
+    const reqUser = extractUserFromReq(req);
+    if (reqUser && !reqUser.isGuest) {
+      verifiedUser = reqUser;
+    }
+  }
+
+  if (!verifiedUser) {
+    return res.status(401).json({ error: 'Silakan login akun Google terlebih dahulu di browser Chrome.' });
+  }
+
+  const accessToken = signAccessToken(verifiedUser);
+  const refreshToken = signRefreshToken(verifiedUser);
+  const payload = { ok: true, user: verifiedUser, accessToken, refreshToken };
+  const expiresAt = Date.now() + APK_AUTH_TTL_MS;
+
+  apkAuthMemStore.set(nonce, { status: 'ready', payload, expiresAt });
+
+  const pool = getCloudDbPool();
+  if (pool) {
+    try {
+      await ensureApkAuthTable(pool);
+      await pool.query(
+        `INSERT INTO apk_auth_sessions (nonce, status, payload, expires_at)
+         VALUES ($1, 'ready', $2::jsonb, to_timestamp($3 / 1000.0))
+         ON CONFLICT (nonce) DO UPDATE SET status = 'ready', payload = EXCLUDED.payload, expires_at = EXCLUDED.expires_at`,
+        [nonce, JSON.stringify(payload), expiresAt]
+      );
+    } catch {
+      // memory store already updated
+    }
+  }
+
+  return res.status(200).json({
+    ok: true,
+    user: verifiedUser,
+    deepLink: `spotyflow://auth-done?nonce=${nonce}`,
+  });
+});
+
+app.get('/api/auth/apk-bridge/poll', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  pruneApkAuthMem();
+  const nonce = String(req.query?.nonce || '').trim();
+  if (!/^[a-f0-9]{32}$/.test(nonce)) {
+    return res.status(400).json({ ok: false, status: 'invalid' });
+  }
+
+  const pool = getCloudDbPool();
+  if (pool) {
+    try {
+      await ensureApkAuthTable(pool);
+      const r = await pool.query(
+        'SELECT status, payload, expires_at FROM apk_auth_sessions WHERE nonce = $1 LIMIT 1',
+        [nonce]
+      );
+      const row = r.rows?.[0];
+      if (row) {
+        const expMs = new Date(row.expires_at).getTime();
+        if (expMs <= Date.now()) {
+          await pool.query('DELETE FROM apk_auth_sessions WHERE nonce = $1', [nonce]).catch(() => {});
+          apkAuthMemStore.delete(nonce);
+          return res.status(200).json({ ok: false, status: 'expired' });
+        }
+        if (row.status === 'ready' && row.payload) {
+          await pool.query('DELETE FROM apk_auth_sessions WHERE nonce = $1', [nonce]).catch(() => {});
+          apkAuthMemStore.delete(nonce);
+          return res.status(200).json({ ok: true, status: 'ready', ...row.payload });
+        }
+        return res.status(200).json({ ok: true, status: 'pending' });
+      }
+    } catch {
+      // fall through to memory store
+    }
+  }
+
+  const mem = apkAuthMemStore.get(nonce);
+  if (!mem || mem.expiresAt <= Date.now()) {
+    apkAuthMemStore.delete(nonce);
+    return res.status(200).json({ ok: false, status: 'expired' });
+  }
+  if (mem.status === 'ready' && mem.payload) {
+    apkAuthMemStore.delete(nonce);
+    return res.status(200).json({ ok: true, status: 'ready', ...mem.payload });
+  }
+  return res.status(200).json({ ok: true, status: 'pending' });
 });
 
 // Email OTP Stateless HMAC/JWT via Resend + Cek DNS MX (ZERO OTP di response JSON)

@@ -49,9 +49,12 @@ jobs:
         run: |
           test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowMediaService.java
           test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowMediaPlugin.java
+          test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowWebView.java
           test -f android/app/src/main/java/com/spotyflow/music/MainActivity.java
+          test -f android/app/src/main/res/layout/bridge_layout_main.xml
           grep -q "androidx.media:media:1.7.0" android/app/build.gradle
           grep -q "SpotyFlowMediaService" android/app/src/main/AndroidManifest.xml
+          grep -q 'android:scheme="spotyflow"' android/app/src/main/AndroidManifest.xml
           ! grep -q "SYSTEM_ALERT_WINDOW" android/app/src/main/AndroidManifest.xml
 
       - name: Compile Android Debug APK (Gradle 8 / Java 17)
