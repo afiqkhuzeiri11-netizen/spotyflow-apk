@@ -1284,14 +1284,14 @@ public class MainActivity extends BridgeActivity {
 function patchVariablesGradle() {
   if (!fs.existsSync(VARIABLES_GRADLE)) return;
   let content = fs.readFileSync(VARIABLES_GRADLE, 'utf8');
-  content = content.replace(/compileSdkVersion\s*=\s*\d+/, 'compileSdkVersion = 34');
-  content = content.replace(/targetSdkVersion\s*=\s*\d+/, 'targetSdkVersion = 34');
+  content = content.replace(/compileSdkVersion\s*=\s*\d+/, 'compileSdkVersion = 35');
+  content = content.replace(/targetSdkVersion\s*=\s*\d+/, 'targetSdkVersion = 35');
   content = content.replace(/minSdkVersion\s*=\s*\d+/, (m) => {
     const val = parseInt(m.replace(/\D+/g, ''), 10);
-    return val < 24 ? 'minSdkVersion = 24' : m;
+    return val < 23 ? 'minSdkVersion = 23' : m;
   });
   fs.writeFileSync(VARIABLES_GRADLE, content, 'utf8');
-  console.log('  + Patched android/variables.gradle (compileSdk=34, targetSdk=34, minSdk>=24)');
+  console.log('  + Patched android/variables.gradle (compileSdk=35, targetSdk=35, minSdk>=23)');
 }
 
 function patchBuildGradle() {
@@ -1310,28 +1310,39 @@ function patchBuildGradle() {
     content = content.replace(/applicationId\s+["'][^"']+["']/, `applicationId "${APP_ID}"`);
   }
 
-  // Ensure Java 17 compileOptions inside android { ... }
-  if (!content.includes('JavaVersion.VERSION_17')) {
+  // Ensure Java 21 compileOptions inside android { ... } (required by Capacitor 7 + SDK 35)
+  if (!content.includes('JavaVersion.VERSION_21')) {
     if (/compileOptions\s*\{/.test(content)) {
       content = content.replace(
         /compileOptions\s*\{[\s\S]*?\}/,
-        `compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`
+        `compileOptions {\n        sourceCompatibility JavaVersion.VERSION_21\n        targetCompatibility JavaVersion.VERSION_21\n    }`
       );
     } else {
       content = content.replace(
         /android\s*\{/,
-        `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`
+        `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_21\n        targetCompatibility JavaVersion.VERSION_21\n    }`
       );
     }
   }
 
-  // Remove unused heavy ExoPlayer dependency if left over from earlier build
+  // Production Release BuildType (full Android ART speed, non-debuggable, zero R8/ProGuard breakage, installable with debug keystore)
+  const releaseBlock = `release {\n            minifyEnabled false\n            shrinkResources false\n            signingConfig signingConfigs.debug\n        }`;
+  if (/buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?\}/.test(content)) {
+    content = content.replace(/release\s*\{[\s\S]*?\}/, releaseBlock);
+  } else if (/buildTypes\s*\{/.test(content)) {
+    content = content.replace(/buildTypes\s*\{/, `buildTypes {\n        ${releaseBlock}`);
+  } else {
+    content = content.replace(/android\s*\{/, `android {\n    buildTypes {\n        ${releaseBlock}\n    }`);
+  }
+
+  // Remove unused heavy ExoPlayer or old Media3 1.4.x dependencies if present
+  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-(?:exoplayer|common|session):1\.4\.[^"']*["']\s*$/gm, '');
   content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-exoplayer:[^"']+["']\s*$/gm, '');
 
-  // Add lightweight AndroidX Media3 1.4.1 (common + session) + Guava
+  // Add lightweight AndroidX Media3 1.5.1 (common + session) + Guava for SDK 35
   const requiredDeps = [
-    'implementation "androidx.media3:media3-common:1.4.1"',
-    'implementation "androidx.media3:media3-session:1.4.1"',
+    'implementation "androidx.media3:media3-common:1.5.1"',
+    'implementation "androidx.media3:media3-session:1.5.1"',
     'implementation "com.google.guava:guava:32.1.3-android"',
   ];
   const missingDeps = requiredDeps.filter((dep) => {
@@ -1346,7 +1357,7 @@ function patchBuildGradle() {
   }
 
   fs.writeFileSync(BUILD_GRADLE, content, 'utf8');
-  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, Media3 common+session 1.4.1, Guava, Java 17)`);
+  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, Media3 1.5.1, Guava, Java 21, Production release buildType)`);
 }
 
 function patchAndroidManifest() {
@@ -1408,7 +1419,7 @@ function patchAndroidManifest() {
   });
 
   // Ensure launchMode="singleTask", configChanges, and hardwareAccelerated="true" on <activity> (MainActivity)
-  const requiredConfigChanges = 'orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode';
+  const requiredConfigChanges = 'orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation';
   xml = xml.replace(/<activity\b([^>]*)>/, (full, attrs) => {
     let nextAttrs = attrs;
     if (/android:launchMode\s*=\s*"[^"]*"/.test(nextAttrs)) {
@@ -1537,6 +1548,7 @@ function verifyPatchedProject() {
     }
   }
 
+  const variablesGradle = fs.existsSync(VARIABLES_GRADLE) ? fs.readFileSync(VARIABLES_GRADLE, 'utf8') : '';
   const gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
   const manifest = fs.readFileSync(MANIFEST_XML, 'utf8');
   const svc = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), 'utf8');
@@ -1546,19 +1558,21 @@ function verifyPatchedProject() {
 
   const pkgDecl = `package ${APP_ID};`;
   const checks = [
+    [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 35') && variablesGradle.includes('targetSdkVersion = 35')), 'variables.gradle missing compileSdk/targetSdk = 35'],
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('androidx.media3:media3-common:1.4.1'), 'build.gradle missing media3-common:1.4.1'],
-    [gradle.includes('androidx.media3:media3-session:1.4.1'), 'build.gradle missing media3-session:1.4.1'],
+    [gradle.includes('androidx.media3:media3-common:1.5.1'), 'build.gradle missing media3-common:1.5.1'],
+    [gradle.includes('androidx.media3:media3-session:1.5.1'), 'build.gradle missing media3-session:1.5.1'],
     [!gradle.includes('media3-exoplayer'), 'build.gradle should NOT include heavy media3-exoplayer'],
     [gradle.includes('com.google.guava:guava:32.1.3-android'), 'build.gradle missing guava'],
-    [gradle.includes('JavaVersion.VERSION_17'), 'build.gradle missing Java 17'],
+    [gradle.includes('JavaVersion.VERSION_21'), 'build.gradle missing Java 21'],
+    [gradle.includes('minifyEnabled false') && gradle.includes('shrinkResources false') && gradle.includes('signingConfig signingConfigs.debug'), 'build.gradle missing production release buildType config'],
     [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
     [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
     [webv.includes('onWindowVisibilityChanged') && webv.includes('dispatchWindowVisibilityChanged') && webv.includes('onVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing full background visibility & pause overrides'],
     [manifest.includes('android:appCategory="audio"'), 'Manifest missing appCategory="audio"'],
     [manifest.includes('android:launchMode="singleTask"'), 'Manifest missing launchMode="singleTask" on MainActivity'],
-    [manifest.includes('android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"'), 'Manifest missing full configChanges on MainActivity'],
+    [manifest.includes('android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"'), 'Manifest missing full configChanges (including navigation) on MainActivity'],
     [manifest.includes('androidx.media3.session.MediaSessionService'), 'Manifest missing MediaSessionService'],
     [manifest.includes('androidx.media3.session.MediaButtonReceiver'), 'Manifest missing Media3 MediaButtonReceiver'],
     [!manifest.includes('SpotyFlowMediaService'), 'Manifest still has legacy SpotyFlowMediaService'],
@@ -1581,7 +1595,7 @@ function verifyPatchedProject() {
       process.exit(1);
     }
   }
-  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} Media3 SimpleBasePlayer + Origin Island + Background YouTube checks)`);
+  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} Capacitor 7 + SDK 35 + Media3 1.5.1 + Origin Island checks)`);
 }
 
 function main() {
@@ -1589,13 +1603,13 @@ function main() {
     if (!fs.existsSync(ANDROID_DIR)) {
       throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
     }
-    console.log(`[SpotyFlow Media3 Patcher] Injecting Media3 SimpleBasePlayer + Background YouTube WebView (appId=${APP_ID})...`);
+    console.log(`[SpotyFlow Media3 Patcher] Injecting Capacitor 7 + SDK 35 + Media3 1.5.1 (appId=${APP_ID})...`);
     patchVariablesGradle();
     patchBuildGradle();
     patchAndroidManifest();
     writeJavaAndResSources();
     verifyPatchedProject();
-    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle 8 / Java 17!');
+    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle / Java 21 Release!');
   } catch (err) {
     console.error('[SpotyFlow Media3 Patcher] ERROR:', err?.message || err);
     process.exit(1);
