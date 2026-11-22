@@ -10167,7 +10167,14 @@
     }
 
     function escapeJsAttr(str) {
-      return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\r?\n/g, ' ');
+      return String(str || '')
+        .replace(/\\/g, '\\\\')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/\r?\n/g, ' ');
     }
 
     function resolveApiUrl(u, opts = null) {
@@ -27123,6 +27130,7 @@
           body: JSON.stringify({
             code: SpotyJam.code,
             action: 'sync',
+            hostToken: SpotyJam.hostToken || '',
             hostName: SpotyJam.hostName,
             track: curTrack,
             isPlaying: Boolean(AppState.isPlaying),
@@ -27207,6 +27215,7 @@
         const data = await res.json();
         if (!res.ok || !data.ok) throw new Error(data.error || 'Gagal membuat room Jam.');
         SpotyJam.active = true;
+        SpotyJam.hostToken = data.hostToken || '';
         SpotyJam.role = 'host';
         SpotyJam.code = data.code;
         SpotyJam.hostName = hostName;
