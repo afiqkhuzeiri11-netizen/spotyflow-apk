@@ -47,8 +47,8 @@ jobs:
 
       - name: Verify Patched Native Files
         run: |
+          test -f android/app/src/main/java/com/spotyflow/music/NativeYouTubeResolver.java
           test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowMediaService.java
-          test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowMediaPlugin.java
           test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowWebView.java
           test -f android/app/src/main/java/com/spotyflow/music/MainActivity.java
           test -f android/app/src/main/res/layout/bridge_layout_main.xml
@@ -57,6 +57,8 @@ jobs:
           grep -q "SpotyFlowMediaService" android/app/src/main/AndroidManifest.xml
           grep -q 'android:appCategory="audio"' android/app/src/main/AndroidManifest.xml
           grep -q "android.media.browse.MediaBrowserService" android/app/src/main/AndroidManifest.xml
+          grep -q "android.permission.BLUETOOTH_CONNECT" android/app/src/main/AndroidManifest.xml
+          grep -q "android.permission.READ_MEDIA_AUDIO" android/app/src/main/AndroidManifest.xml
           grep -q 'android:scheme="spotyflow"' android/app/src/main/AndroidManifest.xml
           ! grep -q "SYSTEM_ALERT_WINDOW" android/app/src/main/AndroidManifest.xml
 

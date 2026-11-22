@@ -5013,8 +5013,33 @@
     /* =====================================================================
        3. BACKGROUND PLAYBACK, MEDIA SESSION API, WAKE LOCK & SLEEP TIMER
        ===================================================================== */
+    function getNativeBridge() {
+      return window.SpotyFlowNative || null;
+    }
+
+    function isRunningInNativeApk() {
+      return Boolean(
+        getNativeBridge() ||
+        window.Capacitor?.isNativePlatform?.() ||
+        /SpotyFlowApp/i.test(navigator.userAgent || '')
+      );
+    }
+
     function registerServiceWorker() {
-      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      if (!('serviceWorker' in navigator)) return;
+      // NONAKTIFKAN SERVICE WORKER DI DALAM APK agar selalu membaca www/index.html terbaru tanpa terjebak cache SW lama!
+      if (isRunningInNativeApk()) {
+        try {
+          navigator.serviceWorker.getRegistrations().then((regs) => {
+            regs.forEach((r) => r.unregister().catch(() => {}));
+          }).catch(() => {});
+          if ('caches' in window) {
+            caches.keys().then((keys) => keys.forEach((k) => caches.delete(k).catch(() => {}))).catch(() => {});
+          }
+        } catch {}
+        return;
+      }
+      if (window.location.protocol.startsWith('http')) {
         navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
       }
     }
@@ -5060,7 +5085,7 @@
     }
 
     function clearWebViewMediaSessionIfNative() {
-      if (!getNativeMediaPlugin()) return false;
+      if (!getNativeBridge() && !getNativeMediaPlugin() && !isRunningInNativeApk()) return false;
       try {
         if ('mediaSession' in navigator) {
           navigator.mediaSession.metadata = null;
@@ -5073,12 +5098,13 @@
     let __lastNativeMediaSyncAt = 0;
     function syncNativeAndroidMediaSession(force = false, trackOverride = null) {
       try {
-        const nativeMedia = getNativeMediaPlugin();
-        if (!nativeMedia && (typeof IS_NATIVE_APK === 'undefined' || !IS_NATIVE_APK)) return;
+        const bridge = getNativeBridge();
+        const capPlugin = getNativeMediaPlugin();
+        if (!bridge && !capPlugin && !isRunningInNativeApk()) return;
         const track = trackOverride || AppState.currentTrack;
         if (!track) return;
         const now = Date.now();
-        if (!force && now - __lastNativeMediaSyncAt < 400) return;
+        if (!force && now - __lastNativeMediaSyncAt < 1000) return;
         __lastNativeMediaSyncAt = now;
 
         const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
@@ -5088,37 +5114,39 @@
           ? Boolean(AppState.isPlaying)
           : Boolean(AppState.isPlaying && audio && !audio.paused);
 
-        if (nativeMedia && typeof nativeMedia.updatePlayback === 'function') {
-          const rawDur = useYt
-            ? Number(SFYtFull.getDuration() || 0)
-            : (audio && Number.isFinite(audio.duration) ? Number(audio.duration) : 0);
-          const durSec = rawDur > 0 ? rawDur : (Number(track.duration) > 0 ? Number(track.duration) : 210);
-          const curPos = useYt
-            ? Number(SFYtFull.getCurrentTime() || 0)
-            : (audio && Number.isFinite(audio.currentTime) ? Number(audio.currentTime) : 0);
-          nativeMedia.updatePlayback({
-            title: String(track.title || 'SpotyFlow'),
-            artist: String(artistName || 'SpotyFlow'),
-            album: String(albumTitle || 'SpotyFlow'),
-            coverUrl: resolveAbsoluteNativeCoverUrl(track),
-            isPlaying: Boolean(isCurrentlyPlaying),
-            durationMs: Math.max(1000, Math.round(durSec * 1000)),
-            positionMs: Math.max(0, Math.round((curPos || 0) * 1000)),
-            playbackRate: Number(AppState.playbackRate || 1.0),
-          }).catch(() => {});
-        } else if (window.SpotyFlowNative && typeof window.SpotyFlowNative.updateNowPlaying === 'function') {
-          window.SpotyFlowNative.updateNowPlaying(
-            String(track.title || 'SpotyFlow'),
-            String(artistName || 'SpotyFlow'),
-            Boolean(isCurrentlyPlaying)
-          );
+        const rawDur = useYt
+          ? Number(SFYtFull.getDuration() || 0)
+          : (audio && Number.isFinite(audio.duration) ? Number(audio.duration) : 0);
+        const durSec = rawDur > 0 ? rawDur : (Number(track.duration) > 0 ? Number(track.duration) : 210);
+        const curPos = useYt
+          ? Number(SFYtFull.getCurrentTime() || 0)
+          : (audio && Number.isFinite(audio.currentTime) ? Number(audio.currentTime) : 0);
+
+        const payload = {
+          title: String(track.title || 'SpotyFlow'),
+          artist: String(artistName || 'SpotyFlow'),
+          album: String(albumTitle || 'SpotyFlow'),
+          coverUrl: resolveAbsoluteNativeCoverUrl(track),
+          isPlaying: Boolean(isCurrentlyPlaying),
+          durationMs: Math.max(1000, Math.round(durSec * 1000)),
+          positionMs: Math.max(0, Math.round((curPos || 0) * 1000)),
+          playbackRate: Number(AppState.playbackRate || 1.0),
+        };
+
+        if (bridge && typeof bridge.updatePlayback === 'function') {
+          bridge.updatePlayback(JSON.stringify(payload));
+        } else if (capPlugin && typeof capPlugin.updatePlayback === 'function') {
+          capPlugin.updatePlayback(payload).catch(() => {});
+        } else if (bridge && typeof bridge.updateNowPlaying === 'function') {
+          bridge.updateNowPlaying(payload.title, payload.artist, payload.isPlaying);
         }
       } catch {}
     }
 
     function updateMediaSessionPosition() {
-      // MATIKAN navigator.mediaSession WEBVIEW saat di APK agar kapsul Dynamic Island native tidak pernah direbut WebView!
-      if (clearWebViewMediaSessionIfNative() || (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK)) {
+      // MATIKAN navigator.mediaSession WEBVIEW saat di APK agar kapsul media native tidak pernah bentrok!
+      if (clearWebViewMediaSessionIfNative()) {
+        syncNativeAndroidMediaSession(false);
         return;
       }
       if (!('mediaSession' in navigator) || typeof navigator.mediaSession.setPositionState !== 'function') return;
@@ -5141,7 +5169,7 @@
       if (!track) return;
 
       // MATIKAN navigator.mediaSession WEBVIEW saat di APK & langsung sinkronkan ke MediaSessionCompat native!
-      if (clearWebViewMediaSessionIfNative() || (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK)) {
+      if (clearWebViewMediaSessionIfNative()) {
         syncNativeAndroidMediaSession(true, track);
         return;
       }
@@ -5240,89 +5268,106 @@
       updateMediaSessionPosition();
     }
 
+    window.__sfHandleNativeMediaAction = function (action, positionMs) {
+      try {
+        if (action === 'play') {
+          window.__sfUserPauseTs = 0;
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            SFYtFull.play();
+          } else if (audio && audio.paused) {
+            audio.play().catch(() => playCurrentQueueItem());
+          }
+        } else if (action === 'pause' || action === 'noisy') {
+          window.__sfUserPauseTs = Date.now();
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            SFYtFull.pause();
+          } else if (audio && !audio.paused) {
+            audio.pause();
+          }
+        } else if (action === 'next') {
+          playNext(true);
+        } else if (action === 'prev') {
+          playPrev();
+        } else if (action === 'seek' && Number.isFinite(Number(positionMs))) {
+          const targetSec = Math.max(0, Number(positionMs) / 1000);
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            SFYtFull.seekTo(targetSec);
+          } else if (audio && audio.src) {
+            audio.currentTime = targetSec;
+          }
+          syncLyricsWithTime(targetSec);
+          syncNativeAndroidMediaSession(true);
+        }
+      } catch {}
+    };
+
+    window.__sfHandleNativeAppVisibility = function (visible) {
+      try {
+        const isBg = visible === false;
+        window.__sfNativeAppBg = isBg;
+        document.documentElement.classList.toggle('sf-tab-hidden', isBg);
+        if (isBg) {
+          window.__sfLastBgAt = Date.now();
+          stopVisualizerLoop();
+          if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
+          saveListeningStats(true);
+          if (typeof savePlaybackSession === 'function') savePlaybackSession(true);
+        } else {
+          if (AppState.isPlaying) {
+            startVisualizerLoop();
+          }
+          if (typeof syncCanvasMotionLoop === 'function') syncCanvasMotionLoop();
+          if (AppState.currentTrack) {
+            const cur = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
+              ? Number(SFYtFull.getCurrentTime() || 0)
+              : Number(audio?.currentTime || 0);
+            syncLyricsWithTime(cur);
+          }
+          if (__sfNativeApkAuthNonce && typeof pollNativeApkGoogleAuthOnce === 'function') {
+            pollNativeApkGoogleAuthOnce();
+          }
+        }
+      } catch {}
+    };
+
+    window.__sfHandleNativeAuthReturn = function (nonce) {
+      try {
+        if (typeof pollNativeApkGoogleAuthOnce === 'function') {
+          pollNativeApkGoogleAuthOnce(nonce || '');
+        }
+      } catch {}
+    };
+
     let __nativeMediaListenerBound = false;
-    let __nativeMediaSyncTimer = null;
     function initNativeCapacitorMediaBridge() {
       if (__nativeMediaListenerBound) return;
       try {
-        const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
-        if (typeof IS_NATIVE_APK === 'undefined' || !IS_NATIVE_APK || !nativeMedia || typeof nativeMedia.addListener !== 'function') {
+        const nativeMedia = getNativeMediaPlugin();
+        if (!nativeMedia || typeof nativeMedia.addListener !== 'function') {
           return;
         }
         __nativeMediaListenerBound = true;
         nativeMedia.addListener('mediaAction', ({ action, positionMs } = {}) => {
-          try {
-            if (action === 'play') {
-              if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-                SFYtFull.play();
-              } else if (audio && audio.paused) {
-                audio.play().catch(() => playCurrentQueueItem());
-              }
-            } else if (action === 'pause' || action === 'noisy') {
-              window.__sfUserPauseTs = Date.now();
-              if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-                SFYtFull.pause();
-              } else if (audio && !audio.paused) {
-                audio.pause();
-              }
-            } else if (action === 'next') {
-              playNext(true);
-            } else if (action === 'prev') {
-              playPrev();
-            } else if (action === 'seek' && Number.isFinite(Number(positionMs))) {
-              const targetSec = Math.max(0, Number(positionMs) / 1000);
-              if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-                SFYtFull.seekTo(targetSec);
-              } else if (audio && audio.src) {
-                audio.currentTime = targetSec;
-              }
-              syncLyricsWithTime(targetSec);
-              updateSystemMediaSession(AppState.currentTrack);
-            }
-          } catch {}
+          window.__sfHandleNativeMediaAction(action, positionMs);
         });
         nativeMedia.addListener('authReturn', ({ nonce } = {}) => {
-          try {
-            if (typeof pollNativeApkGoogleAuthOnce === 'function') {
-              pollNativeApkGoogleAuthOnce(nonce || '');
-            }
-          } catch {}
+          window.__sfHandleNativeAuthReturn(nonce);
         });
         nativeMedia.addListener('appVisibility', ({ visible } = {}) => {
-          try {
-            const isBg = visible === false;
-            window.__sfNativeAppBg = isBg;
-            document.documentElement.classList.toggle('sf-tab-hidden', isBg);
-            if (isBg) {
-              window.__sfLastBgAt = Date.now();
-              stopVisualizerLoop();
-              if (typeof stopCanvasMotionLoop === 'function') stopCanvasMotionLoop();
-              saveListeningStats(true);
-              if (typeof savePlaybackSession === 'function') savePlaybackSession(true);
-            } else {
-              if (AppState.isPlaying) {
-                startVisualizerLoop();
-              }
-              if (typeof syncCanvasMotionLoop === 'function') syncCanvasMotionLoop();
-              if (AppState.currentTrack) {
-                const cur = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
-                  ? Number(SFYtFull.getCurrentTime() || 0)
-                  : Number(audio?.currentTime || 0);
-                syncLyricsWithTime(cur);
-              }
-              if (__sfNativeApkAuthNonce && typeof pollNativeApkGoogleAuthOnce === 'function') {
-                pollNativeApkGoogleAuthOnce();
-              }
-            }
-          } catch {}
+          window.__sfHandleNativeAppVisibility(visible);
         });
       } catch {}
     }
 
     function stopNativeMediaServiceSafe() {
       try {
-        const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
-        if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && nativeMedia && typeof nativeMedia.stopService === 'function') {
+        const bridge = getNativeBridge();
+        if (bridge && typeof bridge.stopService === 'function') {
+          bridge.stopService();
+          return;
+        }
+        const nativeMedia = getNativeMediaPlugin();
+        if (nativeMedia && typeof nativeMedia.stopService === 'function') {
           nativeMedia.stopService().catch(() => {});
         }
       } catch {}
@@ -5565,10 +5610,10 @@
     /* =====================================================================
        4. BACKEND API CLIENTS (Authenticated JWT + Auto Refresh + Auth Gate)
        ===================================================================== */
-    const IS_NATIVE_APK = Boolean(window.Capacitor?.isNativePlatform?.() || getNativeMediaPlugin());
+    const IS_NATIVE_APK = isRunningInNativeApk();
 
     let API_BASE = (() => {
-      if (IS_NATIVE_APK) {
+      if (isRunningInNativeApk()) {
         return 'https://spotyflow.vercel.app';
       }
       if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
@@ -7910,11 +7955,12 @@
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
 
-        // 1. PRIORITAS UTAMA DI SPOTYFLOW.APK: Resolusi YouTube Audio-Only M4A/AAC langsung dari IP HP (0% decode video = 0% patah-patah di latar belakang!)
-        const nativeCapMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
+        // 1. PRIORITAS UTAMA DI SPOTYFLOW.APK: Resolusi YouTube Audio-Only M4A/AAC langsung dari IP HP via NativeYouTubeResolver (0% decode video = 0% mati di layar terkunci!)
+        const nativeBridge = getNativeBridge();
+        const nativeCapMedia = getNativeMediaPlugin();
         const canResolveOnDevice = Boolean(
-          (IS_NATIVE_APK && nativeCapMedia && typeof nativeCapMedia.resolveYoutubeAudio === 'function') ||
-          (window.SpotyFlowNative && typeof window.SpotyFlowNative.resolveFullAudioAsync === 'function')
+          (nativeBridge && typeof nativeBridge.resolveFullAudioAsync === 'function') ||
+          (isRunningInNativeApk() && nativeCapMedia && typeof nativeCapMedia.resolveYoutubeAudio === 'function')
         );
         if (ytCandidates.length && canResolveOnDevice) {
           for (let j = 0; j < Math.min(ytCandidates.length, 3); j++) {
@@ -7922,9 +7968,9 @@
             if (!cand?.videoId) continue;
             setLoadingBanner(true, `Memuat audio HD YouTube "${track.title}" (${formatTime(cand.duration || track.duration)})...`);
             try {
-              const nativeRes = (IS_NATIVE_APK && nativeCapMedia && typeof nativeCapMedia.resolveYoutubeAudio === 'function')
-                ? await nativeCapMedia.resolveYoutubeAudio({ videoId: cand.videoId })
-                : await resolveFullAudioOnAndroidDevice(cand.videoId);
+              const nativeRes = (nativeBridge && typeof nativeBridge.resolveFullAudioAsync === 'function')
+                ? await resolveFullAudioOnAndroidDevice(cand.videoId)
+                : await nativeCapMedia.resolveYoutubeAudio({ videoId: cand.videoId });
               if (sessionId !== AppState.playSessionId) return;
               if (nativeRes && nativeRes.ok && nativeRes.url) {
                 await tryPlayAudioUrl(nativeRes.url, sessionId, { supportsCors: false });
@@ -8756,6 +8802,10 @@
         ) {
           executeDualDeckTransition();
           return;
+        }
+
+        if (!deckEl.paused && isRunningInNativeApk()) {
+          syncNativeAndroidMediaSession(false);
         }
 
         if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden) return;
@@ -18157,8 +18207,11 @@
         }
         __sfNativeApkAuthNonce = data.nonce;
 
-        const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
-        if (nativeMedia && typeof nativeMedia.openExternalUrl === 'function') {
+        const bridge = getNativeBridge();
+        const nativeMedia = getNativeMediaPlugin();
+        if (bridge && typeof bridge.openExternalUrl === 'function') {
+          bridge.openExternalUrl(data.loginUrl);
+        } else if (nativeMedia && typeof nativeMedia.openExternalUrl === 'function') {
           await nativeMedia.openExternalUrl({ url: data.loginUrl });
         } else {
           window.open(data.loginUrl, '_blank', 'noopener');
