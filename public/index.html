@@ -5066,6 +5066,7 @@
 
     const ExoState = {
       active: false,
+      usingWebBlob: false,
       isPlaying: false,
       positionSec: 0,
       durationSec: 0,
@@ -5073,9 +5074,52 @@
       track: null,
       candidates: [],
       candidateIdx: 0,
+      triedResolveFallback: false,
+      consecutiveErrors: 0,
       lastTickMs: 0,
       pendingResumeSec: 0,
     };
+
+    function pauseAllWebDecks() {
+      try { if (typeof SFYtFull !== 'undefined') SFYtFull.stop(); } catch {}
+      try { if (typeof cancelActiveCrossfade === 'function') cancelActiveCrossfade(true); } catch {}
+      try {
+        const list = [];
+        if (typeof decks !== 'undefined' && Array.isArray(decks)) list.push(...decks);
+        if (typeof deckA !== 'undefined' && deckA && !list.includes(deckA)) list.push(deckA);
+        if (typeof deckB !== 'undefined' && deckB && !list.includes(deckB)) list.push(deckB);
+        if (typeof audio !== 'undefined' && audio && !list.includes(audio)) list.push(audio);
+        list.forEach((d) => {
+          if (!d) return;
+          try {
+            d.pause();
+            d.removeAttribute('src');
+            d.load();
+          } catch {}
+        });
+      } catch {}
+    }
+
+    function extractDirectTrackVideoId(track) {
+      if (!track) return '';
+      const raw = String(track.videoId || track.ytId || track.sid || '').replace(/^(ytm_|yt_|direct_|ytfull_)/i, '').trim();
+      return /^[a-zA-Z0-9_-]{11}$/.test(raw) ? raw : '';
+    }
+
+    function extractDirectNonYtAudioUrl(track) {
+      if (!track || track.isLocal) return '';
+      const candidates = [track.fullStreamUrl, track.directStreamUrl];
+      for (const raw of candidates) {
+        if (!raw || typeof raw !== 'string') continue;
+        const trimmed = raw.trim();
+        if (!trimmed || trimmed.startsWith('blob:') || trimmed.startsWith('data:')) continue;
+        const abs = typeof resolveApiUrl === 'function' ? resolveApiUrl(trimmed) : trimmed;
+        if (/^https?:\/\//i.test(abs) && !/youtube\.com|youtu\.be|googlevideo\.com|\/api\/audio\/stream/i.test(abs)) {
+          return abs;
+        }
+      }
+      return '';
+    }
 
     function buildExoTrackPayload(track, candidate) {
       const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
@@ -5107,7 +5151,9 @@
       const track = ExoState.track;
       if (!cand || !track) return false;
 
+      pauseAllWebDecks();
       clearWebViewMediaSessionIfNative();
+      ExoState.usingWebBlob = false;
       ExoState.active = true;
       setLoadingBanner(true, `Memutar ExoPlayer HD "${track.title}"...`);
       try {
@@ -5190,6 +5236,7 @@
 
       if (type === 'buffering') {
         if (!ExoState.active) return;
+        // Tampilkan indikator loading halus tanpa mengubah AppState.isPlaying jadi paused palsu
         AppState.isResolving = true;
         updatePlayPauseIcons();
         return;
@@ -5221,6 +5268,7 @@
       if (type === 'playing') {
         if (!ExoState.active) return;
         ExoState.isPlaying = true;
+        ExoState.consecutiveErrors = 0;
         ExoState.lastTickMs = Date.now();
         AppState.isPlaying = true;
         AppState.isResolving = false;
@@ -5291,17 +5339,70 @@
         ExoState.candidateIdx += 1;
         if (ExoState.candidateIdx < ExoState.candidates.length) {
           dispatchCurrentExoCandidate();
-        } else {
-          setLoadingBanner(false);
-          ExoState.isPlaying = false;
-          AppState.isPlaying = false;
-          setSignalBadge('SUMBER TIDAK TERSEDIA', false);
-          updatePlayPauseIcons();
-          highlightPlayingTrackRows();
-          showToast(ev.message || 'Gagal memutar sumber audio.', 'error');
+          return;
         }
+
+        // 1x Fallback resolve alternatif jika jalur cepat videoId/URL langsung gagal
+        if (!ExoState.triedResolveFallback && ExoState.track) {
+          ExoState.triedResolveFallback = true;
+          const sid = ExoState.sessionId;
+          const tr = ExoState.track;
+          const triedVids = new Set(ExoState.candidates.map((c) => c.videoId).filter(Boolean));
+          const triedUrls = new Set(ExoState.candidates.map((c) => c.url).filter(Boolean));
+          setLoadingBanner(true, `Mencari sumber cadangan "${tr.title}"...`);
+          resolveTrackAudioSources(tr)
+            .then((sources) => {
+              if (sid !== AppState.playSessionId || !ExoState.active) return;
+              const extra = [];
+              const ytCands = Array.isArray(sources?.__ytCandidates) ? sources.__ytCandidates : [];
+              ytCands.slice(0, 3).forEach((cand) => {
+                if (cand?.videoId && !triedVids.has(cand.videoId)) {
+                  triedVids.add(cand.videoId);
+                  extra.push({ url: '', videoId: cand.videoId, duration: Number(cand.duration || tr.duration || 210) });
+                }
+              });
+              (Array.isArray(sources) ? sources : []).forEach((s) => {
+                if (s && /^https?:\/\//i.test(s.streamUrl || '') && !triedUrls.has(s.streamUrl)) {
+                  triedUrls.add(s.streamUrl);
+                  extra.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || tr.duration || 210) });
+                }
+              });
+              if (extra.length > 0) {
+                ExoState.candidates = extra;
+                ExoState.candidateIdx = 0;
+                if (dispatchCurrentExoCandidate()) return;
+              }
+              finalizeExoTrackFailure(sid);
+            })
+            .catch(() => finalizeExoTrackFailure(sid));
+          return;
+        }
+
+        finalizeExoTrackFailure(ExoState.sessionId);
       }
     };
+
+    function finalizeExoTrackFailure(sessionId) {
+      if (sessionId !== AppState.playSessionId) return;
+      setLoadingBanner(false);
+      ExoState.isPlaying = false;
+      AppState.isPlaying = false;
+      AppState.isResolving = false;
+      setSignalBadge('SUMBER TIDAK TERSEDIA', false);
+      updatePlayPauseIcons();
+      highlightPlayingTrackRows();
+      ExoState.consecutiveErrors = (ExoState.consecutiveErrors || 0) + 1;
+      if (AppState.queue.length > 1 && ExoState.consecutiveErrors <= 2) {
+        showToast('Sumber lagu ini tidak tersedia, lanjut ke lagu berikutnya...', 'info');
+        setTimeout(() => {
+          if (sessionId === AppState.playSessionId && !AppState.isPlaying) {
+            playNext(false);
+          }
+        }, 700);
+      } else {
+        showToast('Gagal memuat audio. Coba pilih lagu lain.', 'error');
+      }
+    }
 
     function registerServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
@@ -8082,20 +8183,11 @@
       AppState.audioSources = [];
       AppState.audioSourceIndex = 0;
 
-      SFYtFull.stop();
-      cancelActiveCrossfade(true);
+      pauseAllWebDecks();
       revokeDeckBlobUrl(activeDeckIndex);
-      if (typeof decks !== 'undefined' && Array.isArray(decks)) {
-        decks.forEach((d) => {
-          if (d) {
-            try { d.pause(); d.removeAttribute('src'); } catch {}
-          }
-        });
-      }
-      audio.pause();
-      audio.removeAttribute('src');
       if (hasNativeExo()) {
         ExoState.active = false;
+        ExoState.usingWebBlob = false;
         ExoState.isPlaying = false;
         ExoState.positionSec = 0;
         ExoState.durationSec = Number(track.duration || 210);
@@ -8103,6 +8195,7 @@
         ExoState.track = track;
         ExoState.candidates = [];
         ExoState.candidateIdx = 0;
+        ExoState.triedResolveFallback = false;
         ExoState.pendingResumeSec = pendingResumeSec;
         try { window.SpotyFlowExo.stop(); } catch {}
       }
@@ -8132,6 +8225,7 @@
         try {
           const rec = await OfflineCache.getRecord(track.id);
           if (rec && rec.audioBlob) {
+            if (hasNativeExo()) ExoState.usingWebBlob = true;
             if (rec.coverBlob) {
               setOfflineCoverBlobUrl(track.id, rec.coverBlob);
               updatePlayerUI();
@@ -8170,7 +8264,30 @@
         } catch {}
       }
 
+      // FAST PATH APK NATIVE EXOPLAYER (Single Source of Truth untuk semua lagu non-blob: — 0 detik tunda JS!)
+      if (hasNativeExo() && !track.isLocal) {
+        const directNonYtUrl = extractDirectNonYtAudioUrl(track);
+        const directVid = extractDirectTrackVideoId(track);
+        if (directNonYtUrl) {
+          setSignalBadge('MENGHUBUNGKAN...', false);
+          ExoState.sessionId = sessionId;
+          ExoState.track = track;
+          ExoState.candidates = [{ url: directNonYtUrl, videoId: '', duration: Number(track.duration || 210) }];
+          ExoState.candidateIdx = 0;
+          if (dispatchCurrentExoCandidate()) return;
+        } else if (directVid) {
+          // Langsung lempar videoId ke Java agar NativeYouTubeResolver balapan paralel 3 jalur (hemat 3-6 detik!)
+          setSignalBadge('MENGHUBUNGKAN...', false);
+          ExoState.sessionId = sessionId;
+          ExoState.track = track;
+          ExoState.candidates = [{ url: '', videoId: directVid, duration: Number(track.duration || 210) }];
+          ExoState.candidateIdx = 0;
+          if (dispatchCurrentExoCandidate()) return;
+        }
+      }
+
       if ((track.isLocal || track.isAudiusNative) && track.fullStreamUrl) {
+        if (hasNativeExo() && track.isLocal) ExoState.usingWebBlob = true;
         setLoadingBanner(true, `Memuat "${track.title}"...`);
         setSignalBadge('MEMUAT AUDIO', false);
         try {
@@ -8271,20 +8388,22 @@
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
 
-        // 0. MODE APK NATIVE ANDROIDX MEDIA3 EXOPLAYER (100% Native Hardware Decoding + DSP EQ/BassBoost/Reverb/Pitch, 0% WebView Audio/IFrame!)
+        // 0. MODE APK NATIVE ANDROIDX MEDIA3 EXOPLAYER (Prioritaskan videoId agar Java parallel race anti-403 yang bekerja!)
         if (hasNativeExo()) {
           const exoCandidates = [];
-          youtubeDirectSources.forEach((s) => {
-            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
-              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
-            }
-          });
-          ytCandidates.slice(0, 5).forEach((cand) => {
-            if (cand?.videoId) {
+          const seenVids = new Set();
+          ytCandidates.slice(0, 4).forEach((cand) => {
+            if (cand?.videoId && !seenVids.has(cand.videoId)) {
+              seenVids.add(cand.videoId);
               exoCandidates.push({ url: '', videoId: cand.videoId, duration: Number(cand.duration || track.duration || 210) });
             }
           });
           otherFullSources.forEach((s) => {
+            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
+              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
+            }
+          });
+          youtubeDirectSources.forEach((s) => {
             if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
               exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
             }
@@ -8298,6 +8417,7 @@
           if (exoCandidates.length > 0) {
             ExoState.sessionId = sessionId;
             ExoState.track = track;
+            ExoState.triedResolveFallback = true;
             ExoState.candidates = exoCandidates;
             ExoState.candidateIdx = 0;
             if (dispatchCurrentExoCandidate()) return;
@@ -9036,8 +9156,10 @@
     }
 
     decks.forEach((deckEl, deckIdx) => {
+      const isWebDeckSuppressedByExo = () => hasNativeExo() && !AppState.currentTrack?.isLocal && !ExoState.usingWebBlob;
+
       deckEl.addEventListener('loadedmetadata', () => {
-        if (deckIdx !== activeDeckIndex) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex) return;
         if (deckEl.duration && isFinite(deckEl.duration)) {
           if (AppState.currentTrack) AppState.currentTrack.duration = deckEl.duration;
           updateDurationDisplays(deckEl.duration);
@@ -9046,7 +9168,7 @@
       });
 
       deckEl.addEventListener('durationchange', () => {
-        if (deckIdx !== activeDeckIndex) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex) return;
         if (deckEl.duration && isFinite(deckEl.duration)) {
           if (AppState.currentTrack) AppState.currentTrack.duration = deckEl.duration;
           updateDurationDisplays(deckEl.duration);
@@ -9055,7 +9177,7 @@
       });
 
       deckEl.addEventListener('play', () => {
-        if (deckIdx !== activeDeckIndex) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex) return;
         AppState.isPlaying = true;
         startVisualizerLoop();
         updatePlayPauseIcons();
@@ -9064,7 +9186,7 @@
       });
 
       deckEl.addEventListener('playing', () => {
-        if (deckIdx !== activeDeckIndex) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex) return;
         if (__autoReconnectTimer) {
           clearTimeout(__autoReconnectTimer);
           __autoReconnectTimer = null;
@@ -9079,18 +9201,18 @@
       });
 
       deckEl.addEventListener('waiting', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         AppState.isResolving = true;
         updatePlayPauseIcons();
       });
 
       deckEl.addEventListener('stalled', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         AppState.isResolving = true;
         updatePlayPauseIcons();
         if (__autoReconnectTimer) clearTimeout(__autoReconnectTimer);
         __autoReconnectTimer = setTimeout(() => {
-          if (deckIdx === activeDeckIndex && !(typeof SFYtFull !== 'undefined' && SFYtFull.active) && AppState.isPlaying && (deckEl.readyState < 3 || deckEl.networkState === 2)) {
+          if (!isWebDeckSuppressedByExo() && deckIdx === activeDeckIndex && !(typeof SFYtFull !== 'undefined' && SFYtFull.active) && AppState.isPlaying && (deckEl.readyState < 3 || deckEl.networkState === 2)) {
             AppState.isResolving = false;
             triggerMidSongAutoReconnect(deckEl, 'stalled > 5s');
           }
@@ -9098,26 +9220,26 @@
       });
 
       deckEl.addEventListener('error', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         if (!AppState.isResolving && deckEl.src) {
           triggerMidSongAutoReconnect(deckEl, 'error');
         }
       });
 
       deckEl.addEventListener('seeked', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         syncLyricsWithTime(deckEl.currentTime || 0);
         updateSystemMediaSession(AppState.currentTrack);
         savePlaybackSession(true);
       });
 
       deckEl.addEventListener('ratechange', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         syncNativeAndroidMediaSession(true);
       });
 
       deckEl.addEventListener('timeupdate', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         if (!deckEl.paused) {
           const now = Date.now();
           if (lastListenTick && now - lastListenTick < 2500) {
@@ -9210,7 +9332,7 @@
       });
 
       deckEl.addEventListener('pause', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         AppState.isResolving = false;
         AppState.isPlaying = false;
         lastListenTick = 0;
@@ -9224,7 +9346,7 @@
       });
 
       deckEl.addEventListener('ended', () => {
-        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
         AppState.isResolving = false;
         stopVisualizerLoop();
         if (AppState.sleepMode === 'end') {

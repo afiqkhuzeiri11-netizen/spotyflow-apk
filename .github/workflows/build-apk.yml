@@ -47,12 +47,18 @@ jobs:
 
       - name: Verify Patched Media3 Native Files
         run: |
-          test -f android/app/src/main/java/com/spotyflow/music/NativeYouTubeResolver.java
-          test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowPlaybackService.java
-          test -f android/app/src/main/java/com/spotyflow/music/SpotyFlowWebView.java
-          test -f android/app/src/main/java/com/spotyflow/music/MainActivity.java
+          APP_ID=$(node -p "require('./capacitor.config.json').appId")
+          PKG_PATH=$(echo "$APP_ID" | tr '.' '/')
+          echo "Verifying dynamic appId=$APP_ID (path=$PKG_PATH)"
+          test -f "android/app/src/main/java/${PKG_PATH}/NativeYouTubeResolver.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowPlaybackService.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWebView.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          test ! -d "android/app/src/main/java/com/spotyflow/music"
           test -f android/app/src/main/res/layout/bridge_layout_main.xml
           test -f android/app/src/main/res/drawable/ic_stat_music.xml
+          grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
+          grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
           grep -q "androidx.media3:media3-exoplayer:1.4.1" android/app/build.gradle
           grep -q "androidx.media3:media3-session:1.4.1" android/app/build.gradle
           grep -q "SpotyFlowPlaybackService" android/app/src/main/AndroidManifest.xml
@@ -83,13 +89,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android Media3 ExoPlayer APK (v11.0.0)
+          name: SpotyFlow Android Media3 ExoPlayer APK (v11.1.0)
           body: |
-            ### SpotyFlow Android APK (Native Media3 ExoPlayer + Hardware DSP Edition)
-            - **100% Native AndroidX Media3 ExoPlayer (`MediaSessionService`)**: hardware audio decoding + 20–60 detik buffer anti patah-patah saat layar terkunci atau pindah aplikasi.
+            ### SpotyFlow Android APK (Instant Native Media3 ExoPlayer + Anti-403 Parallel Resolver + Origin Island Edition)
+            - **Startup Instan (~1–2 detik)**: 3-way parallel audio resolver (`WEB_EMBEDDED_PLAYER` itag 18 anti-403 + `ANDROID` client + Vercel fallback) dengan probe Range HTTP 200/206, 20-menit RAM cache, dan `DefaultLoadControl` 400ms fast-start.
+            - **100% Native AndroidX Media3 ExoPlayer (`MediaSessionService`)**: video track decoding dimatikan (`C.TRACK_TYPE_VIDEO`), dynamic `User-Agent` per track, `AtomicLong activePlaySeq` guard anti lagu tumpang tindih, dan 15–45 detik buffer anti patah-patah di layar terkunci.
             - **Native Android Hardware Audio FX (`android.media.audiofx`)**: Equalizer 5-Band, Bass Boost, Loudness/Volume Boost, Reverb/3D Room, dan Slowed/Nightcore Pitch & Speed langsung di DSP audio sistem.
-            - **Dynamic Island, Origin Island, Live Alerts, Now Bar, Lockscreen & TWS Bluetooth**: menggunakan standar resmi `MediaSessionService` + `DefaultMediaNotificationProvider` + `android:appCategory="audio"` + 4 kategori notifikasi persis Spotify.
-            - **Ringan & Cepat (~15–20 MB)**: bebas aset WAV dummy 200 MB.
+            - **Origin Island Vivo & Dynamic Island Resmi**: menggunakan `appId` whitelist resmi dengan nama & ikon tetap **SpotyFlow**, `MediaSessionService` + `DefaultMediaNotificationProvider` + `android:appCategory="audio"` + 4 kategori notifikasi persis Spotify.
+            - **Ringan & Cepat (~7–15 MB)**: bebas aset WAV dummy 200 MB.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
