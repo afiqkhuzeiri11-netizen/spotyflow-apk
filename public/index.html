@@ -5037,7 +5037,75 @@
       return getSafeMediaSessionArtwork(track);
     }
 
+    function resolveAbsoluteNativeCoverUrl(track) {
+      const FALLBACK_ICON = 'https://spotyflow.vercel.app/icon-512.png';
+      try {
+        let raw = '';
+        if (typeof getCover === 'function' && track) {
+          raw = String(getCover(track, 'big') || '').trim();
+        }
+        if (!raw) raw = String(resolveSafeMediaArtworkUrl(track) || '').trim();
+        if (!raw || raw.startsWith('data:') || raw.startsWith('blob:')) return FALLBACK_ICON;
+        if (raw.startsWith('/')) return `https://spotyflow.vercel.app${raw}`;
+        if (raw.startsWith('//')) return `https:${raw}`;
+        if (/^https?:\/\//i.test(raw)) return raw;
+        return FALLBACK_ICON;
+      } catch {
+        return FALLBACK_ICON;
+      }
+    }
+
+    let __lastNativeMediaSyncAt = 0;
+    function syncNativeAndroidMediaSession(force = false, trackOverride = null) {
+      try {
+        if (typeof IS_NATIVE_APK === 'undefined' || !IS_NATIVE_APK) return;
+        const track = trackOverride || AppState.currentTrack;
+        if (!track) return;
+        const now = Date.now();
+        if (!force && now - __lastNativeMediaSyncAt < 250) return;
+        __lastNativeMediaSyncAt = now;
+
+        const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
+        const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
+        const artistName = typeof track.artist === 'string' ? track.artist : (track.artist?.name || 'SpotyFlow');
+        const useYt = typeof SFYtFull !== 'undefined' && SFYtFull.active;
+        const isCurrentlyPlaying = useYt
+          ? Boolean(AppState.isPlaying)
+          : Boolean(AppState.isPlaying && audio && !audio.paused);
+
+        if (nativeMedia && typeof nativeMedia.updatePlayback === 'function') {
+          const rawDur = useYt
+            ? Number(SFYtFull.getDuration() || 0)
+            : (audio && Number.isFinite(audio.duration) ? Number(audio.duration) : 0);
+          const durSec = rawDur > 0 ? rawDur : (Number(track.duration) > 0 ? Number(track.duration) : 210);
+          const curPos = useYt
+            ? Number(SFYtFull.getCurrentTime() || 0)
+            : (audio && Number.isFinite(audio.currentTime) ? Number(audio.currentTime) : 0);
+          nativeMedia.updatePlayback({
+            title: String(track.title || 'SpotyFlow'),
+            artist: String(artistName || 'SpotyFlow'),
+            album: String(albumTitle || 'SpotyFlow'),
+            coverUrl: resolveAbsoluteNativeCoverUrl(track),
+            isPlaying: Boolean(isCurrentlyPlaying),
+            durationMs: Math.max(1000, Math.round(durSec * 1000)),
+            positionMs: Math.max(0, Math.round((curPos || 0) * 1000)),
+            playbackRate: Number(AppState.playbackRate || 1.0),
+          }).catch(() => {});
+        } else if (window.SpotyFlowNative && typeof window.SpotyFlowNative.updateNowPlaying === 'function') {
+          window.SpotyFlowNative.updateNowPlaying(
+            String(track.title || 'SpotyFlow'),
+            String(artistName || 'SpotyFlow'),
+            Boolean(isCurrentlyPlaying)
+          );
+        }
+      } catch {}
+    }
+
     function updateMediaSessionPosition() {
+      // CEGAH BENTROK WEBVIEW & SPAM 250ms: di mode APK native, progress bar diinterpolasi otomatis oleh MediaSessionCompat native Android!
+      if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK) {
+        return;
+      }
       if (!('mediaSession' in navigator) || typeof navigator.mediaSession.setPositionState !== 'function') return;
       const useYt = typeof SFYtFull !== 'undefined' && SFYtFull.active;
       const dur = useYt ? SFYtFull.getDuration() : audio.duration;
@@ -5056,6 +5124,14 @@
 
     function updateSystemMediaSession(track = AppState.currentTrack) {
       if (!track) return;
+
+      // CEGAH BENTROK WEBVIEW: di mode APK native, gunakan HANYA MediaSessionCompat native Android!
+      if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK) {
+        syncNativeAndroidMediaSession(true, track);
+        return;
+      }
+
+      if (!('mediaSession' in navigator)) return;
       const safeArtworkUrl = resolveSafeMediaArtworkUrl(track);
       const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
       const artistName = typeof track.artist === 'string' ? track.artist : (track.artist?.name || 'SpotyFlow');
@@ -5063,122 +5139,90 @@
         ? Boolean(AppState.isPlaying)
         : Boolean(audio && !audio.paused);
 
-      if ('mediaSession' in navigator) {
-        try {
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: String(track.title || 'SpotyFlow'),
-            artist: String(artistName || 'SpotyFlow'),
-            album: String(albumTitle || 'SpotyFlow'),
-            artwork: [
-              { src: safeArtworkUrl, sizes: '512x512', type: 'image/png' },
-              { src: safeArtworkUrl, sizes: '192x192', type: 'image/png' },
-            ],
-          });
-        } catch {}
-
-        try {
-          navigator.mediaSession.playbackState = isCurrentlyPlaying ? 'playing' : 'paused';
-        } catch {}
-
-        try {
-          navigator.mediaSession.setActionHandler('play', () => {
-            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-              SFYtFull.play();
-            } else if (audio.paused) {
-              audio.play().catch(() => playCurrentQueueItem());
-            }
-          });
-        } catch {}
-        try {
-          navigator.mediaSession.setActionHandler('pause', () => {
-            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-              SFYtFull.pause();
-            } else if (!audio.paused) {
-              audio.pause();
-            }
-          });
-        } catch {}
-        try {
-          navigator.mediaSession.setActionHandler('previoustrack', () => {
-            playPrev();
-          });
-        } catch {}
-        try {
-          navigator.mediaSession.setActionHandler('nexttrack', () => {
-            playNext();
-          });
-        } catch {}
-        try {
-          navigator.mediaSession.setActionHandler('seekbackward', (d) => {
-            const offset = d?.seekOffset || 10;
-            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-              SFYtFull.seekTo(Math.max(0, SFYtFull.getCurrentTime() - offset));
-            } else {
-              audio.currentTime = Math.max(0, (audio.currentTime || 0) - offset);
-            }
-            updateMediaSessionPosition();
-          });
-        } catch {}
-        try {
-          navigator.mediaSession.setActionHandler('seekforward', (d) => {
-            const offset = d?.seekOffset || 10;
-            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-              const maxDur = SFYtFull.getDuration() || 9999;
-              SFYtFull.seekTo(Math.min(maxDur, SFYtFull.getCurrentTime() + offset));
-            } else {
-              const maxDur = Number.isFinite(audio.duration) ? audio.duration : 9999;
-              audio.currentTime = Math.min(maxDur, (audio.currentTime || 0) + offset);
-            }
-            updateMediaSessionPosition();
-          });
-        } catch {}
-        try {
-          navigator.mediaSession.setActionHandler('seekto', (d) => {
-            if (typeof d?.seekTime === 'number' && Number.isFinite(d.seekTime)) {
-              if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
-                const maxDur = SFYtFull.getDuration() || d.seekTime;
-                SFYtFull.seekTo(Math.max(0, Math.min(maxDur, d.seekTime)));
-              } else {
-                const maxDur = Number.isFinite(audio.duration) ? audio.duration : d.seekTime;
-                audio.currentTime = Math.max(0, Math.min(maxDur, d.seekTime));
-              }
-              updateMediaSessionPosition();
-            }
-          });
-        } catch {}
-
-        updateMediaSessionPosition();
-      }
-
-      // Sinkronkan ke Capacitor Native MediaSessionCompat + MediaStyle Foreground Service (Dynamic Island bawaan HP & Background Audio)
-      // WAJIB dijalankan meskipun navigator.mediaSession tidak tersedia di Android WebView!
       try {
-        const nativeMedia = window.Capacitor?.Plugins?.SpotyFlowMedia;
-        if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && nativeMedia && typeof nativeMedia.updatePlayback === 'function') {
-          const durSec = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
-            ? (Number(SFYtFull.getDuration()) || Number(track.duration) || 0)
-            : (audio && Number.isFinite(audio.duration) ? audio.duration : (Number(track.duration) || 0));
-          const posSec = (typeof SFYtFull !== 'undefined' && SFYtFull.active)
-            ? (Number(SFYtFull.getCurrentTime()) || 0)
-            : (audio && Number.isFinite(audio.currentTime) ? audio.currentTime : 0);
-          nativeMedia.updatePlayback({
-            title: String(track.title || 'SpotyFlow'),
-            artist: String(artistName || 'SpotyFlow'),
-            album: String(albumTitle || 'SpotyFlow'),
-            coverUrl: String(safeArtworkUrl || ''),
-            isPlaying: Boolean(isCurrentlyPlaying),
-            durationMs: Math.max(0, Math.round(durSec * 1000)),
-            positionMs: Math.max(0, Math.round(posSec * 1000)),
-            playbackRate: Number(AppState.playbackRate || 1),
-          }).catch(() => {});
-        } else if (window.SpotyFlowNative && typeof window.SpotyFlowNative.updateNowPlaying === 'function') {
-          window.SpotyFlowNative.updateNowPlaying(
-            String(track.title || 'SpotyFlow'),
-            String(artistName || 'SpotyFlow'),
-            isCurrentlyPlaying
-          );
-        }
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: String(track.title || 'SpotyFlow'),
+          artist: String(artistName || 'SpotyFlow'),
+          album: String(albumTitle || 'SpotyFlow'),
+          artwork: [
+            { src: safeArtworkUrl, sizes: '512x512', type: 'image/png' },
+            { src: safeArtworkUrl, sizes: '192x192', type: 'image/png' },
+          ],
+        });
       } catch {}
+
+      try {
+        navigator.mediaSession.playbackState = isCurrentlyPlaying ? 'playing' : 'paused';
+      } catch {}
+
+      try {
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            SFYtFull.play();
+          } else if (audio.paused) {
+            audio.play().catch(() => playCurrentQueueItem());
+          }
+        });
+      } catch {}
+      try {
+        navigator.mediaSession.setActionHandler('pause', () => {
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            SFYtFull.pause();
+          } else if (!audio.paused) {
+            audio.pause();
+          }
+        });
+      } catch {}
+      try {
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+          playPrev();
+        });
+      } catch {}
+      try {
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+          playNext();
+        });
+      } catch {}
+      try {
+        navigator.mediaSession.setActionHandler('seekbackward', (d) => {
+          const offset = d?.seekOffset || 10;
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            SFYtFull.seekTo(Math.max(0, SFYtFull.getCurrentTime() - offset));
+          } else {
+            audio.currentTime = Math.max(0, (audio.currentTime || 0) - offset);
+          }
+          updateMediaSessionPosition();
+        });
+      } catch {}
+      try {
+        navigator.mediaSession.setActionHandler('seekforward', (d) => {
+          const offset = d?.seekOffset || 10;
+          if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+            const maxDur = SFYtFull.getDuration() || 9999;
+            SFYtFull.seekTo(Math.min(maxDur, SFYtFull.getCurrentTime() + offset));
+          } else {
+            const maxDur = Number.isFinite(audio.duration) ? audio.duration : 9999;
+            audio.currentTime = Math.min(maxDur, (audio.currentTime || 0) + offset);
+          }
+          updateMediaSessionPosition();
+        });
+      } catch {}
+      try {
+        navigator.mediaSession.setActionHandler('seekto', (d) => {
+          if (typeof d?.seekTime === 'number' && Number.isFinite(d.seekTime)) {
+            if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+              const maxDur = SFYtFull.getDuration() || d.seekTime;
+              SFYtFull.seekTo(Math.max(0, Math.min(maxDur, d.seekTime)));
+            } else {
+              const maxDur = Number.isFinite(audio.duration) ? audio.duration : d.seekTime;
+              audio.currentTime = Math.max(0, Math.min(maxDur, d.seekTime));
+            }
+            updateMediaSessionPosition();
+          }
+        });
+      } catch {}
+
+      updateMediaSessionPosition();
     }
 
     let __nativeMediaListenerBound = false;
@@ -7596,6 +7640,7 @@
       seekTo(sec) {
         if (this.player && this.playerReady) {
           try { this.player.seekTo(Math.max(0, Number(sec) || 0), true); } catch {}
+          syncNativeAndroidMediaSession(true);
           if (typeof SpotyJam !== 'undefined' && SpotyJam.active && SpotyJam.role === 'host' && !SpotyJam.applyingGuestSync) {
             pushJamHostState(true);
           }
@@ -8628,6 +8673,11 @@
         syncLyricsWithTime(deckEl.currentTime || 0);
         updateSystemMediaSession(AppState.currentTrack);
         savePlaybackSession(true);
+      });
+
+      deckEl.addEventListener('ratechange', () => {
+        if (deckIdx !== activeDeckIndex || (typeof SFYtFull !== 'undefined' && SFYtFull.active)) return;
+        syncNativeAndroidMediaSession(true);
       });
 
       deckEl.addEventListener('timeupdate', () => {

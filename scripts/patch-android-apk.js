@@ -20,6 +20,19 @@ const BUILD_GRADLE = path.join(APP_DIR, 'build.gradle');
 const MANIFEST_XML = path.join(APP_DIR, 'src', 'main', 'AndroidManifest.xml');
 const JAVA_PKG_DIR = path.join(APP_DIR, 'src', 'main', 'java', 'com', 'spotyflow', 'music');
 const RES_LAYOUT_DIR = path.join(APP_DIR, 'src', 'main', 'res', 'layout');
+const RES_DRAWABLE_DIR = path.join(APP_DIR, 'src', 'main', 'res', 'drawable');
+
+const IC_STAT_MUSIC_XML = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z" />
+</vector>
+`;
 
 const SPOTYFLOW_MEDIA_SERVICE_JAVA = `package com.spotyflow.music;
 
@@ -27,37 +40,45 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.media.MediaBrowserServiceCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SpotyFlowMediaService extends Service {
-    public static final String CHANNEL_ID = "spotyflow_playback_channel_v2";
+public class SpotyFlowMediaService extends MediaBrowserServiceCompat {
+    public static final String CHANNEL_ID = "spotyflow_media_v2";
     public static final int NOTIFICATION_ID = 1001;
 
     public static final String ACTION_UPDATE = "com.spotyflow.music.ACTION_UPDATE";
@@ -69,6 +90,8 @@ public class SpotyFlowMediaService extends Service {
     public static volatile boolean isPlaying = false;
 
     private MediaSessionCompat mediaSession;
+    private AudioManager audioManager;
+    private AudioFocusRequest audioFocusRequest;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
     private ExecutorService artworkExecutor;
@@ -87,6 +110,21 @@ public class SpotyFlowMediaService extends Service {
     private Bitmap fallbackArtworkCache = null;
     private boolean noisyReceiverRegistered = false;
     private boolean isInForeground = false;
+    private long lastPlayRequestedElapsedMs = 0L;
+
+    private final AudioManager.OnAudioFocusChangeListener focusChangeListener = focusChange -> {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS
+                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+            // Abaikan bentrok internal sementara saat Chromium WebView ikut meminta fokus audio di awal pemutaran
+            if (SystemClock.elapsedRealtime() - lastPlayRequestedElapsedMs < 1800L) {
+                return;
+            }
+            isPlaying = false;
+            releasePowerLocks();
+            SpotyFlowMediaPlugin.emitMediaAction("pause", -1L);
+            updatePlaybackStateAndNotification();
+        }
+    };
 
     private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
         @Override
@@ -105,6 +143,7 @@ public class SpotyFlowMediaService extends Service {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         artworkExecutor = Executors.newSingleThreadExecutor();
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         createNotificationChannel();
         initMediaSession();
@@ -115,12 +154,13 @@ public class SpotyFlowMediaService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "SpotyFlow Music Player",
+                    "Pemutar Musik SpotyFlow",
                     NotificationManager.IMPORTANCE_DEFAULT
             );
-            channel.setDescription("Kontrol pemutaran musik latar belakang & Dynamic Island SpotyFlow");
+            channel.setDescription("Kontrol pemutaran musik latar belakang & Dynamic Island bawaan HP SpotyFlow");
             channel.setSound(null, null);
             channel.enableVibration(false);
+            channel.enableLights(false);
             channel.setShowBadge(false);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -131,7 +171,22 @@ public class SpotyFlowMediaService extends Service {
     }
 
     private void initMediaSession() {
-        mediaSession = new MediaSessionCompat(this, "SpotyFlowMediaSession");
+        ComponentName mediaButtonReceiver = new ComponentName(this, MediaButtonReceiver.class);
+        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        mediaButtonIntent.setComponent(mediaButtonReceiver);
+        PendingIntent mediaButtonPendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                mediaButtonIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        mediaSession = new MediaSessionCompat(this, "SpotyFlowMediaSession", mediaButtonReceiver, mediaButtonPendingIntent);
+        mediaSession.setFlags(
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
+                        | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+        );
+        mediaSession.setSessionActivity(buildContentIntent());
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
@@ -164,11 +219,52 @@ public class SpotyFlowMediaService extends Service {
             public void onStop() {
                 isPlaying = false;
                 releasePowerLocks();
+                abandonAudioFocus();
                 SpotyFlowMediaPlugin.emitMediaAction("pause", -1L);
                 stopSelf();
             }
         });
+        setSessionToken(mediaSession.getSessionToken());
         mediaSession.setActive(true);
+    }
+
+    private void requestAudioFocusSafe() {
+        if (audioManager == null) return;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (audioFocusRequest == null) {
+                    AudioAttributes attrs = new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build();
+                    audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                            .setAudioAttributes(attrs)
+                            .setAcceptsDelayedFocusGain(true)
+                            .setOnAudioFocusChangeListener(focusChangeListener, mainHandler)
+                            .build();
+                }
+                audioManager.requestAudioFocus(audioFocusRequest);
+            } else {
+                audioManager.requestAudioFocus(
+                        focusChangeListener,
+                        AudioManager.STREAM_MUSIC,
+                        AudioManager.AUDIOFOCUS_GAIN
+                );
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void abandonAudioFocus() {
+        if (audioManager == null) return;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && audioFocusRequest != null) {
+                audioManager.abandonAudioFocusRequest(audioFocusRequest);
+            } else {
+                audioManager.abandonAudioFocus(focusChangeListener);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void registerNoisyReceiverSafe() {
@@ -239,6 +335,10 @@ public class SpotyFlowMediaService extends Service {
             return START_NOT_STICKY;
         }
         String action = intent.getAction();
+        if (Intent.ACTION_MEDIA_BUTTON.equals(action)) {
+            MediaButtonReceiver.handleIntent(mediaSession, intent);
+            return START_STICKY;
+        }
         if (ACTION_PLAY_PAUSE.equals(action)) {
             SpotyFlowMediaPlugin.emitMediaAction(isPlaying ? "pause" : "play", -1L);
             return START_STICKY;
@@ -274,6 +374,8 @@ public class SpotyFlowMediaService extends Service {
         isPlaying = playing;
 
         if (isPlaying) {
+            lastPlayRequestedElapsedMs = SystemClock.elapsedRealtime();
+            requestAudioFocusSafe();
             acquirePowerLocks();
         } else {
             releasePowerLocks();
@@ -371,9 +473,12 @@ public class SpotyFlowMediaService extends Service {
 
         long safeDurationMs = currentDurationMs > 0L ? currentDurationMs : (isPlaying ? 180000L : 0L);
         MediaMetadataCompat.Builder metaBuilder = new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentTitle + "_" + currentArtist)
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentArtist)
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentTitle)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, currentArtist)
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, safeDurationMs);
         if (art != null) {
             metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, art);
@@ -396,6 +501,8 @@ public class SpotyFlowMediaService extends Service {
                 .build();
         mediaSession.setPlaybackState(playbackState);
 
+        mediaSession.setActive(true);
+
         int playPauseIcon = isPlaying
                 ? android.R.drawable.ic_media_pause
                 : android.R.drawable.ic_media_play;
@@ -405,13 +512,14 @@ public class SpotyFlowMediaService extends Service {
                 .setContentTitle(currentTitle)
                 .setContentText(currentArtist)
                 .setSubText(currentAlbum)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_music)
                 .setLargeIcon(art)
                 .setContentIntent(buildContentIntent())
                 .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setColorized(true)
+                .setSilent(true)
                 .setOngoing(isPlaying)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
@@ -462,6 +570,7 @@ public class SpotyFlowMediaService extends Service {
     public void onDestroy() {
         isPlaying = false;
         releasePowerLocks();
+        abandonAudioFocus();
         if (noisyReceiverRegistered) {
             try {
                 unregisterReceiver(noisyReceiver);
@@ -501,8 +610,13 @@ public class SpotyFlowMediaService extends Service {
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
+        return new BrowserRoot("spotyflow_root", null);
+    }
+
+    @Override
+    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
+        result.sendResult(new ArrayList<>());
     }
 }
 `;
@@ -858,11 +972,15 @@ const BRIDGE_LAYOUT_MAIN_XML = `<?xml version="1.0" encoding="utf-8"?>
 const MAIN_ACTIVITY_JAVA = `package com.spotyflow.music;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -872,12 +990,21 @@ import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    private static final int REQ_POST_NOTIFICATIONS = 2026;
+    private static final int REQ_POST_NOTIFICATIONS = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(SpotyFlowMediaPlugin.class);
         super.onCreate(savedInstanceState);
+
+        try {
+            if (getBridge() != null && getBridge().getWebView() != null) {
+                WebView webView = getBridge().getWebView();
+                WebSettings settings = webView.getSettings();
+                settings.setMediaPlaybackRequiresUserGesture(false);
+            }
+        } catch (Exception ignored) {
+        }
 
         if (Build.VERSION.SDK_INT >= 33) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -890,13 +1017,19 @@ public class MainActivity extends BridgeActivity {
             }
         }
 
-        try {
-            if (getBridge() != null && getBridge().getWebView() != null) {
-                WebView webView = getBridge().getWebView();
-                WebSettings settings = webView.getSettings();
-                settings.setMediaPlaybackRequiresUserGesture(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                SharedPreferences prefs = getSharedPreferences("spotyflow_prefs", Context.MODE_PRIVATE);
+                boolean prompted = prefs.getBoolean("sf_battery_prompted", false);
+                if (!prompted && pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                    prefs.edit().putBoolean("sf_battery_prompted", true).apply();
+                    Intent batteryIntent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    batteryIntent.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(batteryIntent);
+                }
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
         }
 
         handleDeepLinkIntent(getIntent());
@@ -1013,9 +1146,11 @@ function patchAndroidManifest() {
     'android.permission.INTERNET',
     'android.permission.ACCESS_NETWORK_STATE',
     'android.permission.WAKE_LOCK',
+    'android.permission.MODIFY_AUDIO_SETTINGS',
     'android.permission.FOREGROUND_SERVICE',
     'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK',
     'android.permission.POST_NOTIFICATIONS',
+    'android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
   ];
 
   const missingPerms = requiredPermissions.filter((p) => !xml.includes(`android:name="${p}"`));
@@ -1026,7 +1161,7 @@ function patchAndroidManifest() {
     xml = xml.replace(/<manifest([^>]*)>/, `<manifest$1>\n${permBlock}`);
   }
 
-  // Set android:largeHeap="true" and android:usesCleartextTraffic="true" on <application>
+  // Set android:largeHeap="true", android:usesCleartextTraffic="true", and android:appCategory="audio" on <application>
   xml = xml.replace(/<application\b([^>]*)>/, (full, attrs) => {
     let nextAttrs = attrs;
     if (!/android:largeHeap\s*=/.test(nextAttrs)) {
@@ -1034,6 +1169,9 @@ function patchAndroidManifest() {
     }
     if (!/android:usesCleartextTraffic\s*=/.test(nextAttrs)) {
       nextAttrs += '\n        android:usesCleartextTraffic="true"';
+    }
+    if (!/android:appCategory\s*=/.test(nextAttrs)) {
+      nextAttrs += '\n        android:appCategory="audio"';
     }
     return `<application${nextAttrs}>`;
   });
@@ -1053,31 +1191,48 @@ function patchAndroidManifest() {
     }
   }
 
-  // Register SpotyFlowMediaService inside <application>
+  // Register SpotyFlowMediaService (MediaBrowserServiceCompat + MEDIA_BUTTON) & MediaButtonReceiver for Pemutar Origin / Dynamic Island / Android Auto
   if (!xml.includes('android:name=".SpotyFlowMediaService"')) {
     const serviceBlock = `
         <service
             android:name=".SpotyFlowMediaService"
             android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="androidx.media.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
     `;
     xml = xml.replace('</application>', `${serviceBlock}\n    </application>`);
   }
 
   fs.writeFileSync(MANIFEST_XML, xml, 'utf8');
-  console.log('  + Patched AndroidManifest.xml (6 clean permissions, largeHeap, spotyflow:// deep link, mediaPlayback service)');
+  console.log('  + Patched AndroidManifest.xml (appCategory=audio, MediaBrowserService, MediaButtonReceiver, spotyflow:// deep link)');
 }
 
 function writeJavaSources() {
   fs.mkdirSync(JAVA_PKG_DIR, { recursive: true });
   fs.mkdirSync(RES_LAYOUT_DIR, { recursive: true });
+  fs.mkdirSync(RES_DRAWABLE_DIR, { recursive: true });
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowMediaService.java'), SPOTYFLOW_MEDIA_SERVICE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowMediaPlugin.java'), SPOTYFLOW_MEDIA_PLUGIN_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), SPOTYFLOW_WEBVIEW_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), MAIN_ACTIVITY_JAVA, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
-  console.log('  + Written SpotyFlowMediaService.java, SpotyFlowMediaPlugin.java, SpotyFlowWebView.java, MainActivity.java, bridge_layout_main.xml');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'), IC_STAT_MUSIC_XML, 'utf8');
+  console.log('  + Written SpotyFlowMediaService.java (MediaBrowserServiceCompat), SpotyFlowMediaPlugin.java, SpotyFlowWebView.java, MainActivity.java, bridge_layout_main.xml, ic_stat_music.xml');
 }
 
 function main() {
