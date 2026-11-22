@@ -5039,46 +5039,28 @@
     /* =====================================================================
        3. BACKGROUND PLAYBACK, MEDIA SESSION API, WAKE LOCK & SLEEP TIMER
        ===================================================================== */
+    function getNativeMediaBridge() {
+      return window.SpotyFlowMediaBridge || null;
+    }
+
     function hasNativeExo() {
-      try {
-        return Boolean(
-          window.SpotyFlowExo &&
-          typeof window.SpotyFlowExo.isAvailable === 'function' &&
-          window.SpotyFlowExo.isAvailable()
-        );
-      } catch {
-        return false;
-      }
+      return false;
     }
 
     function getNativeBridge() {
-      return window.SpotyFlowExo || window.SpotyFlowNative || null;
+      return getNativeMediaBridge() || window.SpotyFlowNative || null;
     }
 
     function isRunningInNativeApk() {
       return Boolean(
-        hasNativeExo() ||
+        getNativeMediaBridge() ||
         window.SpotyFlowNative ||
         window.Capacitor?.isNativePlatform?.() ||
         /SpotyFlowApp/i.test(navigator.userAgent || '')
       );
     }
 
-    const ExoState = {
-      active: false,
-      usingWebBlob: false,
-      isPlaying: false,
-      positionSec: 0,
-      durationSec: 0,
-      sessionId: 0,
-      track: null,
-      candidates: [],
-      candidateIdx: 0,
-      triedResolveFallback: false,
-      consecutiveErrors: 0,
-      lastTickMs: 0,
-      pendingResumeSec: 0,
-    };
+    const ExoState = { active: false };
 
     function pauseAllWebDecks() {
       try { if (typeof SFYtFull !== 'undefined') SFYtFull.stop(); } catch {}
@@ -5106,302 +5088,9 @@
       return /^[a-zA-Z0-9_-]{11}$/.test(raw) ? raw : '';
     }
 
-    function extractDirectNonYtAudioUrl(track) {
-      if (!track || track.isLocal) return '';
-      const candidates = [track.fullStreamUrl, track.directStreamUrl];
-      for (const raw of candidates) {
-        if (!raw || typeof raw !== 'string') continue;
-        const trimmed = raw.trim();
-        if (!trimmed || trimmed.startsWith('blob:') || trimmed.startsWith('data:')) continue;
-        const abs = typeof resolveApiUrl === 'function' ? resolveApiUrl(trimmed) : trimmed;
-        if (/^https?:\/\//i.test(abs) && !/youtube\.com|youtu\.be|googlevideo\.com|\/api\/audio\/stream/i.test(abs)) {
-          return abs;
-        }
-      }
-      return '';
-    }
-
-    function buildExoTrackPayload(track, candidate) {
-      const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
-      const artistName = typeof track.artist === 'string' ? track.artist : (track.artist?.name || 'SpotyFlow');
-      const durSec = Number(candidate?.duration || track.duration || 210);
-      const presetBonus = AppState.loudnessLevel === 'loud' ? 25 : (AppState.loudnessLevel === 'quiet' ? -20 : 0);
-      const effBoost = Math.max(100, Math.min(300, (parseInt(AppState.volumeBoostPct, 10) || 100) + presetBonus));
-      return {
-        url: String(candidate?.url || ''),
-        videoId: String(candidate?.videoId || ''),
-        title: String(track.title || 'SpotyFlow'),
-        artist: String(artistName || 'SpotyFlow'),
-        album: String(albumTitle || 'SpotyFlow'),
-        coverUrl: resolveAbsoluteNativeCoverUrl(track),
-        durationMs: Math.max(1000, Math.round(durSec * 1000)),
-        speed: Number(AppState.playbackRate || 1.0),
-        preservesPitch: AppState.preservesPitch !== false,
-        volume: AppState.isMuted ? 0 : Math.max(0, Math.min(1, Number(AppState.volume) || 1.0)),
-        eqGains: Array.isArray(AppState.eqGains) ? AppState.eqGains.slice(0, 5).map((g) => Number(g) || 0) : [0, 0, 0, 0, 0],
-        boostPct: effBoost,
-        normalizerEnabled: Boolean(AppState.normalizerEnabled),
-        reverbMix: Math.max(0, Math.min(1, Number(AppState.reverbMix) || 0)),
-      };
-    }
-
-    function dispatchCurrentExoCandidate() {
-      if (!hasNativeExo()) return false;
-      const cand = ExoState.candidates[ExoState.candidateIdx];
-      const track = ExoState.track;
-      if (!cand || !track) return false;
-
-      pauseAllWebDecks();
-      clearWebViewMediaSessionIfNative();
-      ExoState.usingWebBlob = false;
-      ExoState.active = true;
-      setLoadingBanner(true, `Memutar ExoPlayer HD "${track.title}"...`);
-      try {
-        const payload = buildExoTrackPayload(track, cand);
-        window.SpotyFlowExo.playTrack(JSON.stringify(payload));
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    window.__sfOnExoEvent = function (ev) {
-      if (!ev || typeof ev !== 'object') return;
-      const type = String(ev.type || '');
-      const posMs = Number(ev.positionMs || 0);
-      const durMs = Number(ev.durationMs || 0);
-      const posSec = posMs > 0 ? posMs / 1000 : 0;
-      const durSec = durMs > 0 ? durMs / 1000 : (ExoState.durationSec || AppState.currentTrack?.duration || 0);
-
-      if (type === 'timeupdate') {
-        if (!ExoState.active) return;
-        ExoState.positionSec = posSec;
-        if (durMs > 1000) ExoState.durationSec = durSec;
-        ExoState.isPlaying = Boolean(ev.isPlaying);
-
-        if (ExoState.isPlaying) {
-          const now = Date.now();
-          if (ExoState.lastTickMs && now - ExoState.lastTickMs < 2500) {
-            accumulateListenTime((now - ExoState.lastTickMs) / 1000);
-          }
-          ExoState.lastTickMs = now;
-        } else {
-          ExoState.lastTickMs = 0;
-        }
-
-        // A-B Loop
-        if (AppState.abLoop?.active && AppState.abLoop.a !== null && AppState.abLoop.b !== null && posSec >= AppState.abLoop.b) {
-          try { window.SpotyFlowExo.seekTo(Math.round(AppState.abLoop.a * 1000)); } catch {}
-          return;
-        }
-
-        // Pre-fetch next track 15s before end
-        const total = ExoState.durationSec || AppState.currentTrack?.duration || 0;
-        if (total > 20 && total - posSec > 0.5 && total - posSec <= 15 && AppState.repeatMode !== 'one' && AppState.sleepMode !== 'end') {
-          prefetchNextTrack();
-        }
-
-        if (AppState.isSeeking || window.__sfNativeAppBg || document.hidden || !total) return;
-        const pct = Math.max(0, Math.min(100, (posSec / total) * 100));
-        const curText = formatTime(posSec);
-        ['seek-slider', 'stage-seek-slider'].forEach((id) => {
-          const sl = document.getElementById(id);
-          if (sl) {
-            sl.value = pct;
-            sl.style.setProperty('--slider-pct', `${pct}%`);
-          }
-        });
-        const tc = document.getElementById('time-current');
-        const stc = document.getElementById('stage-time-current');
-        if (tc) tc.textContent = curText;
-        if (stc) stc.textContent = curText;
-        const mpb = document.getElementById('mobile-progress-bar');
-        if (mpb) mpb.style.width = `${pct}%`;
-        const tvBar = document.getElementById('tv-progress-fill');
-        if (tvBar) tvBar.style.width = `${pct}%`;
-        const tvCur = document.getElementById('tv-time-current');
-        if (tvCur) tvCur.textContent = curText;
-        const carBar = document.getElementById('car-progress-fill');
-        if (carBar) carBar.style.width = `${pct}%`;
-        const carCur = document.getElementById('car-time-current');
-        if (carCur) carCur.textContent = curText;
-        const carDur = document.getElementById('car-time-duration');
-        if (carDur) carDur.textContent = formatTime(total);
-        updateDurationDisplays(total);
-        if (typeof updateMiniPlayerPipProgress === 'function') updateMiniPlayerPipProgress(posSec, total);
-        if (typeof checkFloatingCommentBubbles === 'function') checkFloatingCommentBubbles(posSec);
-        syncLyricsWithTime(posSec);
-        return;
-      }
-
-      if (type === 'buffering') {
-        if (!ExoState.active) return;
-        // Tampilkan indikator loading halus tanpa mengubah AppState.isPlaying jadi paused palsu
-        AppState.isResolving = true;
-        updatePlayPauseIcons();
-        return;
-      }
-
-      if (type === 'ready') {
-        if (!ExoState.active) return;
-        if (durMs > 1000) {
-          ExoState.durationSec = durSec;
-          if (AppState.currentTrack) AppState.currentTrack.duration = durSec;
-          updateDurationDisplays(durSec);
-          setSignalBadge(`EXOPLAYER HD • ${formatTime(durSec)}`, true);
-          const lbl = document.getElementById('stage-source-label');
-          if (lbl) lbl.textContent = `Native ExoPlayer • Hardware Audio HD (${formatTime(durSec)})`;
-        }
-        if (ExoState.pendingResumeSec > 1) {
-          const cap = durSec > 5 ? Math.max(0, durSec - 2) : ExoState.pendingResumeSec;
-          const target = Math.min(ExoState.pendingResumeSec, cap);
-          ExoState.pendingResumeSec = 0;
-          if (target > 1) {
-            try { window.SpotyFlowExo.seekTo(Math.round(target * 1000)); } catch {}
-            syncLyricsWithTime(target);
-          }
-        }
-        prefetchNextTrackInQueue();
-        return;
-      }
-
-      if (type === 'playing') {
-        if (!ExoState.active) return;
-        ExoState.isPlaying = true;
-        ExoState.consecutiveErrors = 0;
-        ExoState.lastTickMs = Date.now();
-        AppState.isPlaying = true;
-        AppState.isResolving = false;
-        setLoadingBanner(false);
-        const d = ExoState.durationSec || AppState.currentTrack?.duration || 210;
-        setSignalBadge(`EXOPLAYER HD • ${formatTime(d)}`, true);
-        if (!window.__sfNativeAppBg && !document.hidden) startVisualizerLoop();
-        updatePlayPauseIcons();
-        highlightPlayingTrackRows();
-        if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
-        return;
-      }
-
-      if (type === 'paused') {
-        if (!ExoState.active) return;
-        ExoState.isPlaying = false;
-        ExoState.lastTickMs = 0;
-        AppState.isPlaying = false;
-        AppState.isResolving = false;
-        stopVisualizerLoop();
-        updatePlayPauseIcons();
-        highlightPlayingTrackRows();
-        saveListeningStats(true);
-        savePlaybackSession(true);
-        if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
-        return;
-      }
-
-      if (type === 'ended') {
-        if (!ExoState.active) return;
-        ExoState.isPlaying = false;
-        ExoState.lastTickMs = 0;
-        stopVisualizerLoop();
-        if (AppState.sleepMode === 'end') {
-          AppState.sleepMode = 'off';
-          document.getElementById('header-sleep-pill')?.classList.add('hidden');
-          const sr = document.getElementById('sleep-readout');
-          if (sr) sr.textContent = 'Selesai';
-          AppState.isPlaying = false;
-          updatePlayPauseIcons();
-          highlightPlayingTrackRows();
-          showToast('Lagu selesai. Timer tidur menghentikan pemutaran.');
-          return;
-        }
-        if (AppState.repeatMode === 'one') {
-          try {
-            window.SpotyFlowExo.seekTo(0);
-            window.SpotyFlowExo.resume();
-          } catch {}
-          return;
-        }
-        playNext(false);
-        return;
-      }
-
-      if (type === 'next') {
-        playNext(true);
-        return;
-      }
-
-      if (type === 'prev') {
-        playPrev();
-        return;
-      }
-
-      if (type === 'error') {
-        if (!ExoState.active || ExoState.sessionId !== AppState.playSessionId) return;
-        ExoState.candidateIdx += 1;
-        if (ExoState.candidateIdx < ExoState.candidates.length) {
-          dispatchCurrentExoCandidate();
-          return;
-        }
-
-        // 1x Fallback resolve alternatif jika jalur cepat videoId/URL langsung gagal
-        if (!ExoState.triedResolveFallback && ExoState.track) {
-          ExoState.triedResolveFallback = true;
-          const sid = ExoState.sessionId;
-          const tr = ExoState.track;
-          const triedVids = new Set(ExoState.candidates.map((c) => c.videoId).filter(Boolean));
-          const triedUrls = new Set(ExoState.candidates.map((c) => c.url).filter(Boolean));
-          setLoadingBanner(true, `Mencari sumber cadangan "${tr.title}"...`);
-          resolveTrackAudioSources(tr)
-            .then((sources) => {
-              if (sid !== AppState.playSessionId || !ExoState.active) return;
-              const extra = [];
-              const ytCands = Array.isArray(sources?.__ytCandidates) ? sources.__ytCandidates : [];
-              ytCands.slice(0, 3).forEach((cand) => {
-                if (cand?.videoId && !triedVids.has(cand.videoId)) {
-                  triedVids.add(cand.videoId);
-                  extra.push({ url: '', videoId: cand.videoId, duration: Number(cand.duration || tr.duration || 210) });
-                }
-              });
-              (Array.isArray(sources) ? sources : []).forEach((s) => {
-                if (s && /^https?:\/\//i.test(s.streamUrl || '') && !triedUrls.has(s.streamUrl)) {
-                  triedUrls.add(s.streamUrl);
-                  extra.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || tr.duration || 210) });
-                }
-              });
-              if (extra.length > 0) {
-                ExoState.candidates = extra;
-                ExoState.candidateIdx = 0;
-                if (dispatchCurrentExoCandidate()) return;
-              }
-              finalizeExoTrackFailure(sid);
-            })
-            .catch(() => finalizeExoTrackFailure(sid));
-          return;
-        }
-
-        finalizeExoTrackFailure(ExoState.sessionId);
-      }
-    };
-
-    function finalizeExoTrackFailure(sessionId) {
-      if (sessionId !== AppState.playSessionId) return;
-      setLoadingBanner(false);
-      ExoState.isPlaying = false;
-      AppState.isPlaying = false;
-      AppState.isResolving = false;
-      setSignalBadge('SUMBER TIDAK TERSEDIA', false);
-      updatePlayPauseIcons();
-      highlightPlayingTrackRows();
-      ExoState.consecutiveErrors = (ExoState.consecutiveErrors || 0) + 1;
-      if (AppState.queue.length > 1 && ExoState.consecutiveErrors <= 2) {
-        showToast('Sumber lagu ini tidak tersedia, lanjut ke lagu berikutnya...', 'info');
-        setTimeout(() => {
-          if (sessionId === AppState.playSessionId && !AppState.isPlaying) {
-            playNext(false);
-          }
-        }, 700);
-      } else {
-        showToast('Gagal memuat audio. Coba pilih lagu lain.', 'error');
-      }
+    function isPreviewAudioUrl(url) {
+      if (!url || typeof url !== 'string') return false;
+      return /dzcdn\.net|itunes\.apple\.com|audio-ssl\.itunes\.apple\.com|mzstatic\.com|cdnt-preview/i.test(url);
     }
 
     function registerServiceWorker() {
@@ -5475,15 +5164,15 @@
     }
 
     let __lastNativeMediaSyncAt = 0;
-    function syncNativeAndroidMediaSession(force = false, trackOverride = null) {
+    function syncNativeMediaBridge(force = false, trackOverride = null) {
       try {
-        const bridge = getNativeBridge();
+        const bridge = getNativeMediaBridge() || getNativeBridge();
         const capPlugin = getNativeMediaPlugin();
         if (!bridge && !capPlugin && !isRunningInNativeApk()) return;
         const track = trackOverride || AppState.currentTrack;
         if (!track) return;
         const now = Date.now();
-        if (!force && now - __lastNativeMediaSyncAt < 1000) return;
+        if (!force && now - __lastNativeMediaSyncAt < 800) return;
         __lastNativeMediaSyncAt = now;
 
         const albumTitle = typeof track.album === 'string' ? track.album : (track.album?.title || 'SpotyFlow');
@@ -5502,6 +5191,7 @@
           : (audio && Number.isFinite(audio.currentTime) ? Number(audio.currentTime) : 0);
 
         const payload = {
+          trackId: String(track.id || track.videoId || track.ytId || 'track'),
           title: String(track.title || 'SpotyFlow'),
           artist: String(artistName || 'SpotyFlow'),
           album: String(albumTitle || 'SpotyFlow'),
@@ -5512,7 +5202,9 @@
           playbackRate: Number(AppState.playbackRate || 1.0),
         };
 
-        if (bridge && typeof bridge.updatePlayback === 'function') {
+        if (bridge && typeof bridge.updateState === 'function') {
+          bridge.updateState(JSON.stringify(payload));
+        } else if (bridge && typeof bridge.updatePlayback === 'function') {
           bridge.updatePlayback(JSON.stringify(payload));
         } else if (capPlugin && typeof capPlugin.updatePlayback === 'function') {
           capPlugin.updatePlayback(payload).catch(() => {});
@@ -5520,6 +5212,10 @@
           bridge.updateNowPlaying(payload.title, payload.artist, payload.isPlaying);
         }
       } catch {}
+    }
+
+    function syncNativeAndroidMediaSession(force = false, trackOverride = null) {
+      return syncNativeMediaBridge(force, trackOverride);
     }
 
     function updateMediaSessionPosition() {
@@ -5647,22 +5343,27 @@
       updateMediaSessionPosition();
     }
 
-    window.__sfHandleNativeMediaAction = function (action, positionMs) {
+    window.__sfOnNativeMediaAction = function (action, positionMs) {
       try {
         if (action === 'play') {
           window.__sfUserPauseTs = 0;
           if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
             SFYtFull.play();
+            AppState.isPlaying = true;
           } else if (audio && audio.paused) {
             audio.play().catch(() => playCurrentQueueItem());
           }
+          syncNativeMediaBridge(true);
         } else if (action === 'pause' || action === 'noisy') {
           window.__sfUserPauseTs = Date.now();
           if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
             SFYtFull.pause();
+            AppState.isPlaying = false;
           } else if (audio && !audio.paused) {
             audio.pause();
           }
+          updatePlayPauseIcons();
+          syncNativeMediaBridge(true);
         } else if (action === 'next') {
           playNext(true);
         } else if (action === 'prev') {
@@ -5675,10 +5376,11 @@
             audio.currentTime = targetSec;
           }
           syncLyricsWithTime(targetSec);
-          syncNativeAndroidMediaSession(true);
+          syncNativeMediaBridge(true);
         }
       } catch {}
     };
+    window.__sfHandleNativeMediaAction = window.__sfOnNativeMediaAction;
 
     window.__sfHandleNativeAppVisibility = function (visible) {
       try {
@@ -7885,12 +7587,25 @@
           AppState.isPlaying = true;
           setLoadingBanner(false);
           if (dur > 0) {
+            const prevDur = Number(AppState.currentTrack?.duration || 0);
             if (AppState.currentTrack) AppState.currentTrack.duration = dur;
             updateDurationDisplays(dur);
+            // Jika durasi penuh (>45 detik) baru terbaca dan lirik sebelumnya belum termuat, muat ulang lirik dengan durasi akurat!
+            if (
+              dur > 45 &&
+              AppState.currentTrack &&
+              !AppState.currentTrack._lyricsRetriedWithFullDur &&
+              Math.abs(dur - prevDur) > 8 &&
+              (!AppState.lyrics?.lines?.length && !AppState.lyrics?.plain)
+            ) {
+              AppState.currentTrack._lyricsRetriedWithFullDur = true;
+              try { fetchTrackLyrics(AppState.currentTrack); } catch {}
+            }
           }
           updatePlayPauseIcons();
           highlightPlayingTrackRows();
           updateSystemMediaSession(AppState.currentTrack);
+          syncNativeMediaBridge(true);
           this.startSyncLoop();
           if (typeof SpotyJam !== 'undefined' && SpotyJam.active && SpotyJam.role === 'host' && !SpotyJam.applyingGuestSync) {
             pushJamHostState(true);
@@ -7900,8 +7615,8 @@
           if (!this.active) return;
           // Proteksi background APK: jika YouTube embed menjeda sepihak saat layar dikunci / tekan Home (bukan klik user), langsung lanjutkan!
           const userPausedRecently = Date.now() - Number(window.__sfUserPauseTs || 0) < 1800;
-          const bgRecently = document.hidden || (Date.now() - Number(window.__sfLastBgAt || 0) < 3500);
-          if (typeof IS_NATIVE_APK !== 'undefined' && IS_NATIVE_APK && AppState.isPlaying && !userPausedRecently && bgRecently) {
+          const bgRecently = document.hidden || window.__sfNativeAppBg || (Date.now() - Number(window.__sfLastBgAt || 0) < 4000);
+          if (isRunningInNativeApk() && AppState.isPlaying && !userPausedRecently && bgRecently) {
             setTimeout(() => {
               try {
                 if (this.active && AppState.isPlaying) this.play();
@@ -7914,6 +7629,7 @@
           updatePlayPauseIcons();
           highlightPlayingTrackRows();
           updateSystemMediaSession(AppState.currentTrack);
+          syncNativeMediaBridge(true);
           saveListeningStats(true);
           if (typeof SpotyJam !== 'undefined' && SpotyJam.active && SpotyJam.role === 'host' && !SpotyJam.applyingGuestSync) {
             pushJamHostState(true);
@@ -8021,6 +7737,11 @@
             return;
           }
 
+          // Sinkronkan durasi penuh & posisi ke Origin Island / Dynamic Island bahkan saat layar mati
+          if (isRunningInNativeApk()) {
+            syncNativeMediaBridge(false);
+          }
+
           // Hemat CPU/GPU penuh di latar belakang APK agar audio 0% patah-patah
           if (window.__sfNativeAppBg || document.hidden) return;
 
@@ -8112,6 +7833,7 @@
       setPlaybackRate(rate) {
         if (this.player && this.playerReady && typeof this.player.setPlaybackRate === 'function') {
           try { this.player.setPlaybackRate(Number(rate) || 1); } catch {}
+          syncNativeMediaBridge(true);
         }
       },
 
@@ -8185,20 +7907,6 @@
 
       pauseAllWebDecks();
       revokeDeckBlobUrl(activeDeckIndex);
-      if (hasNativeExo()) {
-        ExoState.active = false;
-        ExoState.usingWebBlob = false;
-        ExoState.isPlaying = false;
-        ExoState.positionSec = 0;
-        ExoState.durationSec = Number(track.duration || 210);
-        ExoState.sessionId = sessionId;
-        ExoState.track = track;
-        ExoState.candidates = [];
-        ExoState.candidateIdx = 0;
-        ExoState.triedResolveFallback = false;
-        ExoState.pendingResumeSec = pendingResumeSec;
-        try { window.SpotyFlowExo.stop(); } catch {}
-      }
       if (!IS_MOBILE_DEVICE || hasAnyActiveAudioFx()) {
         resumeAudioContext();
       } else {
@@ -8225,7 +7933,6 @@
         try {
           const rec = await OfflineCache.getRecord(track.id);
           if (rec && rec.audioBlob) {
-            if (hasNativeExo()) ExoState.usingWebBlob = true;
             if (rec.coverBlob) {
               setOfflineCoverBlobUrl(track.id, rec.coverBlob);
               updatePlayerUI();
@@ -8264,34 +7971,13 @@
         } catch {}
       }
 
-      // FAST PATH APK NATIVE EXOPLAYER (Single Source of Truth untuk semua lagu non-blob: — 0 detik tunda JS!)
-      if (hasNativeExo() && !track.isLocal) {
-        const directNonYtUrl = extractDirectNonYtAudioUrl(track);
-        const directVid = extractDirectTrackVideoId(track);
-        if (directNonYtUrl) {
-          setSignalBadge('MENGHUBUNGKAN...', false);
-          ExoState.sessionId = sessionId;
-          ExoState.track = track;
-          ExoState.candidates = [{ url: directNonYtUrl, videoId: '', duration: Number(track.duration || 210) }];
-          ExoState.candidateIdx = 0;
-          if (dispatchCurrentExoCandidate()) return;
-        } else if (directVid) {
-          // Langsung lempar videoId ke Java agar NativeYouTubeResolver balapan paralel 3 jalur (hemat 3-6 detik!)
-          setSignalBadge('MENGHUBUNGKAN...', false);
-          ExoState.sessionId = sessionId;
-          ExoState.track = track;
-          ExoState.candidates = [{ url: '', videoId: directVid, duration: Number(track.duration || 210) }];
-          ExoState.candidateIdx = 0;
-          if (dispatchCurrentExoCandidate()) return;
-        }
-      }
-
-      if ((track.isLocal || track.isAudiusNative) && track.fullStreamUrl) {
-        if (hasNativeExo() && track.isLocal) ExoState.usingWebBlob = true;
+      // Priority 1: File Lokal (blob:) & Stream Penuh Audius Native (bukan preview 30 detik!)
+      if ((track.isLocal || track.isAudiusNative) && track.fullStreamUrl && !isPreviewAudioUrl(track.fullStreamUrl)) {
         setLoadingBanner(true, `Memuat "${track.title}"...`);
         setSignalBadge('MEMUAT AUDIO', false);
         try {
           await tryPlayAudioUrl(track.fullStreamUrl, sessionId);
+          if (sessionId !== AppState.playSessionId) return;
           setLoadingBanner(false);
           AppState.isPlaying = true;
           if (audio.duration && isFinite(audio.duration)) {
@@ -8314,46 +8000,86 @@
         }
       }
 
-      if (track.isUniversal && track.directStreamUrl) {
+      // Priority 2: Direct Non-Preview Full Stream (ANTI PREVIEW 30 DETIK: tolak dzcdn.net / itunes.apple.com!)
+      if (track.isUniversal && track.directStreamUrl && !isPreviewAudioUrl(track.directStreamUrl)) {
         const directUrl = resolveApiUrl(track.directStreamUrl);
-        setLoadingBanner(true, `Memutar "${track.title}"...`);
-        setSignalBadge('MENGHUBUNGKAN...', false);
-        AppState.audioSources = [{
-          sid: track.sid || '',
-          label: 'Master Utama',
-          edition: track.title,
-          duration: track.duration || 180,
-          quality: 'Hi-Fi AAC',
-          streamUrl: directUrl,
-        }];
-        AppState.audioSourceIndex = 0;
-        renderAudioSourcesPanel();
-        if (hasNativeExo() && /^https?:\/\//i.test(directUrl)) {
-          ExoState.sessionId = sessionId;
-          ExoState.track = track;
-          ExoState.candidates = [{ url: directUrl, videoId: '', duration: Number(track.duration || 180) }];
-          ExoState.candidateIdx = 0;
-          if (dispatchCurrentExoCandidate()) return;
+        if (!isPreviewAudioUrl(directUrl)) {
+          setLoadingBanner(true, `Memutar "${track.title}"...`);
+          setSignalBadge('MENGHUBUNGKAN...', false);
+          AppState.audioSources = [{
+            sid: track.sid || '',
+            label: 'Master Utama',
+            edition: track.title,
+            duration: track.duration || 180,
+            quality: 'Hi-Fi AAC',
+            streamUrl: directUrl,
+          }];
+          AppState.audioSourceIndex = 0;
+          renderAudioSourcesPanel();
+          try {
+            await tryPlayAudioUrl(directUrl, sessionId);
+            if (sessionId !== AppState.playSessionId) return;
+            setLoadingBanner(false);
+            AppState.isPlaying = true;
+            const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (track.duration || 180);
+            track.duration = realDur;
+            updateDurationDisplays(realDur);
+            setSignalBadge(`HI-FI AAC • ${formatTime(realDur)}`, true);
+            document.getElementById('stage-source-label').textContent = `Master Utama • Hi-Fi AAC (${formatTime(realDur)})`;
+            updatePlayPauseIcons();
+            highlightPlayingTrackRows();
+            renderAudioSourcesPanel();
+            updateMediaSession();
+            updateMediaSessionPosition();
+            prefetchNextTrackInQueue();
+            return;
+          } catch (err) {
+            console.warn('[AudioEngine] Direct universal stream gagal, mencoba YouTube penuh:', err.message);
+          }
         }
+      }
+
+      // Priority 3 (FAST PATH YOUTUBE PENUH): Jika track sudah punya videoId valid, langsung putar FULL lewat SFYtFull (~1-2 detik!)
+      const directYtVid = extractDirectTrackVideoId(track);
+      if (directYtVid && typeof SFYtFull !== 'undefined') {
+        setLoadingBanner(true, `Memutar YouTube penuh "${track.title}"...`);
+        setSignalBadge('MENGHUBUNGKAN...', false);
         try {
-          await tryPlayAudioUrl(directUrl, sessionId);
-          if (sessionId !== AppState.playSessionId) return;
+          const ytRes = await SFYtFull.playVideoId(directYtVid, sessionId);
+          if (sessionId !== AppState.playSessionId) {
+            SFYtFull.stop();
+            return;
+          }
+          AppState.audioSources = [{
+            sid: `ytfull_${directYtVid}`,
+            label: 'YouTube Master Penuh',
+            edition: `${track.title} - ${track.artist?.name || ''}`,
+            duration: Number(ytRes?.duration || track.duration || 210),
+            quality: 'YouTube Hi-Fi',
+            streamUrl: '',
+            isYtFull: true,
+            videoId: directYtVid,
+          }];
+          AppState.audioSourceIndex = 0;
           setLoadingBanner(false);
           AppState.isPlaying = true;
-          const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (track.duration || 180);
+          const realDur = (ytRes && ytRes.duration && isFinite(ytRes.duration) && ytRes.duration > 30)
+            ? ytRes.duration
+            : (Number(track.duration) || 210);
           track.duration = realDur;
+          applyPendingResumePosition(true, realDur);
           updateDurationDisplays(realDur);
-          setSignalBadge(`HI-FI AAC • ${formatTime(realDur)}`, true);
-          document.getElementById('stage-source-label').textContent = `Master Utama • Hi-Fi AAC (${formatTime(realDur)})`;
+          setSignalBadge(`YOUTUBE HI-FI • ${formatTime(realDur)}`, true);
+          document.getElementById('stage-source-label').textContent = `YouTube Master • Full Track (${formatTime(realDur)})`;
           updatePlayPauseIcons();
           highlightPlayingTrackRows();
           renderAudioSourcesPanel();
-          updateMediaSession();
-          updateMediaSessionPosition();
+          updateSystemMediaSession(track);
+          syncNativeMediaBridge(true, track);
           prefetchNextTrackInQueue();
           return;
         } catch (err) {
-          console.warn('[AudioEngine] Direct universal stream gagal, mencoba pencarian alternatif:', err.message);
+          console.warn('[SFYtFull] Direct videoId gagal, mencari kandidat YouTube alternatif:', err?.message || err);
         }
       }
 
@@ -8365,7 +8091,9 @@
         if (sessionId !== AppState.playSessionId) return;
 
         const ytCandidates = Array.isArray(sources.__ytCandidates) ? sources.__ytCandidates : [];
-        const fullCloudSources = sources.filter((s) => !s.isPreviewFallback && Number(s.duration || 0) >= 60);
+        const fullCloudSources = sources.filter(
+          (s) => !s.isPreviewFallback && !isPreviewAudioUrl(s.streamUrl) && Number(s.duration || 0) >= 60
+        );
         const youtubeDirectSources = fullCloudSources.filter(
           (s) => s.isYoutubeDirect || String(s.sid || '').startsWith('yt_') || String(s.sid || '').startsWith('direct_')
         );
@@ -8383,120 +8111,12 @@
           isYtFull: true,
           videoId: cand.videoId,
         }));
-        const displaySources = [...youtubeDirectSources, ...ytMasterEntries, ...otherFullSources, ...previewFallbackSources];
+        const displaySources = [...ytMasterEntries, ...otherFullSources, ...youtubeDirectSources, ...previewFallbackSources];
         AppState.audioSources = displaySources;
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
 
-        // 0. MODE APK NATIVE ANDROIDX MEDIA3 EXOPLAYER (Prioritaskan videoId agar Java parallel race anti-403 yang bekerja!)
-        if (hasNativeExo()) {
-          const exoCandidates = [];
-          const seenVids = new Set();
-          ytCandidates.slice(0, 4).forEach((cand) => {
-            if (cand?.videoId && !seenVids.has(cand.videoId)) {
-              seenVids.add(cand.videoId);
-              exoCandidates.push({ url: '', videoId: cand.videoId, duration: Number(cand.duration || track.duration || 210) });
-            }
-          });
-          otherFullSources.forEach((s) => {
-            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
-              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
-            }
-          });
-          youtubeDirectSources.forEach((s) => {
-            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
-              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || track.duration || 210) });
-            }
-          });
-          previewFallbackSources.forEach((s) => {
-            if (s && /^https?:\/\//i.test(s.streamUrl || '')) {
-              exoCandidates.push({ url: s.streamUrl, videoId: '', duration: Number(s.duration || 30) });
-            }
-          });
-
-          if (exoCandidates.length > 0) {
-            ExoState.sessionId = sessionId;
-            ExoState.track = track;
-            ExoState.triedResolveFallback = true;
-            ExoState.candidates = exoCandidates;
-            ExoState.candidateIdx = 0;
-            if (dispatchCurrentExoCandidate()) return;
-          }
-        }
-
-        // 1. PRIORITAS UTAMA DI SPOTYFLOW.APK: Resolusi YouTube Audio-Only M4A/AAC langsung dari IP HP via NativeYouTubeResolver (0% decode video = 0% mati di layar terkunci!)
-        const nativeBridge = getNativeBridge();
-        const nativeCapMedia = getNativeMediaPlugin();
-        const canResolveOnDevice = Boolean(
-          (nativeBridge && typeof nativeBridge.resolveFullAudioAsync === 'function') ||
-          (isRunningInNativeApk() && nativeCapMedia && typeof nativeCapMedia.resolveYoutubeAudio === 'function')
-        );
-        if (ytCandidates.length && canResolveOnDevice) {
-          for (let j = 0; j < Math.min(ytCandidates.length, 3); j++) {
-            const cand = ytCandidates[j];
-            if (!cand?.videoId) continue;
-            setLoadingBanner(true, `Memuat audio HD YouTube "${track.title}" (${formatTime(cand.duration || track.duration)})...`);
-            try {
-              const nativeRes = (nativeBridge && typeof nativeBridge.resolveFullAudioAsync === 'function')
-                ? await resolveFullAudioOnAndroidDevice(cand.videoId)
-                : await nativeCapMedia.resolveYoutubeAudio({ videoId: cand.videoId });
-              if (sessionId !== AppState.playSessionId) return;
-              if (nativeRes && nativeRes.ok && nativeRes.url) {
-                await tryPlayAudioUrl(nativeRes.url, sessionId, { supportsCors: false });
-                if (sessionId !== AppState.playSessionId) return;
-
-                setLoadingBanner(false);
-                AppState.isPlaying = true;
-                const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (Number(nativeRes.duration) || cand.duration || track.duration || 210);
-                track.duration = realDur;
-                applyPendingResumePosition(false, realDur);
-                updateDurationDisplays(realDur);
-                setSignalBadge(`YOUTUBE HI-FI • ${formatTime(realDur)}`, true);
-                document.getElementById('stage-source-label').textContent = `YouTube Master • Native Audio HD (${formatTime(realDur)})`;
-                updatePlayPauseIcons();
-                highlightPlayingTrackRows();
-                renderAudioSourcesPanel();
-                updateSystemMediaSession(track);
-                prefetchNextTrackInQueue();
-                return;
-              }
-            } catch (err) {
-              console.warn(`[NativeFullAudio] Kandidat #${j + 1} gagal:`, err?.message || err);
-            }
-          }
-        }
-
-        // 2. PRIORITAS KEDUA: Stream Direct YouTube Hi-Fi AAC (128k/Opus asli YouTube, jalan langsung di localhost & IP yang didukung)
-        for (let i = 0; i < Math.min(youtubeDirectSources.length, 2); i++) {
-          const src = youtubeDirectSources[i];
-          setLoadingBanner(true, `Memutar ${src.label} (${formatTime(src.duration || track.duration)})...`);
-          try {
-            await tryPlayAudioUrl(src.streamUrl, sessionId, src);
-            if (sessionId !== AppState.playSessionId) return;
-
-            AppState.audioSourceIndex = displaySources.indexOf(src);
-            setLoadingBanner(false);
-            AppState.isPlaying = true;
-
-            const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (src.duration || track.duration || 210);
-            track.duration = realDur;
-            applyPendingResumePosition(false, realDur);
-            updateDurationDisplays(realDur);
-
-            setSignalBadge(`YOUTUBE AAC • ${formatTime(realDur)}`, true);
-            document.getElementById('stage-source-label').textContent = `${src.label} • ${src.quality} (${formatTime(realDur)})`;
-            updatePlayPauseIcons();
-            highlightPlayingTrackRows();
-            renderAudioSourcesPanel();
-            updateSystemMediaSession(track);
-            prefetchNextTrackInQueue();
-            return;
-          } catch (err) {
-            console.warn(`[AudioEngine] YouTube Direct #${i + 1} gagal:`, err.message);
-          }
-        }
-
-        // 3. PRIORITAS KETIGA (UTAMA DI VERCEL WEB): YouTube Full-Duration Engine (suara asli YouTube jernih, bass bersih, 100% full 3-5+ menit!)
+        // 1. PRIORITAS UTAMA (WEB & APK): YouTube Full-Duration Engine (SFYtFull — cepat ~1-2 detik, 100% full 3-5+ menit, anti preview 30 detik!)
         if (ytCandidates.length > 0 && typeof SFYtFull !== 'undefined') {
           for (let j = 0; j < Math.min(ytCandidates.length, 6); j++) {
             const cand = ytCandidates[j];
@@ -8526,6 +8146,7 @@
               highlightPlayingTrackRows();
               renderAudioSourcesPanel();
               updateSystemMediaSession(track);
+              syncNativeMediaBridge(true, track);
               prefetchNextTrackInQueue();
               return;
             } catch (err) {
@@ -8534,7 +8155,7 @@
           }
         }
 
-        // 4. CADANGAN PENUH NON-YOUTUBE (Saavn 320k / Audius Hi-Fi, hanya jika seluruh kandidat YouTube gagal)
+        // 2. CADANGAN PENUH NON-YOUTUBE (Audius Hi-Fi / Saavn 320k, hanya jika seluruh kandidat YouTube gagal)
         for (let i = 0; i < Math.min(otherFullSources.length, 3); i++) {
           const src = otherFullSources[i];
           setLoadingBanner(true, `Memutar ${src.label} (${formatTime(src.duration || track.duration)})...`);
@@ -8557,10 +8178,42 @@
             highlightPlayingTrackRows();
             renderAudioSourcesPanel();
             updateSystemMediaSession(track);
+            syncNativeMediaBridge(true, track);
             prefetchNextTrackInQueue();
             return;
           } catch (err) {
             console.warn(`[AudioEngine] Sumber cadangan penuh #${i + 1} gagal:`, err.message);
+          }
+        }
+
+        // 3. CADANGAN DIRECT YOUTUBE AAC (jika SFYtFull & Audius/Saavn penuh tidak tersedia)
+        for (let i = 0; i < Math.min(youtubeDirectSources.length, 2); i++) {
+          const src = youtubeDirectSources[i];
+          setLoadingBanner(true, `Memutar ${src.label} (${formatTime(src.duration || track.duration)})...`);
+          try {
+            await tryPlayAudioUrl(src.streamUrl, sessionId, src);
+            if (sessionId !== AppState.playSessionId) return;
+
+            AppState.audioSourceIndex = displaySources.indexOf(src);
+            setLoadingBanner(false);
+            AppState.isPlaying = true;
+
+            const realDur = audio.duration && isFinite(audio.duration) ? audio.duration : (src.duration || track.duration || 210);
+            track.duration = realDur;
+            applyPendingResumePosition(false, realDur);
+            updateDurationDisplays(realDur);
+
+            setSignalBadge(`YOUTUBE AAC • ${formatTime(realDur)}`, true);
+            document.getElementById('stage-source-label').textContent = `${src.label} • ${src.quality} (${formatTime(realDur)})`;
+            updatePlayPauseIcons();
+            highlightPlayingTrackRows();
+            renderAudioSourcesPanel();
+            updateSystemMediaSession(track);
+            syncNativeMediaBridge(true, track);
+            prefetchNextTrackInQueue();
+            return;
+          } catch (err) {
+            console.warn(`[AudioEngine] YouTube Direct #${i + 1} gagal:`, err.message);
           }
         }
 
@@ -9156,7 +8809,7 @@
     }
 
     decks.forEach((deckEl, deckIdx) => {
-      const isWebDeckSuppressedByExo = () => hasNativeExo() && !AppState.currentTrack?.isLocal && !ExoState.usingWebBlob;
+      const isWebDeckSuppressedByExo = () => typeof SFYtFull !== 'undefined' && SFYtFull.active;
 
       deckEl.addEventListener('loadedmetadata', () => {
         if (isWebDeckSuppressedByExo() || deckIdx !== activeDeckIndex) return;

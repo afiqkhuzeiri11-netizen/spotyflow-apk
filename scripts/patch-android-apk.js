@@ -1,24 +1,16 @@
 'use strict';
 /**
- * SpotyFlow Native AndroidX Media3 ExoPlayer + Hardware DSP Patcher (scripts/patch-android-apk.js)
- * Runs automatically after `npx cap sync android` to inject:
- *  - Dynamic appId from capacitor.config.json (com.netease.cloudmusic for Vivo Origin Island whitelist,
- *    with appName="SpotyFlow" and zero duplicate com/spotyflow/music Java files)
- *  - compileSdkVersion = 34, targetSdkVersion = 34, minSdkVersion = 24 (android/variables.gradle)
- *  - AndroidX Media3 1.4.1 (exoplayer, session, common) + Guava + Java 17 (android/app/build.gradle)
- *  - Monochrome 24dp vector music note icon (res/drawable/ic_stat_music.xml)
- *  - Full Spotify-equivalent permissions (ZERO SYSTEM_ALERT_WINDOW), appCategory="audio",
- *    spotyflow:// deep link, SpotyFlowPlaybackService (MediaSessionService) + MediaButtonReceiver
- *  - NativeYouTubeResolver.java (20-min RAM cache + fast Range 200/206 anti-403 probe +
- *    3-way parallel race: WEB_EMBEDDED_PLAYER itag 18, ANDROID client itag 140/251/18, Vercel fallback)
- *  - SpotyFlowPlaybackService.java (Media3 ExoPlayer 400ms fast-start buffer, dynamic User-Agent per track,
- *    video track decoding disabled for lightweight itag 18, AtomicLong activePlaySeq guard,
- *    Hardware Equalizer 5-Band, BassBoost, LoudnessEnhancer, PresetReverb, Pitch/Speed,
- *    4 Spotify Notification Channels + ForwardingPlayer)
- *  - SpotyFlowWebView.java + res/layout/bridge_layout_main.xml (pre-loadUrl bridge & lockscreen keep-alive)
- *  - MainActivity.java (@JavascriptInterface "SpotyFlowExo", JSON-safe event bridge, MediaController binding,
- *    500ms ticker, Chrome Google OAuth deep link, 1x runtime permissions & battery optimization exemption)
- *  - Strict post-patch verification (process.exit(1) on any failure)
+ * SpotyFlow Native Android Patcher (scripts/patch-android-apk.js)
+ * Combines:
+ *  1. Vivo Origin Island official whitelist (dynamic appId from capacitor.config.json = com.netease.cloudmusic,
+ *     appName = SpotyFlow, zero duplicate com/spotyflow/music files, zero NativeYouTubeResolver.java)
+ *  2. Lightweight AndroidX Media3 1.4.1 (media3-common + media3-session + Guava, NO ExoPlayer bloat)
+ *     using SimpleBasePlayer + ForwardingPlayer + DefaultMediaNotificationProvider + 4 Spotify Notification Channels
+ *     + android:appCategory="audio" + 14 Spotify permissions + WakeLock/WifiLock + ACTION_AUDIO_BECOMING_NOISY
+ *  3. Background & Lockscreen YouTube WebView Keep-Alive via SpotyFlowWebView (onWindowVisibilityChanged override
+ *     + bridge_layout_main.xml override + MainActivity onPause/onStop resumeTimers)
+ *  4. @JavascriptInterface "SpotyFlowMediaBridge" (updateState, stopService, openExternalUrl, clearHttpCache)
+ *     + Chrome Google OAuth spotyflow:// deep link
  */
 
 const fs = require('node:fs');
@@ -62,494 +54,81 @@ const IC_STAT_MUSIC_XML = `<?xml version="1.0" encoding="utf-8"?>
 </vector>
 `;
 
-const NATIVE_YOUTUBE_RESOLVER_JAVA = `package ${APP_ID};
+const SPOTYFLOW_WEBVIEW_JAVA = `package ${APP_ID};
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import android.content.Context;
+import android.util.AttributeSet;
+import android.view.View;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import com.getcapacitor.CapacitorWebView;
+
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class NativeYouTubeResolver {
-    public static final String CHROME_UA =
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36";
-    public static final String ANDROID_UA =
-            "com.google.android.youtube/20.10.38 (Linux; U; Android 14) gzip";
+public class SpotyFlowWebView extends CapacitorWebView {
+    private boolean mediaBridgeAttached = false;
 
-    private static final long CACHE_TTL_MS = 20L * 60L * 1000L;
-    private static final int CACHE_MAX_ENTRIES = 100;
-    private static final long RACE_TIMEOUT_MS = 4500L;
-
-    private static final ConcurrentHashMap<String, CacheEntry> STREAM_CACHE = new ConcurrentHashMap<>();
-
-    private static class CacheEntry {
-        final String jsonPayload;
-        final long createdAtMs;
-        final long expiresAtMs;
-
-        CacheEntry(String jsonPayload, long nowMs) {
-            this.jsonPayload = jsonPayload;
-            this.createdAtMs = nowMs;
-            this.expiresAtMs = nowMs + CACHE_TTL_MS;
-        }
+    public SpotyFlowWebView(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    public static JSONObject resolveAudioStream(final String videoId) {
-        JSONObject fail = new JSONObject();
-        try {
-            fail.put("ok", false);
-        } catch (Exception ignored) {
-        }
-
-        if (videoId == null || !videoId.trim().matches("^[a-zA-Z0-9_-]{11}$")) {
-            try {
-                fail.put("error", "invalid_video_id");
-            } catch (Exception ignored) {
-            }
-            return fail;
-        }
-        final String vid = videoId.trim();
-
-        // 0. Instant 0ms RAM Cache hit (20 min TTL, max 100 tracks)
-        JSONObject cached = getCachedResult(vid);
-        if (cached != null) {
-            return cached;
-        }
-
-        // 1. 3-Way Parallel Race (max wait 4.5s) — first verified HTTP 200/206 stream wins immediately
-        ExecutorService racePool = Executors.newFixedThreadPool(3);
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<JSONObject> winner = new AtomicReference<>(null);
-        final AtomicInteger completedCount = new AtomicInteger(0);
-
-        try {
-            // Jalur 1 (Primary Anti-403 2026): WEB_EMBEDDED_PLAYER progressive itag 18 (AAC MP4)
-            racePool.execute(() -> {
-                try {
-                    JSONObject res = queryWebEmbeddedItag18(vid);
-                    if (res != null && winner.compareAndSet(null, res)) {
-                        latch.countDown();
-                    }
-                } catch (Throwable ignored) {
-                } finally {
-                    if (completedCount.incrementAndGet() >= 3) {
-                        latch.countDown();
-                    }
-                }
-            });
-
-            // Jalur 2 (Parallel): ANDROID Client (adaptive itag 140/251 -> progressive itag 18)
-            racePool.execute(() -> {
-                try {
-                    JSONObject res = queryAndroidClient(vid);
-                    if (res != null && winner.compareAndSet(null, res)) {
-                        latch.countDown();
-                    }
-                } catch (Throwable ignored) {
-                } finally {
-                    if (completedCount.incrementAndGet() >= 3) {
-                        latch.countDown();
-                    }
-                }
-            });
-
-            // Jalur 3 (Parallel): Vercel Server Fallback (/api/audio/resolve?videoId=...)
-            racePool.execute(() -> {
-                try {
-                    JSONObject res = queryVercelFallback(vid);
-                    if (res != null && winner.compareAndSet(null, res)) {
-                        latch.countDown();
-                    }
-                } catch (Throwable ignored) {
-                } finally {
-                    if (completedCount.incrementAndGet() >= 3) {
-                        latch.countDown();
-                    }
-                }
-            });
-
-            latch.await(RACE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        } finally {
-            racePool.shutdownNow();
-        }
-
-        JSONObject won = winner.get();
-        if (won != null) {
-            putCachedResult(vid, won);
-            return won;
-        }
-
-        try {
-            fail.put("error", "stream_unavailable");
-        } catch (Exception ignored) {
-        }
-        return fail;
+    private void ensureBridgeBeforeLoad() {
+        if (mediaBridgeAttached) return;
+        mediaBridgeAttached = true;
+        MainActivity.attachMediaBridgeToWebView(this);
     }
 
-    /**
-     * Fast HTTP 200/206 Range probe (< 0.3s rejection for YouTube 403 PO Token blocks).
-     */
-    public static boolean isPlayableUrl(String streamUrl, String userAgent) {
-        if (streamUrl == null) return false;
-        String trimmed = streamUrl.trim();
-        if (!trimmed.startsWith("https://") && !trimmed.startsWith("http://")) return false;
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL(trimmed);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(1500);
-            conn.setReadTimeout(2000);
-            conn.setInstanceFollowRedirects(true);
-            conn.setRequestProperty("Range", "bytes=0-1");
-            conn.setRequestProperty("User-Agent", (userAgent != null && !userAgent.isEmpty()) ? userAgent : CHROME_UA);
-            int code = conn.getResponseCode();
-            return code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_PARTIAL;
-        } catch (Throwable ignored) {
-            return false;
-        } finally {
-            if (conn != null) conn.disconnect();
-        }
+    @Override
+    public void loadUrl(String url) {
+        ensureBridgeBeforeLoad();
+        super.loadUrl(url);
     }
 
-    private static JSONObject getCachedResult(String videoId) {
-        CacheEntry entry = STREAM_CACHE.get(videoId);
-        if (entry == null) return null;
-        long now = System.currentTimeMillis();
-        if (now >= entry.expiresAtMs) {
-            STREAM_CACHE.remove(videoId);
-            return null;
-        }
-        try {
-            return new JSONObject(entry.jsonPayload);
-        } catch (Exception ignored) {
-            STREAM_CACHE.remove(videoId);
-            return null;
-        }
+    @Override
+    public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
+        ensureBridgeBeforeLoad();
+        super.loadUrl(url, additionalHttpHeaders);
     }
 
-    private static void putCachedResult(String videoId, JSONObject result) {
-        if (videoId == null || result == null) return;
-        long now = System.currentTimeMillis();
-        if (STREAM_CACHE.size() >= CACHE_MAX_ENTRIES) {
-            String oldestKey = null;
-            long oldestTs = Long.MAX_VALUE;
-            Iterator<Map.Entry<String, CacheEntry>> it = STREAM_CACHE.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, CacheEntry> e = it.next();
-                CacheEntry val = e.getValue();
-                if (val == null || now >= val.expiresAtMs) {
-                    it.remove();
-                } else if (val.createdAtMs < oldestTs) {
-                    oldestTs = val.createdAtMs;
-                    oldestKey = e.getKey();
-                }
-            }
-            if (STREAM_CACHE.size() >= CACHE_MAX_ENTRIES && oldestKey != null) {
-                STREAM_CACHE.remove(oldestKey);
-            }
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        if (visibility != View.VISIBLE && SpotyFlowPlaybackService.isPlaying) {
+            super.onWindowVisibilityChanged(View.VISIBLE);
+            return;
         }
-        STREAM_CACHE.put(videoId, new CacheEntry(result.toString(), now));
+        super.onWindowVisibilityChanged(visibility);
     }
 
-    // ==================== JALUR 1: WEB_EMBEDDED_PLAYER (itag 18 Anti-403 2026) ====================
-
-    private static JSONObject queryWebEmbeddedItag18(String videoId) {
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL("https://www.youtube.com/youtubei/v1/player?prettyPrint=false");
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setConnectTimeout(2500);
-            conn.setReadTimeout(3000);
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("User-Agent", CHROME_UA);
-            conn.setRequestProperty("Origin", "https://www.youtube.com");
-            conn.setRequestProperty("Referer", "https://spotyflow.vercel.app/");
-
-            JSONObject client = new JSONObject();
-            client.put("clientName", "WEB_EMBEDDED_PLAYER");
-            client.put("clientVersion", "1.20260101.00.00");
-            client.put("hl", "id");
-
-            JSONObject thirdParty = new JSONObject();
-            thirdParty.put("embedUrl", "https://spotyflow.vercel.app");
-
-            JSONObject context = new JSONObject();
-            context.put("client", client);
-            context.put("thirdParty", thirdParty);
-
-            JSONObject body = new JSONObject();
-            body.put("videoId", videoId);
-            body.put("context", context);
-            body.put("contentCheckOk", true);
-            body.put("racyCheckOk", true);
-
-            byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload);
-            }
-
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) return null;
-
-            String responseText = readAllText(conn.getInputStream());
-            JSONObject json = new JSONObject(responseText);
-            JSONObject streamingData = json.optJSONObject("streamingData");
-            if (streamingData == null) return null;
-
-            JSONArray formats = streamingData.optJSONArray("formats");
-            if (formats == null || formats.length() == 0) return null;
-
-            String candidateUrl = null;
-            int candidateBitrate = 0;
-            String candidateMime = "video/mp4";
-
-            for (int i = 0; i < formats.length(); i++) {
-                JSONObject fmt = formats.optJSONObject(i);
-                if (fmt == null) continue;
-                int itag = fmt.optInt("itag", 0);
-                String u = fmt.optString("url", "");
-                if (itag == 18 && u.startsWith("https://")) {
-                    candidateUrl = u;
-                    candidateBitrate = fmt.optInt("bitrate", 128000);
-                    candidateMime = fmt.optString("mimeType", "video/mp4").split(";")[0];
-                    break;
-                }
-            }
-
-            if (candidateUrl == null) return null;
-            if (!isPlayableUrl(candidateUrl, CHROME_UA)) return null;
-
-            JSONObject videoDetails = json.optJSONObject("videoDetails");
-            long durationSec = videoDetails != null ? videoDetails.optLong("lengthSeconds", 0L) : 0L;
-
-            JSONObject ok = new JSONObject();
-            ok.put("ok", true);
-            ok.put("url", candidateUrl);
-            ok.put("duration", durationSec);
-            ok.put("bitrate", candidateBitrate);
-            ok.put("mimeType", candidateMime);
-            ok.put("userAgent", CHROME_UA);
-            ok.put("client", "WEB_EMBEDDED_PLAYER");
-            return ok;
-        } catch (Throwable ignored) {
-            return null;
-        } finally {
-            if (conn != null) conn.disconnect();
+    @Override
+    public void onPause() {
+        if (SpotyFlowPlaybackService.isPlaying) {
+            return;
         }
+        super.onPause();
     }
 
-    // ==================== JALUR 2: ANDROID CLIENT (itag 140/251 -> itag 18) ====================
-
-    private static JSONObject queryAndroidClient(String videoId) {
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL("https://www.youtube.com/youtubei/v1/player?prettyPrint=false");
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setConnectTimeout(2500);
-            conn.setReadTimeout(3000);
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("User-Agent", ANDROID_UA);
-
-            JSONObject client = new JSONObject();
-            client.put("clientName", "ANDROID");
-            client.put("clientVersion", "20.10.38");
-            client.put("androidSdkVersion", 34);
-            client.put("hl", "id");
-            client.put("gl", "ID");
-
-            JSONObject context = new JSONObject();
-            context.put("client", client);
-
-            JSONObject body = new JSONObject();
-            body.put("videoId", videoId);
-            body.put("context", context);
-            body.put("contentCheckOk", true);
-            body.put("racyCheckOk", true);
-
-            byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload);
-            }
-
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) return null;
-
-            String responseText = readAllText(conn.getInputStream());
-            JSONObject json = new JSONObject(responseText);
-            JSONObject streamingData = json.optJSONObject("streamingData");
-            if (streamingData == null) return null;
-
-            JSONObject videoDetails = json.optJSONObject("videoDetails");
-            long durationSec = videoDetails != null ? videoDetails.optLong("lengthSeconds", 0L) : 0L;
-
-            // Prioritize adaptiveFormats itag 140 (M4A AAC) then itag 251 (Opus)
-            JSONArray adaptive = streamingData.optJSONArray("adaptiveFormats");
-            JSONObject itag140 = null;
-            JSONObject itag251 = null;
-            if (adaptive != null) {
-                for (int i = 0; i < adaptive.length(); i++) {
-                    JSONObject fmt = adaptive.optJSONObject(i);
-                    if (fmt == null) continue;
-                    String u = fmt.optString("url", "");
-                    if (!u.startsWith("https://")) continue;
-                    int itag = fmt.optInt("itag", 0);
-                    if (itag == 140 && itag140 == null) itag140 = fmt;
-                    else if (itag == 251 && itag251 == null) itag251 = fmt;
-                }
-            }
-
-            if (itag140 != null) {
-                String u = itag140.optString("url", "");
-                if (isPlayableUrl(u, ANDROID_UA)) {
-                    return buildSuccessJson(u, durationSec, itag140.optInt("bitrate", 128000), "audio/mp4", ANDROID_UA, "ANDROID_140");
-                }
-            }
-            if (itag251 != null) {
-                String u = itag251.optString("url", "");
-                if (isPlayableUrl(u, ANDROID_UA)) {
-                    return buildSuccessJson(u, durationSec, itag251.optInt("bitrate", 128000), "audio/webm", ANDROID_UA, "ANDROID_251");
-                }
-            }
-
-            // Fallback to progressive formats itag 18
-            JSONArray formats = streamingData.optJSONArray("formats");
-            if (formats != null) {
-                for (int i = 0; i < formats.length(); i++) {
-                    JSONObject fmt = formats.optJSONObject(i);
-                    if (fmt == null) continue;
-                    int itag = fmt.optInt("itag", 0);
-                    String u = fmt.optString("url", "");
-                    if (itag == 18 && u.startsWith("https://") && isPlayableUrl(u, ANDROID_UA)) {
-                        return buildSuccessJson(u, durationSec, fmt.optInt("bitrate", 128000), "video/mp4", ANDROID_UA, "ANDROID_18");
-                    }
-                }
-            }
-            return null;
-        } catch (Throwable ignored) {
-            return null;
-        } finally {
-            if (conn != null) conn.disconnect();
+    @Override
+    public void pauseTimers() {
+        if (SpotyFlowPlaybackService.isPlaying) {
+            return;
         }
-    }
-
-    // ==================== JALUR 3: VERCEL SERVER FALLBACK ====================
-
-    private static JSONObject queryVercelFallback(String videoId) {
-        HttpURLConnection conn = null;
-        try {
-            String endpoint = "https://spotyflow.vercel.app/api/audio/resolve?videoId="
-                    + URLEncoder.encode(videoId, "UTF-8");
-            URL url = new URL(endpoint);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(2500);
-            conn.setReadTimeout(3500);
-            conn.setInstanceFollowRedirects(true);
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("User-Agent", CHROME_UA);
-
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) return null;
-
-            String responseText = readAllText(conn.getInputStream());
-            JSONObject json = new JSONObject(responseText);
-
-            List<String> candidateUrls = new ArrayList<>();
-            long durationSec = json.optLong("duration", 0L);
-
-            String topUrl = normalizeServerUrl(json.optString("url", ""));
-            if (!topUrl.isEmpty()) {
-                candidateUrls.add(topUrl);
-            }
-
-            JSONArray sources = json.optJSONArray("sources");
-            if (sources != null) {
-                for (int i = 0; i < sources.length(); i++) {
-                    JSONObject src = sources.optJSONObject(i);
-                    if (src == null) continue;
-                    if (src.optBoolean("isPreview", false) || src.optBoolean("isPreviewFallback", false)) continue;
-                    String su = normalizeServerUrl(src.optString("streamUrl", src.optString("url", "")));
-                    if (!su.isEmpty() && !candidateUrls.contains(su)) {
-                        candidateUrls.add(su);
-                        if (durationSec <= 0L) {
-                            durationSec = src.optLong("duration", 0L);
-                        }
-                    }
-                }
-            }
-
-            int maxCheck = Math.min(3, candidateUrls.size());
-            for (int i = 0; i < maxCheck; i++) {
-                String cand = candidateUrls.get(i);
-                if (isPlayableUrl(cand, CHROME_UA)) {
-                    return buildSuccessJson(cand, durationSec, 128000, "audio/mp4", CHROME_UA, "VERCEL_FALLBACK");
-                }
-            }
-            return null;
-        } catch (Throwable ignored) {
-            return null;
-        } finally {
-            if (conn != null) conn.disconnect();
-        }
-    }
-
-    private static String normalizeServerUrl(String raw) {
-        if (raw == null) return "";
-        String s = raw.trim();
-        if (s.startsWith("https://")) return s;
-        if (s.startsWith("/")) return "https://spotyflow.vercel.app" + s;
-        return "";
-    }
-
-    private static JSONObject buildSuccessJson(
-            String url, long durationSec, int bitrate, String mimeType, String userAgent, String client
-    ) throws Exception {
-        JSONObject ok = new JSONObject();
-        ok.put("ok", true);
-        ok.put("url", url);
-        ok.put("duration", durationSec);
-        ok.put("bitrate", bitrate);
-        ok.put("mimeType", mimeType);
-        ok.put("userAgent", userAgent);
-        ok.put("client", client);
-        return ok;
-    }
-
-    private static String readAllText(InputStream is) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        try (InputStream in = is;
-             BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-        }
-        return sb.toString();
+        super.pauseTimers();
     }
 }
+`;
+
+const BRIDGE_LAYOUT_MAIN_XML = `<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <${APP_ID}.SpotyFlowWebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 `;
 
 const SPOTYFLOW_PLAYBACK_SERVICE_JAVA = `package ${APP_ID};
@@ -558,42 +137,41 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.audiofx.BassBoost;
-import android.media.audiofx.Equalizer;
-import android.media.audiofx.LoudnessEnhancer;
-import android.media.audiofx.PresetReverb;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.media3.common.AudioAttributes;
-import androidx.media3.common.AuxEffectInfo;
+import androidx.core.content.ContextCompat;
 import androidx.media3.common.C;
 import androidx.media3.common.ForwardingPlayer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
-import androidx.media3.common.PlaybackException;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
-import androidx.media3.common.TrackSelectionParameters;
+import androidx.media3.common.SimpleBasePlayer;
 import androidx.media3.common.util.UnstableApi;
-import androidx.media3.datasource.DefaultDataSource;
-import androidx.media3.datasource.DefaultHttpDataSource;
-import androidx.media3.exoplayer.DefaultLoadControl;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.session.DefaultMediaNotificationProvider;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import org.json.JSONObject;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Collections;
+import java.util.List;
 
 @UnstableApi
 public class SpotyFlowPlaybackService extends MediaSessionService {
@@ -602,73 +180,32 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     public static final String CHANNEL_MUSIC = "spotyflow_music";
     public static final String CHANNEL_DOWNLOADS = "spotyflow_downloads";
 
-    private static final String DEFAULT_UA = NativeYouTubeResolver.CHROME_UA;
-
     public static volatile SpotyFlowPlaybackService instance = null;
     public static volatile boolean isPlaying = false;
-    public static final AtomicLong activePlaySeq = new AtomicLong(0L);
+    private static volatile String pendingJsonPayload = null;
 
-    private static volatile PendingPlayRequest pendingPlayRequest = null;
-
-    private ExoPlayer exoPlayer;
-    private MediaSession mediaSession;
-    private DefaultHttpDataSource.Factory httpDataSourceFactory;
     private Handler mainHandler;
-    private volatile boolean suppressingStopEvents = false;
+    private SpotyFlowRemotePlayer remotePlayer;
+    private MediaSession mediaSession;
+    private PowerManager.WakeLock wakeLock;
+    private WifiManager.WifiLock wifiLock;
+    private boolean noisyReceiverRegistered = false;
 
-    // Hardware Audio FX instances (attached directly to ExoPlayer audioSessionId)
-    private Equalizer nativeEqualizer;
-    private BassBoost nativeBassBoost;
-    private LoudnessEnhancer nativeLoudness;
-    private PresetReverb nativeReverb;
-    private int attachedAudioSessionId = C.AUDIO_SESSION_ID_UNSET;
-
-    // Active FX parameters
-    private final float[] currentEqGains = new float[] {0f, 0f, 0f, 0f, 0f};
-    private int currentBoostPct = 100;
-    private boolean currentNormalizer = false;
-    private float currentReverbMix = 0f;
-    private float currentSpeed = 1.0f;
-    private boolean currentPreservesPitch = true;
-
-    public static class PendingPlayRequest {
-        public final long playSeq;
-        public final String url;
-        public final String title;
-        public final String artist;
-        public final String album;
-        public final String coverUrl;
-        public final String userAgent;
-        public final float volume;
-        public final float speed;
-        public final boolean preservesPitch;
-        public final float[] eqGains;
-        public final int boostPct;
-        public final boolean normalizerEnabled;
-        public final float reverbMix;
-
-        public PendingPlayRequest(
-                long playSeq,
-                String url, String title, String artist, String album, String coverUrl,
-                String userAgent, float volume, float speed, boolean preservesPitch,
-                float[] eqGains, int boostPct, boolean normalizerEnabled, float reverbMix
-        ) {
-            this.playSeq = playSeq;
-            this.url = url;
-            this.title = title;
-            this.artist = artist;
-            this.album = album;
-            this.coverUrl = coverUrl;
-            this.userAgent = userAgent;
-            this.volume = volume;
-            this.speed = speed;
-            this.preservesPitch = preservesPitch;
-            this.eqGains = eqGains;
-            this.boostPct = boostPct;
-            this.normalizerEnabled = normalizerEnabled;
-            this.reverbMix = reverbMix;
+    private final BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                if (isPlaying) {
+                    isPlaying = false;
+                    updateWakeAndWifiLocks(false);
+                    if (remotePlayer != null) {
+                        remotePlayer.setLocalPlayingState(false);
+                    }
+                    MainActivity.sendMediaActionToJs("noisy", 0L);
+                }
+            }
         }
-    }
+    };
 
     public static void ensureNotificationChannels(Context ctx) {
         if (ctx == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
@@ -727,44 +264,53 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     }
 
     /**
-     * Sequence Guard: increments activePlaySeq and immediately stops/clears ExoPlayer on main thread
-     * so rapid track switching never overlaps or emits stale paused events.
+     * Android 12-15 safe state update:
+     * - If service instance is already alive -> update directly on Main Thread (zero ForegroundServiceStartNotAllowedException!)
+     * - If service is not yet started -> queue pending payload and start foreground service safely.
      */
-    public static long nextPlaySequenceAndStop() {
-        long seq = activePlaySeq.incrementAndGet();
+    public static void dispatchStateUpdate(Context ctx, String jsonPayload) {
+        if (jsonPayload == null || jsonPayload.isEmpty()) return;
+        SpotyFlowPlaybackService svc = instance;
+        if (svc != null && svc.mainHandler != null) {
+            svc.mainHandler.post(() -> svc.applyJsonState(jsonPayload));
+            return;
+        }
+        pendingJsonPayload = jsonPayload;
+        if (ctx != null) {
+            try {
+                Intent intent = new Intent(ctx, SpotyFlowPlaybackService.class);
+                ContextCompat.startForegroundService(ctx, intent);
+            } catch (Throwable ignored) {
+                try {
+                    ctx.startService(new Intent(ctx, SpotyFlowPlaybackService.class));
+                } catch (Throwable ignored2) {
+                }
+            }
+        }
+    }
+
+    public static void requestStopService(Context ctx) {
         isPlaying = false;
-        pendingPlayRequest = null;
+        pendingJsonPayload = null;
         SpotyFlowPlaybackService svc = instance;
         if (svc != null && svc.mainHandler != null) {
             svc.mainHandler.post(() -> {
-                if (svc.exoPlayer != null) {
-                    svc.suppressingStopEvents = true;
-                    try {
-                        svc.exoPlayer.stop();
-                        svc.exoPlayer.clearMediaItems();
-                    } catch (Throwable ignored) {
-                    } finally {
-                        svc.suppressingStopEvents = false;
-                    }
+                svc.updateWakeAndWifiLocks(false);
+                if (svc.remotePlayer != null) {
+                    svc.remotePlayer.setLocalPlayingState(false);
                 }
+                try {
+                    svc.stopForeground(STOP_FOREGROUND_REMOVE);
+                } catch (Throwable ignored) {
+                }
+                svc.stopSelf();
             });
-        }
-        return seq;
-    }
-
-    public static void requestPlay(Context ctx, PendingPlayRequest req) {
-        if (req == null) return;
-        if (req.playSeq > 0 && req.playSeq != activePlaySeq.get()) return;
-        SpotyFlowPlaybackService svc = instance;
-        if (svc != null && svc.mainHandler != null) {
-            svc.mainHandler.post(() -> svc.playMediaUrl(req));
             return;
         }
-        pendingPlayRequest = req;
         if (ctx != null) {
             try {
-                ctx.startService(new Intent(ctx, SpotyFlowPlaybackService.class));
-            } catch (Exception ignored) {
+                ctx.stopService(new Intent(ctx, SpotyFlowPlaybackService.class));
+            } catch (Throwable ignored) {
             }
         }
     }
@@ -777,7 +323,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
 
         ensureNotificationChannels(this);
 
-        // Configure Media3 Notification Provider (auto async artworkUri loader + Playback channel + white vector icon)
+        // Official Media3 Notification Provider (Playback channel + crisp white music note vector + async artworkUri loader)
         DefaultMediaNotificationProvider notificationProvider =
                 new DefaultMediaNotificationProvider.Builder(this)
                         .setChannelId(CHANNEL_PLAYBACK)
@@ -785,86 +331,10 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         notificationProvider.setSmallIcon(R.drawable.ic_stat_music);
         setMediaNotificationProvider(notificationProvider);
 
-        // Fast-Start Anti-Stutter LoadControl (15s min, 45s max, 400ms instant start, 1s rebuffer)
-        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                .setBufferDurationsMs(15000, 45000, 400, 1000)
-                .build();
+        // SimpleBasePlayer mirrors YouTube/WebView state to Origin Island / Lockscreen / TWS without fighting Audio Focus!
+        remotePlayer = new SpotyFlowRemotePlayer(Looper.getMainLooper());
 
-        httpDataSourceFactory = new DefaultHttpDataSource.Factory()
-                .setAllowCrossProtocolRedirects(true)
-                .setConnectTimeoutMs(6000)
-                .setReadTimeoutMs(10000)
-                .setUserAgent(DEFAULT_UA);
-
-        DefaultDataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this, httpDataSourceFactory);
-        DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this)
-                .setDataSourceFactory(dataSourceFactory);
-
-        AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                .setUsage(C.USAGE_MEDIA)
-                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                .build();
-
-        exoPlayer = new ExoPlayer.Builder(this)
-                .setMediaSourceFactory(mediaSourceFactory)
-                .setLoadControl(loadControl)
-                .setAudioAttributes(audioAttributes, true)
-                .setHandleAudioBecomingNoisy(true)
-                .setWakeMode(C.WAKE_MODE_NETWORK)
-                .build();
-
-        // Disable video decoding so progressive itag 18 MP4 streams decode ONLY audio (lightweight & battery-safe)
-        TrackSelectionParameters audioOnlyParams = exoPlayer.getTrackSelectionParameters()
-                .buildUpon()
-                .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true)
-                .build();
-        exoPlayer.setTrackSelectionParameters(audioOnlyParams);
-
-        exoPlayer.addListener(new Player.Listener() {
-            @Override
-            public void onAudioSessionIdChanged(int audioSessionId) {
-                attachAudioEffects(audioSessionId);
-            }
-
-            @Override
-            public void onPlaybackStateChanged(int playbackState) {
-                if (suppressingStopEvents) return;
-                if (playbackState == Player.STATE_BUFFERING) {
-                    MainActivity.dispatchExoEvent("buffering", buildStateJson());
-                } else if (playbackState == Player.STATE_READY) {
-                    int sid = exoPlayer.getAudioSessionId();
-                    if (sid != C.AUDIO_SESSION_ID_UNSET && sid != 0 && sid != attachedAudioSessionId) {
-                        attachAudioEffects(sid);
-                    }
-                    MainActivity.dispatchExoEvent("ready", buildStateJson());
-                } else if (playbackState == Player.STATE_ENDED) {
-                    isPlaying = false;
-                    MainActivity.dispatchExoEvent("ended", buildStateJson());
-                }
-            }
-
-            @Override
-            public void onIsPlayingChanged(boolean playing) {
-                if (suppressingStopEvents) return;
-                isPlaying = playing;
-                MainActivity.dispatchExoEvent(playing ? "playing" : "paused", buildStateJson());
-            }
-
-            @Override
-            public void onPlayerError(@NonNull PlaybackException error) {
-                if (suppressingStopEvents) return;
-                isPlaying = false;
-                JSONObject extra = buildStateJson();
-                try {
-                    extra.put("message", error.getMessage() != null ? error.getMessage() : "ExoPlayer error");
-                    extra.put("errorCode", error.errorCode);
-                } catch (Exception ignored) {
-                }
-                MainActivity.dispatchExoEvent("error", extra);
-            }
-        });
-
-        ForwardingPlayer forwardingPlayer = new ForwardingPlayer(exoPlayer) {
+        ForwardingPlayer forwardingPlayer = new ForwardingPlayer(remotePlayer) {
             @NonNull
             @Override
             public Commands getAvailableCommands() {
@@ -888,37 +358,39 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             }
 
             @Override
+            public boolean hasNextMediaItem() {
+                return true;
+            }
+
+            @Override
+            public boolean hasPreviousMediaItem() {
+                return true;
+            }
+
+            @Override
             public void seekToNext() {
-                MainActivity.dispatchExoEvent("next", null);
+                MainActivity.sendMediaActionToJs("next", 0L);
             }
 
             @Override
             public void seekToNextMediaItem() {
-                MainActivity.dispatchExoEvent("next", null);
+                MainActivity.sendMediaActionToJs("next", 0L);
             }
 
             @Override
             public void seekToPrevious() {
-                if (getCurrentPosition() > 3000L) {
-                    seekTo(0L);
-                } else {
-                    MainActivity.dispatchExoEvent("prev", null);
-                }
+                MainActivity.sendMediaActionToJs("prev", 0L);
             }
 
             @Override
             public void seekToPreviousMediaItem() {
-                if (getCurrentPosition() > 3000L) {
-                    seekTo(0L);
-                } else {
-                    MainActivity.dispatchExoEvent("prev", null);
-                }
+                MainActivity.sendMediaActionToJs("prev", 0L);
             }
         };
 
         Intent launchIntent = new Intent(this, MainActivity.class);
         launchIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent sessionActivity = PendingIntent.getActivity(
+        PendingIntent openAppPendingIntent = PendingIntent.getActivity(
                 this,
                 100,
                 launchIntent,
@@ -926,15 +398,34 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         );
 
         mediaSession = new MediaSession.Builder(this, forwardingPlayer)
-                .setSessionActivity(sessionActivity)
+                .setSessionActivity(openAppPendingIntent)
                 .build();
 
-        // Execute any play request queued while service was booting
-        PendingPlayRequest queued = pendingPlayRequest;
-        pendingPlayRequest = null;
-        if (queued != null) {
-            mainHandler.post(() -> playMediaUrl(queued));
+        initWakeAndWifiLocks();
+        registerBecomingNoisyReceiver();
+
+        String queued = pendingJsonPayload;
+        pendingJsonPayload = null;
+        if (queued != null && !queued.isEmpty()) {
+            mainHandler.post(() -> applyJsonState(queued));
         }
+    }
+
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        String queued = pendingJsonPayload;
+        pendingJsonPayload = null;
+        if (queued != null && !queued.isEmpty()) {
+            applyJsonState(queued);
+        }
+        if (mediaSession != null) {
+            try {
+                onUpdateNotification(mediaSession, true);
+            } catch (Throwable ignored) {
+            }
+        }
+        return START_STICKY;
     }
 
     @Nullable
@@ -945,7 +436,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
 
     @Override
     public void onTaskRemoved(@Nullable Intent rootIntent) {
-        if (exoPlayer == null || !exoPlayer.getPlayWhenReady()) {
+        if (!isPlaying) {
             stopSelf();
         }
         super.onTaskRemoved(rootIntent);
@@ -957,7 +448,8 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             instance = null;
         }
         isPlaying = false;
-        releaseAudioEffects();
+        updateWakeAndWifiLocks(false);
+        unregisterBecomingNoisyReceiver();
         if (mediaSession != null) {
             try {
                 mediaSession.release();
@@ -965,368 +457,292 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             }
             mediaSession = null;
         }
-        if (exoPlayer != null) {
+        if (remotePlayer != null) {
             try {
-                exoPlayer.release();
+                remotePlayer.release();
             } catch (Exception ignored) {
             }
-            exoPlayer = null;
+            remotePlayer = null;
         }
         super.onDestroy();
     }
 
-    public JSONObject buildStateJson() {
-        JSONObject obj = new JSONObject();
+    private void initWakeAndWifiLocks() {
         try {
-            long pos = exoPlayer != null ? Math.max(0L, exoPlayer.getCurrentPosition()) : 0L;
-            long dur = exoPlayer != null ? Math.max(0L, exoPlayer.getDuration()) : 0L;
-            if (dur == C.TIME_UNSET || dur < 0L) dur = 0L;
-            obj.put("positionMs", pos);
-            obj.put("durationMs", dur);
-            obj.put("isPlaying", exoPlayer != null && exoPlayer.isPlaying());
-        } catch (Exception ignored) {
-        }
-        return obj;
-    }
-
-    public void playMediaUrl(PendingPlayRequest req) {
-        if (exoPlayer == null || req == null || req.url == null || req.url.isEmpty()) return;
-        if (req.playSeq > 0 && req.playSeq != activePlaySeq.get()) return;
-
-        if (req.eqGains != null) {
-            for (int i = 0; i < Math.min(5, req.eqGains.length); i++) {
-                currentEqGains[i] = req.eqGains[i];
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SpotyFlow::BackgroundAudioWakeLock");
+                wakeLock.setReferenceCounted(false);
             }
-        }
-        currentBoostPct = req.boostPct;
-        currentNormalizer = req.normalizerEnabled;
-        currentReverbMix = req.reverbMix;
-        currentSpeed = req.speed;
-        currentPreservesPitch = req.preservesPitch;
-
-        // Dynamic User-Agent per track BEFORE setMediaItem (anti HTTP 403 mismatch)
-        String safeUserAgent = (req.userAgent != null && !req.userAgent.isEmpty()) ? req.userAgent : DEFAULT_UA;
-        if (httpDataSourceFactory != null) {
-            httpDataSourceFactory.setUserAgent(safeUserAgent);
-        }
-
-        String safeTitle = (req.title != null && !req.title.isEmpty()) ? req.title : "SpotyFlow";
-        String safeArtist = (req.artist != null && !req.artist.isEmpty()) ? req.artist : "SpotyFlow Studio";
-        String safeAlbum = (req.album != null && !req.album.isEmpty()) ? req.album : "SpotyFlow";
-        String safeCover = (req.coverUrl != null && req.coverUrl.startsWith("http"))
-                ? req.coverUrl
-                : "https://spotyflow.vercel.app/icon-512.png";
-
-        // DefaultMediaNotificationProvider in Media3 1.4.1 fetches artworkUri asynchronously in background!
-        MediaMetadata metadata = new MediaMetadata.Builder()
-                .setTitle(safeTitle)
-                .setArtist(safeArtist)
-                .setAlbumTitle(safeAlbum)
-                .setDisplayTitle(safeTitle)
-                .setSubtitle(safeArtist)
-                .setArtworkUri(Uri.parse(safeCover))
-                .build();
-
-        MediaItem mediaItem = new MediaItem.Builder()
-                .setMediaId("sf_" + req.playSeq + "_" + System.currentTimeMillis())
-                .setUri(Uri.parse(req.url))
-                .setMediaMetadata(metadata)
-                .build();
-
-        exoPlayer.setVolume(Math.max(0f, Math.min(1f, req.volume)));
-        applyPlaybackParams(currentSpeed, currentPreservesPitch);
-        exoPlayer.setMediaItem(mediaItem);
-        exoPlayer.prepare();
-        exoPlayer.play();
-
-        applyAllActiveHardwareEffects();
-    }
-
-    // ==================== HARDWARE DSP AUDIO FX (SAFE ANTI-CRASH) ====================
-
-    private void attachAudioEffects(int audioSessionId) {
-        if (audioSessionId == C.AUDIO_SESSION_ID_UNSET || audioSessionId == 0) return;
-        releaseAudioEffects();
-        attachedAudioSessionId = audioSessionId;
-
-        try {
-            nativeEqualizer = new Equalizer(0, audioSessionId);
         } catch (Throwable ignored) {
-            nativeEqualizer = null;
         }
-
         try {
-            nativeBassBoost = new BassBoost(0, audioSessionId);
-        } catch (Throwable ignored) {
-            nativeBassBoost = null;
-        }
-
-        try {
-            nativeLoudness = new LoudnessEnhancer(audioSessionId);
-        } catch (Throwable ignored) {
-            nativeLoudness = null;
-        }
-
-        try {
-            nativeReverb = new PresetReverb(0, audioSessionId);
-        } catch (Throwable ignored) {
-            nativeReverb = null;
-        }
-
-        applyAllActiveHardwareEffects();
-    }
-
-    private void releaseAudioEffects() {
-        attachedAudioSessionId = C.AUDIO_SESSION_ID_UNSET;
-        if (exoPlayer != null) {
-            try {
-                exoPlayer.setAuxEffectInfo(new AuxEffectInfo(AuxEffectInfo.NO_AUX_EFFECT_ID, 0f));
-            } catch (Throwable ignored) {
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm != null) {
+                int mode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                        ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY
+                        : WifiManager.WIFI_MODE_FULL_HIGH_PERF;
+                wifiLock = wm.createWifiLock(mode, "SpotyFlow::BackgroundWifiLock");
+                wifiLock.setReferenceCounted(false);
             }
-        }
-        if (nativeEqualizer != null) {
-            try { nativeEqualizer.release(); } catch (Throwable ignored) {}
-            nativeEqualizer = null;
-        }
-        if (nativeBassBoost != null) {
-            try { nativeBassBoost.release(); } catch (Throwable ignored) {}
-            nativeBassBoost = null;
-        }
-        if (nativeLoudness != null) {
-            try { nativeLoudness.release(); } catch (Throwable ignored) {}
-            nativeLoudness = null;
-        }
-        if (nativeReverb != null) {
-            try { nativeReverb.release(); } catch (Throwable ignored) {}
-            nativeReverb = null;
+        } catch (Throwable ignored) {
         }
     }
 
-    private void applyAllActiveHardwareEffects() {
-        applyEqBandsInternal();
-        applyLoudnessBoostInternal();
-        applyReverbMixInternal();
-    }
-
-    public void applyEqBands(float[] gains) {
-        if (gains == null) return;
-        for (int i = 0; i < Math.min(5, gains.length); i++) {
-            currentEqGains[i] = Math.max(-12f, Math.min(12f, gains[i]));
-        }
-        applyEqBandsInternal();
-    }
-
-    private void applyEqBandsInternal() {
-        boolean anyNonZero = false;
-        for (float g : currentEqGains) {
-            if (Math.abs(g) > 0.05f) {
-                anyNonZero = true;
-                break;
-            }
-        }
-
-        if (nativeEqualizer != null) {
-            try {
-                short numBands = nativeEqualizer.getNumberOfBands();
-                short[] range = nativeEqualizer.getBandLevelRange();
-                short minMb = (range != null && range.length >= 2) ? range[0] : -1200;
-                short maxMb = (range != null && range.length >= 2) ? range[1] : 1200;
-
-                for (short b = 0; b < numBands; b++) {
-                    int mappedIdx = numBands <= 1
-                            ? 0
-                            : Math.min(4, Math.round((b * 4f) / (numBands - 1f)));
-                    int targetMb = Math.round(currentEqGains[mappedIdx] * 100f);
-                    short clamped = (short) Math.max(minMb, Math.min(maxMb, targetMb));
-                    nativeEqualizer.setBandLevel(b, clamped);
+    private void updateWakeAndWifiLocks(boolean active) {
+        try {
+            if (wakeLock != null) {
+                if (active && !wakeLock.isHeld()) {
+                    wakeLock.acquire(4L * 60L * 60L * 1000L);
+                } else if (!active && wakeLock.isHeld()) {
+                    wakeLock.release();
                 }
-                nativeEqualizer.setEnabled(anyNonZero);
-            } catch (Throwable ignored) {
             }
+        } catch (Throwable ignored) {
         }
-
-        if (nativeBassBoost != null) {
-            try {
-                float bassDb = currentEqGains[0];
-                if (bassDb > 1.0f) {
-                    short strength = (short) Math.max(0, Math.min(750, Math.round((bassDb / 12f) * 750f)));
-                    if (nativeBassBoost.getStrengthSupported()) {
-                        nativeBassBoost.setStrength(strength);
-                    }
-                    nativeBassBoost.setEnabled(true);
-                } else {
-                    if (nativeBassBoost.getStrengthSupported()) {
-                        nativeBassBoost.setStrength((short) 0);
-                    }
-                    nativeBassBoost.setEnabled(false);
-                }
-            } catch (Throwable ignored) {
-            }
-        }
-    }
-
-    public void applyLoudnessBoost(int boostPct, boolean normalizerEnabled) {
-        currentBoostPct = Math.max(100, Math.min(300, boostPct));
-        currentNormalizer = normalizerEnabled;
-        applyLoudnessBoostInternal();
-    }
-
-    private void applyLoudnessBoostInternal() {
-        if (nativeLoudness == null) return;
         try {
-            int gainMb = (currentNormalizer ? 250 : 0) + Math.max(0, (currentBoostPct - 100) * 5);
-            gainMb = Math.max(0, Math.min(950, gainMb));
-            nativeLoudness.setTargetGain(gainMb);
-            nativeLoudness.setEnabled(gainMb > 0);
+            if (wifiLock != null) {
+                if (active && !wifiLock.isHeld()) {
+                    wifiLock.acquire();
+                } else if (!active && wifiLock.isHeld()) {
+                    wifiLock.release();
+                }
+            }
         } catch (Throwable ignored) {
         }
     }
 
-    public void applyReverbMix(float mix01) {
-        currentReverbMix = Math.max(0f, Math.min(1f, mix01));
-        applyReverbMixInternal();
+    private void registerBecomingNoisyReceiver() {
+        if (noisyReceiverRegistered) return;
+        try {
+            IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+            ContextCompat.registerReceiver(this, becomingNoisyReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+            noisyReceiverRegistered = true;
+        } catch (Throwable ignored) {
+        }
     }
 
-    private void applyReverbMixInternal() {
-        if (nativeReverb == null || exoPlayer == null) return;
+    private void unregisterBecomingNoisyReceiver() {
+        if (!noisyReceiverRegistered) return;
         try {
-            if (currentReverbMix >= 0.08f) {
-                short preset;
-                if (currentReverbMix < 0.25f) {
-                    preset = PresetReverb.PRESET_SMALLROOM;
-                } else if (currentReverbMix < 0.45f) {
-                    preset = PresetReverb.PRESET_MEDIUMHALL;
-                } else {
-                    preset = PresetReverb.PRESET_LARGEHALL;
+            unregisterReceiver(becomingNoisyReceiver);
+        } catch (Throwable ignored) {
+        }
+        noisyReceiverRegistered = false;
+    }
+
+    public void applyJsonState(String jsonPayload) {
+        if (jsonPayload == null || jsonPayload.isEmpty() || remotePlayer == null) return;
+        try {
+            JSONObject obj = new JSONObject(jsonPayload);
+            String trackId = obj.optString("trackId", "track");
+            if (trackId.isEmpty()) trackId = "track";
+            String title = obj.optString("title", "SpotyFlow");
+            if (title.isEmpty()) title = "SpotyFlow";
+            String artist = obj.optString("artist", "SpotyFlow");
+            if (artist.isEmpty()) artist = "SpotyFlow";
+            String album = obj.optString("album", "SpotyFlow");
+            if (album.isEmpty()) album = "SpotyFlow";
+            String coverUrl = obj.optString("coverUrl", "https://spotyflow.vercel.app/icon-512.png");
+            if (!coverUrl.startsWith("https://") && !coverUrl.startsWith("http://")) {
+                coverUrl = "https://spotyflow.vercel.app/icon-512.png";
+            }
+            boolean playingNow = obj.optBoolean("isPlaying", false);
+            long durationMs = Math.max(1000L, obj.optLong("durationMs", 210000L));
+            long positionMs = Math.max(0L, obj.optLong("positionMs", 0L));
+            float playbackRate = (float) obj.optDouble("playbackRate", 1.0);
+            if (playbackRate <= 0.1f || playbackRate > 4.0f) playbackRate = 1.0f;
+
+            boolean wasPlaying = isPlaying;
+            isPlaying = playingNow;
+            updateWakeAndWifiLocks(playingNow);
+
+            remotePlayer.updateFromJs(
+                    trackId, title, artist, album, coverUrl,
+                    playingNow, durationMs, positionMs, playbackRate
+            );
+
+            if (mediaSession != null && (playingNow || wasPlaying)) {
+                try {
+                    onUpdateNotification(mediaSession, playingNow);
+                } catch (Throwable ignored) {
                 }
-                nativeReverb.setPreset(preset);
-                nativeReverb.setEnabled(true);
-                exoPlayer.setAuxEffectInfo(new AuxEffectInfo(nativeReverb.getId(), Math.min(1f, currentReverbMix)));
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /**
+     * Media3 SimpleBasePlayer proxy that mirrors WebView/YouTube playback state cleanly
+     * without requesting or clashing with WebView Audio Focus.
+     */
+    private static class SpotyFlowRemotePlayer extends SimpleBasePlayer {
+        private boolean hasTrack = false;
+        private String trackId = "track";
+        private String title = "SpotyFlow";
+        private String artist = "SpotyFlow";
+        private String album = "SpotyFlow";
+        private String coverUrl = "https://spotyflow.vercel.app/icon-512.png";
+        private boolean playing = false;
+        private long durationMs = 210000L;
+        private long anchorPosMs = 0L;
+        private long anchorRealtimeMs = SystemClock.elapsedRealtime();
+        private float playbackRate = 1.0f;
+
+        private final PositionSupplier livePositionSupplier = () -> {
+            if (!playing) return anchorPosMs;
+            long delta = SystemClock.elapsedRealtime() - anchorRealtimeMs;
+            long est = anchorPosMs + (long) (delta * playbackRate);
+            return durationMs > 0L ? Math.min(est, durationMs) : Math.max(0L, est);
+        };
+
+        SpotyFlowRemotePlayer(Looper looper) {
+            super(looper);
+        }
+
+        void updateFromJs(
+                String trackId, String title, String artist, String album, String coverUrl,
+                boolean playing, long durationMs, long positionMs, float playbackRate
+        ) {
+            this.hasTrack = true;
+            this.trackId = trackId;
+            this.title = title;
+            this.artist = artist;
+            this.album = album;
+            this.coverUrl = coverUrl;
+            this.playing = playing;
+            this.durationMs = durationMs;
+            this.anchorPosMs = positionMs;
+            this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+            this.playbackRate = playbackRate;
+            invalidateState();
+        }
+
+        void setLocalPlayingState(boolean playingNow) {
+            this.anchorPosMs = livePositionSupplier.get();
+            this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+            this.playing = playingNow;
+            invalidateState();
+        }
+
+        @NonNull
+        @Override
+        protected State getState() {
+            Commands commands = new Commands.Builder()
+                    .addAll(
+                            Player.COMMAND_PLAY_PAUSE,
+                            Player.COMMAND_STOP,
+                            Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM,
+                            Player.COMMAND_SEEK_TO_NEXT,
+                            Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+                            Player.COMMAND_SEEK_TO_PREVIOUS,
+                            Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+                            Player.COMMAND_GET_CURRENT_MEDIA_ITEM,
+                            Player.COMMAND_GET_METADATA,
+                            Player.COMMAND_GET_TIMELINE
+                    )
+                    .build();
+
+            State.Builder builder = new State.Builder()
+                    .setAvailableCommands(commands)
+                    .setPlayWhenReady(playing, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+                    .setPlaybackState(hasTrack ? Player.STATE_READY : Player.STATE_IDLE)
+                    .setPlaybackParameters(new PlaybackParameters(playbackRate));
+
+            if (hasTrack) {
+                String safeCover = (coverUrl != null && coverUrl.startsWith("http"))
+                        ? coverUrl
+                        : "https://spotyflow.vercel.app/icon-512.png";
+                MediaMetadata metadata = new MediaMetadata.Builder()
+                        .setTitle(title)
+                        .setArtist(artist)
+                        .setAlbumTitle(album)
+                        .setDisplayTitle(title)
+                        .setSubtitle(artist)
+                        .setArtworkUri(Uri.parse(safeCover))
+                        .build();
+
+                MediaItem mediaItem = new MediaItem.Builder()
+                        .setMediaId(trackId)
+                        .setMediaMetadata(metadata)
+                        .build();
+
+                MediaItemData itemData = new MediaItemData.Builder(trackId)
+                        .setMediaItem(mediaItem)
+                        .setMediaMetadata(metadata)
+                        .setDurationUs(durationMs > 0L ? durationMs * 1000L : C.TIME_UNSET)
+                        .setIsSeekable(true)
+                        .build();
+
+                List<MediaItemData> playlist = Collections.singletonList(itemData);
+                builder.setPlaylist(playlist);
+                builder.setCurrentMediaItemIndex(0);
+                builder.setContentPositionMs(livePositionSupplier);
             } else {
-                nativeReverb.setPreset(PresetReverb.PRESET_NONE);
-                nativeReverb.setEnabled(false);
-                exoPlayer.setAuxEffectInfo(new AuxEffectInfo(AuxEffectInfo.NO_AUX_EFFECT_ID, 0f));
+                builder.setPlaylist(Collections.emptyList());
             }
-        } catch (Throwable ignored) {
+
+            return builder.build();
         }
-    }
 
-    public void applyPlaybackParams(float speed, boolean preservesPitch) {
-        currentSpeed = Math.max(0.5f, Math.min(2.0f, speed));
-        currentPreservesPitch = preservesPitch;
-        if (exoPlayer == null) return;
-        try {
-            float pitch = currentPreservesPitch ? 1.0f : currentSpeed;
-            exoPlayer.setPlaybackParameters(new PlaybackParameters(currentSpeed, pitch));
-        } catch (Throwable ignored) {
+        @NonNull
+        @Override
+        protected ListenableFuture<?> handlePrepare() {
+            invalidateState();
+            return Futures.immediateVoidFuture();
         }
-    }
 
-    // ==================== DIRECT PLAYER CONTROLS ====================
+        @NonNull
+        @Override
+        protected ListenableFuture<?> handleSetPlayWhenReady(boolean playWhenReady) {
+            this.anchorPosMs = livePositionSupplier.get();
+            this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+            this.playing = playWhenReady;
+            SpotyFlowPlaybackService.isPlaying = playWhenReady;
+            SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
+            if (svc != null) {
+                svc.updateWakeAndWifiLocks(playWhenReady);
+            }
+            invalidateState();
+            MainActivity.sendMediaActionToJs(playWhenReady ? "play" : "pause", 0L);
+            return Futures.immediateVoidFuture();
+        }
 
-    public void pausePlayback() {
-        if (exoPlayer != null) exoPlayer.pause();
-    }
+        @NonNull
+        @Override
+        protected ListenableFuture<?> handleSeek(int mediaItemIndex, long positionMs, int seekCommand) {
+            if (seekCommand == Player.COMMAND_SEEK_TO_NEXT
+                    || seekCommand == Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM) {
+                MainActivity.sendMediaActionToJs("next", 0L);
+            } else if (seekCommand == Player.COMMAND_SEEK_TO_PREVIOUS
+                    || seekCommand == Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM) {
+                MainActivity.sendMediaActionToJs("prev", 0L);
+            } else if (positionMs != C.TIME_UNSET) {
+                this.anchorPosMs = Math.max(0L, positionMs);
+                this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+                invalidateState();
+                MainActivity.sendMediaActionToJs("seek", this.anchorPosMs);
+            }
+            return Futures.immediateVoidFuture();
+        }
 
-    public void resumePlayback() {
-        if (exoPlayer != null) exoPlayer.play();
-    }
-
-    public void togglePlayback() {
-        if (exoPlayer == null) return;
-        if (exoPlayer.isPlaying()) exoPlayer.pause();
-        else exoPlayer.play();
-    }
-
-    public void seekToMs(long positionMs) {
-        if (exoPlayer != null) exoPlayer.seekTo(Math.max(0L, positionMs));
-    }
-
-    public void setPlayerVolume(float vol) {
-        if (exoPlayer != null) exoPlayer.setVolume(Math.max(0f, Math.min(1f, vol)));
-    }
-
-    public void stopPlayback() {
-        nextPlaySequenceAndStop();
+        @NonNull
+        @Override
+        protected ListenableFuture<?> handleStop() {
+            this.anchorPosMs = livePositionSupplier.get();
+            this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+            this.playing = false;
+            SpotyFlowPlaybackService.isPlaying = false;
+            SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
+            if (svc != null) {
+                svc.updateWakeAndWifiLocks(false);
+            }
+            invalidateState();
+            MainActivity.sendMediaActionToJs("pause", 0L);
+            return Futures.immediateVoidFuture();
+        }
     }
 }
-`;
-
-const SPOTYFLOW_WEBVIEW_JAVA = `package ${APP_ID};
-
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-
-import com.getcapacitor.CapacitorWebView;
-
-import java.util.Map;
-
-public class SpotyFlowWebView extends CapacitorWebView {
-    private boolean exoBridgeReady = false;
-
-    public SpotyFlowWebView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    private void ensureExoBridgeBeforeLoad() {
-        if (exoBridgeReady) return;
-        exoBridgeReady = true;
-        MainActivity.attachExoBridgeToWebView(this);
-    }
-
-    @Override
-    public void loadUrl(String url) {
-        ensureExoBridgeBeforeLoad();
-        super.loadUrl(url);
-    }
-
-    @Override
-    public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
-        ensureExoBridgeBeforeLoad();
-        super.loadUrl(url, additionalHttpHeaders);
-    }
-
-    @Override
-    protected void onWindowVisibilityChanged(int visibility) {
-        if (visibility != View.VISIBLE && SpotyFlowPlaybackService.isPlaying) {
-            super.onWindowVisibilityChanged(View.VISIBLE);
-            return;
-        }
-        super.onWindowVisibilityChanged(visibility);
-    }
-
-    @Override
-    public void onPause() {
-        if (SpotyFlowPlaybackService.isPlaying) {
-            return;
-        }
-        super.onPause();
-    }
-
-    @Override
-    public void pauseTimers() {
-        if (SpotyFlowPlaybackService.isPlaying) {
-            return;
-        }
-        super.pauseTimers();
-    }
-}
-`;
-
-const BRIDGE_LAYOUT_MAIN_XML = `<?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
-    <${APP_ID}.SpotyFlowWebView
-        android:id="@+id/webview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
 `;
 
 const MAIN_ACTIVITY_JAVA = `package ${APP_ID};
@@ -1357,47 +773,25 @@ import androidx.media3.session.SessionToken;
 import com.getcapacitor.BridgeActivity;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @UnstableApi
 public class MainActivity extends BridgeActivity {
     private static final int REQ_SPOTYFLOW_PERMISSIONS = 1001;
     private static WeakReference<MainActivity> activeInstance = new WeakReference<>(null);
 
-    private ExecutorService backgroundExecutor;
     private Handler mainHandler;
     private ListenableFuture<MediaController> controllerFuture;
     private boolean bridgeAttached = false;
-    private boolean appInForeground = true;
-
-    private final Runnable timeUpdateTicker = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null && SpotyFlowPlaybackService.isPlaying && appInForeground) {
-                    dispatchExoEvent("timeupdate", svc.buildStateJson());
-                }
-            } catch (Exception ignored) {
-            }
-            if (mainHandler != null) {
-                mainHandler.postDelayed(this, 500L);
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         activeInstance = new WeakReference<>(this);
         mainHandler = new Handler(Looper.getMainLooper());
-        backgroundExecutor = Executors.newCachedThreadPool();
 
         // Buat 4 kategori notifikasi persis Spotify segera saat app dibuka
         SpotyFlowPlaybackService.ensureNotificationChannels(this);
@@ -1405,15 +799,13 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         if (getBridge() != null && getBridge().getWebView() != null) {
-            attachExoBridgeInstance(getBridge().getWebView());
+            attachMediaBridgeInstance(getBridge().getWebView());
         }
 
         connectMediaController();
         requestSpotifyLikePermissions();
         requestBatteryOptimizationExemptionOnce();
         handleDeepLinkIntent(getIntent());
-
-        mainHandler.postDelayed(timeUpdateTicker, 500L);
     }
 
     private void connectMediaController() {
@@ -1427,25 +819,26 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    public static void attachExoBridgeToWebView(WebView webView) {
+    public static void attachMediaBridgeToWebView(WebView webView) {
         MainActivity act = activeInstance != null ? activeInstance.get() : null;
         if (act != null && webView != null) {
-            act.attachExoBridgeInstance(webView);
+            act.attachMediaBridgeInstance(webView);
         }
     }
 
-    private void attachExoBridgeInstance(WebView webView) {
+    private void attachMediaBridgeInstance(WebView webView) {
         if (bridgeAttached || webView == null) return;
         bridgeAttached = true;
         try {
             WebSettings settings = webView.getSettings();
             settings.setMediaPlaybackRequiresUserGesture(false);
+            settings.setDomStorageEnabled(true);
             String ua = settings.getUserAgentString();
             if (ua == null) ua = "";
             if (!ua.contains("SpotyFlowApp/")) {
-                settings.setUserAgentString(ua + " SpotyFlowApp/4.1");
+                settings.setUserAgentString(ua + " SpotyFlowApp/5.0");
             }
-            webView.addJavascriptInterface(new SpotyFlowExoBridge(), "SpotyFlowExo");
+            webView.addJavascriptInterface(new SpotyFlowMediaBridgeInterface(), "SpotyFlowMediaBridge");
         } catch (Exception ignored) {
         }
     }
@@ -1519,19 +912,15 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    public static void dispatchExoEvent(final String type, final JSONObject payload) {
+    public static void sendMediaActionToJs(final String action, final long positionMs) {
         MainActivity act = activeInstance != null ? activeInstance.get() : null;
-        if (act == null || type == null) return;
-        final JSONObject eventObj = payload != null ? payload : new JSONObject();
-        try {
-            eventObj.put("type", type);
-        } catch (Exception ignored) {
-        }
-        final String quotedJson = JSONObject.quote(eventObj.toString());
+        if (act == null || action == null) return;
+        final String quotedAction = JSONObject.quote(action);
         act.runOnUiThread(() -> {
             try {
                 if (act.getBridge() != null && act.getBridge().getWebView() != null) {
-                    String js = "try{if(window.__sfOnExoEvent){window.__sfOnExoEvent(JSON.parse(" + quotedJson + "));}}catch(e){}";
+                    String js = "try{if(window.__sfOnNativeMediaAction){window.__sfOnNativeMediaAction("
+                            + quotedAction + "," + positionMs + ");}}catch(e){}";
                     act.getBridge().getWebView().evaluateJavascript(js, null);
                 }
             } catch (Exception ignored) {
@@ -1545,8 +934,8 @@ public class MainActivity extends BridgeActivity {
         act.runOnUiThread(() -> {
             try {
                 if (act.getBridge() != null && act.getBridge().getWebView() != null) {
-                    String js = "if(window.__sfHandleNativeAppVisibility){window.__sfHandleNativeAppVisibility("
-                            + (visible ? "true" : "false") + ");}";
+                    String js = "try{if(window.__sfHandleNativeAppVisibility){window.__sfHandleNativeAppVisibility("
+                            + (visible ? "true" : "false") + ");}}catch(e){}";
                     act.getBridge().getWebView().evaluateJavascript(js, null);
                 }
             } catch (Exception ignored) {
@@ -1560,8 +949,8 @@ public class MainActivity extends BridgeActivity {
         act.runOnUiThread(() -> {
             try {
                 if (act.getBridge() != null && act.getBridge().getWebView() != null) {
-                    String js = "if(window.__sfHandleNativeAuthReturn){window.__sfHandleNativeAuthReturn("
-                            + JSONObject.quote(nonce) + ");}";
+                    String js = "try{if(window.__sfHandleNativeAuthReturn){window.__sfHandleNativeAuthReturn("
+                            + JSONObject.quote(nonce) + ");}}catch(e){}";
                     act.getBridge().getWebView().evaluateJavascript(js, null);
                 }
             } catch (Exception ignored) {
@@ -1572,13 +961,8 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onResume() {
         super.onResume();
-        appInForeground = true;
         activeInstance = new WeakReference<>(this);
         dispatchAppVisibilityToWebView(true);
-        SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-        if (svc != null) {
-            dispatchExoEvent("timeupdate", svc.buildStateJson());
-        }
     }
 
     @Override
@@ -1589,7 +973,6 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onStop() {
-        appInForeground = false;
         dispatchAppVisibilityToWebView(false);
         super.onStop();
         scheduleBackgroundWebViewKeepAlive();
@@ -1597,9 +980,6 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onDestroy() {
-        if (mainHandler != null) {
-            mainHandler.removeCallbacks(timeUpdateTicker);
-        }
         if (controllerFuture != null) {
             try {
                 MediaController.releaseFuture(controllerFuture);
@@ -1607,22 +987,18 @@ public class MainActivity extends BridgeActivity {
             }
             controllerFuture = null;
         }
-        if (backgroundExecutor != null) {
-            backgroundExecutor.shutdownNow();
-            backgroundExecutor = null;
-        }
         super.onDestroy();
     }
 
     private void scheduleBackgroundWebViewKeepAlive() {
-        keepBackgroundAudioWebViewAlive();
+        keepBackgroundYouTubeWebViewAlive();
         if (mainHandler != null) {
-            mainHandler.postDelayed(this::keepBackgroundAudioWebViewAlive, 150L);
-            mainHandler.postDelayed(this::keepBackgroundAudioWebViewAlive, 500L);
+            mainHandler.postDelayed(this::keepBackgroundYouTubeWebViewAlive, 150L);
+            mainHandler.postDelayed(this::keepBackgroundYouTubeWebViewAlive, 500L);
         }
     }
 
-    private void keepBackgroundAudioWebViewAlive() {
+    private void keepBackgroundYouTubeWebViewAlive() {
         try {
             if (SpotyFlowPlaybackService.isPlaying && getBridge() != null && getBridge().getWebView() != null) {
                 WebView webView = getBridge().getWebView();
@@ -1633,214 +1009,15 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    private class SpotyFlowExoBridge {
+    private class SpotyFlowMediaBridgeInterface {
         @JavascriptInterface
-        public boolean isAvailable() {
-            return true;
+        public void updateState(final String jsonPayload) {
+            SpotyFlowPlaybackService.dispatchStateUpdate(getApplicationContext(), jsonPayload);
         }
 
         @JavascriptInterface
-        public void playTrack(final String jsonPayload) {
-            // Sequence Guard: increment seq and stop previous audio immediately
-            final long seq = SpotyFlowPlaybackService.nextPlaySequenceAndStop();
-            dispatchExoEvent("buffering", null);
-
-            if (backgroundExecutor == null || backgroundExecutor.isShutdown()) {
-                backgroundExecutor = Executors.newCachedThreadPool();
-            }
-            backgroundExecutor.execute(() -> {
-                try {
-                    if (seq != SpotyFlowPlaybackService.activePlaySeq.get()) return;
-
-                    JSONObject obj = new JSONObject(jsonPayload != null ? jsonPayload : "{}");
-                    String url = obj.optString("url", "").trim();
-                    String videoId = obj.optString("videoId", "").trim();
-                    String title = obj.optString("title", "SpotyFlow");
-                    String artist = obj.optString("artist", "SpotyFlow Studio");
-                    String album = obj.optString("album", "SpotyFlow");
-                    String coverUrl = obj.optString("coverUrl", "https://spotyflow.vercel.app/icon-512.png");
-                    float volume = (float) obj.optDouble("volume", 1.0);
-                    float speed = (float) obj.optDouble("speed", 1.0);
-                    boolean preservesPitch = obj.optBoolean("preservesPitch", true);
-                    int boostPct = obj.optInt("boostPct", 100);
-                    boolean normalizerEnabled = obj.optBoolean("normalizerEnabled", false);
-                    float reverbMix = (float) obj.optDouble("reverbMix", 0.0);
-                    String userAgent = obj.optString("userAgent", "");
-
-                    float[] eqGains = new float[] {0f, 0f, 0f, 0f, 0f};
-                    JSONArray eqArr = obj.optJSONArray("eqGains");
-                    if (eqArr != null) {
-                        for (int i = 0; i < Math.min(5, eqArr.length()); i++) {
-                            eqGains[i] = (float) eqArr.optDouble(i, 0.0);
-                        }
-                    }
-
-                    if (url.isEmpty() && !videoId.isEmpty()) {
-                        JSONObject resolved = NativeYouTubeResolver.resolveAudioStream(videoId);
-                        // Sequence Guard after async resolve — discard if user already switched track!
-                        if (seq != SpotyFlowPlaybackService.activePlaySeq.get()) return;
-
-                        if (resolved != null && resolved.optBoolean("ok", false)) {
-                            url = resolved.optString("url", "");
-                            String resolvedUa = resolved.optString("userAgent", "");
-                            if (!resolvedUa.isEmpty()) {
-                                userAgent = resolvedUa;
-                            }
-                        } else {
-                            JSONObject err = new JSONObject();
-                            err.put("message", resolved != null ? resolved.optString("error", "stream_unavailable") : "stream_unavailable");
-                            dispatchExoEvent("error", err);
-                            return;
-                        }
-                    }
-
-                    if (seq != SpotyFlowPlaybackService.activePlaySeq.get()) return;
-
-                    if (url.isEmpty()) {
-                        JSONObject err = new JSONObject();
-                        err.put("message", "empty_audio_url");
-                        dispatchExoEvent("error", err);
-                        return;
-                    }
-
-                    if (userAgent.isEmpty()) {
-                        userAgent = NativeYouTubeResolver.CHROME_UA;
-                    }
-
-                    SpotyFlowPlaybackService.PendingPlayRequest req =
-                            new SpotyFlowPlaybackService.PendingPlayRequest(
-                                    seq, url, title, artist, album, coverUrl, userAgent,
-                                    volume, speed, preservesPitch, eqGains,
-                                    boostPct, normalizerEnabled, reverbMix
-                            );
-                    SpotyFlowPlaybackService.requestPlay(getApplicationContext(), req);
-                } catch (Exception e) {
-                    if (seq != SpotyFlowPlaybackService.activePlaySeq.get()) return;
-                    JSONObject err = new JSONObject();
-                    try {
-                        err.put("message", e.getMessage() != null ? e.getMessage() : "playTrack failed");
-                    } catch (Exception ignored) {
-                    }
-                    dispatchExoEvent("error", err);
-                }
-            });
-        }
-
-        @JavascriptInterface
-        public void pause() {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.pausePlayback();
-            });
-        }
-
-        @JavascriptInterface
-        public void resume() {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.resumePlayback();
-            });
-        }
-
-        @JavascriptInterface
-        public void toggle() {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.togglePlayback();
-            });
-        }
-
-        @JavascriptInterface
-        public void seekTo(final long positionMs) {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.seekToMs(positionMs);
-            });
-        }
-
-        @JavascriptInterface
-        public void setVolume(final float vol) {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.setPlayerVolume(vol);
-            });
-        }
-
-        @JavascriptInterface
-        public void setPlaybackRate(final float rate) {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.applyPlaybackParams(rate, true);
-            });
-        }
-
-        @JavascriptInterface
-        public void setPlaybackParams(final float speed, final boolean preservesPitch) {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.applyPlaybackParams(speed, preservesPitch);
-            });
-        }
-
-        @JavascriptInterface
-        public void setEqBands(final String jsonGains) {
-            runOnUiThread(() -> {
-                try {
-                    JSONArray arr = new JSONArray(jsonGains != null ? jsonGains : "[]");
-                    float[] gains = new float[] {0f, 0f, 0f, 0f, 0f};
-                    for (int i = 0; i < Math.min(5, arr.length()); i++) {
-                        gains[i] = (float) arr.optDouble(i, 0.0);
-                    }
-                    SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                    if (svc != null) svc.applyEqBands(gains);
-                } catch (Exception ignored) {
-                }
-            });
-        }
-
-        @JavascriptInterface
-        public void setLoudnessAndBoost(final int boostPct, final boolean normalizerEnabled) {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.applyLoudnessBoost(boostPct, normalizerEnabled);
-            });
-        }
-
-        @JavascriptInterface
-        public void setReverbMix(final float mix01) {
-            runOnUiThread(() -> {
-                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
-                if (svc != null) svc.applyReverbMix(mix01);
-            });
-        }
-
-        @JavascriptInterface
-        public void stop() {
-            SpotyFlowPlaybackService.nextPlaySequenceAndStop();
-        }
-
-        @JavascriptInterface
-        public void resolveFullAudioAsync(final String videoId, final String reqId) {
-            if (backgroundExecutor == null || backgroundExecutor.isShutdown()) {
-                backgroundExecutor = Executors.newCachedThreadPool();
-            }
-            backgroundExecutor.execute(() -> {
-                final JSONObject result = NativeYouTubeResolver.resolveAudioStream(videoId);
-                final String quotedRes = JSONObject.quote(result.toString());
-                runOnUiThread(() -> {
-                    try {
-                        if (getBridge() != null && getBridge().getWebView() != null) {
-                            String js = "try{if(window.__onNativeAudioResolved){window.__onNativeAudioResolved("
-                                    + JSONObject.quote(reqId != null ? reqId : "")
-                                    + ",JSON.parse("
-                                    + quotedRes
-                                    + "));}}catch(e){}";
-                            getBridge().getWebView().evaluateJavascript(js, null);
-                        }
-                    } catch (Exception ignored) {
-                    }
-                });
-            });
+        public void stopService() {
+            SpotyFlowPlaybackService.requestStopService(getApplicationContext());
         }
 
         @JavascriptInterface
@@ -1915,11 +1092,13 @@ function patchBuildGradle() {
     }
   }
 
-  // Add AndroidX Media3 1.4.1 + Guava dependencies
+  // Remove unused heavy ExoPlayer dependency if left over from earlier build
+  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-exoplayer:[^"']+["']\s*$/gm, '');
+
+  // Add lightweight AndroidX Media3 1.4.1 (common + session) + Guava
   const requiredDeps = [
-    'implementation "androidx.media3:media3-exoplayer:1.4.1"',
-    'implementation "androidx.media3:media3-session:1.4.1"',
     'implementation "androidx.media3:media3-common:1.4.1"',
+    'implementation "androidx.media3:media3-session:1.4.1"',
     'implementation "com.google.guava:guava:32.1.3-android"',
   ];
   const missingDeps = requiredDeps.filter((dep) => {
@@ -1934,7 +1113,7 @@ function patchBuildGradle() {
   }
 
   fs.writeFileSync(BUILD_GRADLE, content, 'utf8');
-  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, Media3 1.4.1, Guava, Java 17)`);
+  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, Media3 common+session 1.4.1, Guava, Java 17)`);
 }
 
 function patchAndroidManifest() {
@@ -2055,29 +1234,30 @@ function writeJavaAndResSources() {
   fs.mkdirSync(RES_LAYOUT_DIR, { recursive: true });
   fs.mkdirSync(RES_DRAWABLE_DIR, { recursive: true });
 
-  // Clean up any legacy service/plugin Java files in active package
-  for (const legacy of ['SpotyFlowMediaService.java', 'SpotyFlowMediaPlugin.java']) {
+  // Clean up any legacy ExoPlayer / resolver / service Java files
+  for (const legacy of ['NativeYouTubeResolver.java', 'SpotyFlowMediaService.java', 'SpotyFlowMediaPlugin.java']) {
     const p = path.join(JAVA_PKG_DIR, legacy);
-    if (fs.existsSync(p)) fs.rmSync(p, { force: true });
+    if (fs.existsSync(p)) {
+      fs.rmSync(p, { force: true });
+      console.log('  + Removed legacy Java file:', legacy);
+    }
   }
 
-  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'NativeYouTubeResolver.java'), NATIVE_YOUTUBE_RESOLVER_JAVA, 'utf8');
-  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), SPOTYFLOW_PLAYBACK_SERVICE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), SPOTYFLOW_WEBVIEW_JAVA, 'utf8');
+  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), SPOTYFLOW_PLAYBACK_SERVICE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), MAIN_ACTIVITY_JAVA, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'), IC_STAT_MUSIC_XML, 'utf8');
 
-  console.log(`  + Written 4 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + layout & vector icon`);
+  console.log(`  + Written 3 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + layout & vector icon`);
 }
 
 function verifyPatchedProject() {
   const mustExist = [
     BUILD_GRADLE,
     MANIFEST_XML,
-    path.join(JAVA_PKG_DIR, 'NativeYouTubeResolver.java'),
-    path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'),
     path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'),
     path.join(JAVA_PKG_DIR, 'MainActivity.java'),
     path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'),
     path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'),
@@ -2089,6 +1269,10 @@ function verifyPatchedProject() {
     }
   }
 
+  if (fs.existsSync(path.join(JAVA_PKG_DIR, 'NativeYouTubeResolver.java'))) {
+    console.error('[SpotyFlow Media3 Patcher] VERIFY FAILED — NativeYouTubeResolver.java lama masih ada!');
+    process.exit(1);
+  }
   if (APP_ID !== 'com.spotyflow.music') {
     const legacyDir = path.join(JAVA_ROOT_DIR, 'com', 'spotyflow', 'music');
     if (fs.existsSync(legacyDir)) {
@@ -2101,7 +1285,6 @@ function verifyPatchedProject() {
   const manifest = fs.readFileSync(MANIFEST_XML, 'utf8');
   const svc = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), 'utf8');
   const act = fs.readFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), 'utf8');
-  const res = fs.readFileSync(path.join(JAVA_PKG_DIR, 'NativeYouTubeResolver.java'), 'utf8');
   const webv = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), 'utf8');
   const layout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), 'utf8');
 
@@ -2109,23 +1292,24 @@ function verifyPatchedProject() {
   const checks = [
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('androidx.media3:media3-exoplayer:1.4.1'), 'build.gradle missing media3-exoplayer:1.4.1'],
-    [gradle.includes('androidx.media3:media3-session:1.4.1'), 'build.gradle missing media3-session:1.4.1'],
     [gradle.includes('androidx.media3:media3-common:1.4.1'), 'build.gradle missing media3-common:1.4.1'],
+    [gradle.includes('androidx.media3:media3-session:1.4.1'), 'build.gradle missing media3-session:1.4.1'],
+    [!gradle.includes('media3-exoplayer'), 'build.gradle should NOT include heavy media3-exoplayer'],
     [gradle.includes('com.google.guava:guava:32.1.3-android'), 'build.gradle missing guava'],
     [gradle.includes('JavaVersion.VERSION_17'), 'build.gradle missing Java 17'],
-    [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && res.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
+    [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
     [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
+    [webv.includes('onWindowVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing background visibility override'],
     [manifest.includes('android:appCategory="audio"'), 'Manifest missing appCategory="audio"'],
     [manifest.includes('androidx.media3.session.MediaSessionService'), 'Manifest missing MediaSessionService'],
     [manifest.includes('androidx.media3.session.MediaButtonReceiver'), 'Manifest missing Media3 MediaButtonReceiver'],
     [!manifest.includes('SpotyFlowMediaService'), 'Manifest still has legacy SpotyFlowMediaService'],
     [!manifest.includes('SYSTEM_ALERT_WINDOW'), 'Manifest must NOT contain SYSTEM_ALERT_WINDOW'],
-    [svc.includes('extends MediaSessionService') && svc.includes('@UnstableApi') && svc.includes('setBufferDurationsMs(15000, 45000, 400, 1000)') && svc.includes('C.TRACK_TYPE_VIDEO') && svc.includes('activePlaySeq'), 'Service missing fast-start Media3 ExoPlayer config or activePlaySeq'],
-    [svc.includes('Equalizer') && svc.includes('BassBoost') && svc.includes('LoudnessEnhancer') && svc.includes('PresetReverb'), 'Service missing hardware AudioFX classes'],
+    [svc.includes('extends MediaSessionService') && svc.includes('extends SimpleBasePlayer') && svc.includes('@UnstableApi'), 'Service must use SimpleBasePlayer + MediaSessionService + @UnstableApi'],
+    [svc.includes('ForwardingPlayer') && svc.includes('hasNextMediaItem') && svc.includes('hasPreviousMediaItem'), 'Service missing ForwardingPlayer Next/Prev overrides'],
     [svc.includes('spotyflow_general') && svc.includes('spotyflow_playback') && svc.includes('spotyflow_music') && svc.includes('spotyflow_downloads'), 'Service missing 4 notification channels'],
-    [act.includes('"SpotyFlowExo"') && act.includes('nextPlaySequenceAndStop') && act.includes('JSON.parse('), 'MainActivity missing SpotyFlowExo sequence guard or safe JSON bridge'],
-    [res.includes('WEB_EMBEDDED_PLAYER') && res.includes('isPlayableUrl') && res.includes('CountDownLatch') && res.includes('ConcurrentHashMap') && res.includes('spotyflow.vercel.app/api/audio/resolve'), 'NativeYouTubeResolver missing parallel anti-403 race or probe'],
+    [svc.includes('PARTIAL_WAKE_LOCK') && svc.includes('ACTION_AUDIO_BECOMING_NOISY'), 'Service missing WakeLock or Noisy receiver'],
+    [act.includes('"SpotyFlowMediaBridge"') && act.includes('sendMediaActionToJs') && act.includes('setMediaPlaybackRequiresUserGesture(false)') && act.includes('setDomStorageEnabled(true)'), 'MainActivity missing SpotyFlowMediaBridge or WebView settings'],
   ];
 
   for (const [ok, msg] of checks) {
@@ -2134,7 +1318,7 @@ function verifyPatchedProject() {
       process.exit(1);
     }
   }
-  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} Media3 + Anti-403 + Origin Island checks)`);
+  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} Media3 SimpleBasePlayer + Origin Island + Background YouTube checks)`);
 }
 
 function main() {
@@ -2142,7 +1326,7 @@ function main() {
     if (!fs.existsSync(ANDROID_DIR)) {
       throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
     }
-    console.log(`[SpotyFlow Media3 Patcher] Injecting AndroidX Media3 ExoPlayer (appId=${APP_ID})...`);
+    console.log(`[SpotyFlow Media3 Patcher] Injecting Media3 SimpleBasePlayer + Background YouTube WebView (appId=${APP_ID})...`);
     patchVariablesGradle();
     patchBuildGradle();
     patchAndroidManifest();

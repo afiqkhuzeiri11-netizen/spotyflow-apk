@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (Media3 ExoPlayer)
+name: Build SpotyFlow Android APK (Media3 + Full YouTube)
 
 on:
   workflow_dispatch:
@@ -42,7 +42,7 @@ jobs:
           fi
           npx cap sync android
 
-      - name: Patch AndroidX Media3 ExoPlayer, Hardware Audio FX & Official MediaSessionService
+      - name: Patch Media3 SimpleBasePlayer, Origin Island & Background YouTube WebView
         run: node scripts/patch-android-apk.js
 
       - name: Verify Patched Media3 Native Files
@@ -50,17 +50,18 @@ jobs:
           APP_ID=$(node -p "require('./capacitor.config.json').appId")
           PKG_PATH=$(echo "$APP_ID" | tr '.' '/')
           echo "Verifying dynamic appId=$APP_ID (path=$PKG_PATH)"
-          test -f "android/app/src/main/java/${PKG_PATH}/NativeYouTubeResolver.java"
-          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowPlaybackService.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWebView.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowPlaybackService.java"
           test -f "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          test ! -f "android/app/src/main/java/${PKG_PATH}/NativeYouTubeResolver.java"
           test ! -d "android/app/src/main/java/com/spotyflow/music"
           test -f android/app/src/main/res/layout/bridge_layout_main.xml
           test -f android/app/src/main/res/drawable/ic_stat_music.xml
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
-          grep -q "androidx.media3:media3-exoplayer:1.4.1" android/app/build.gradle
+          grep -q "androidx.media3:media3-common:1.4.1" android/app/build.gradle
           grep -q "androidx.media3:media3-session:1.4.1" android/app/build.gradle
+          ! grep -q "media3-exoplayer" android/app/build.gradle
           grep -q "SpotyFlowPlaybackService" android/app/src/main/AndroidManifest.xml
           grep -q 'android:appCategory="audio"' android/app/src/main/AndroidManifest.xml
           grep -q "androidx.media3.session.MediaSessionService" android/app/src/main/AndroidManifest.xml
@@ -89,14 +90,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow Android Media3 ExoPlayer APK (v11.1.0)
+          name: SpotyFlow Android APK (v12.0.0 — Full YouTube + Origin Island)
           body: |
-            ### SpotyFlow Android APK (Instant Native Media3 ExoPlayer + Anti-403 Parallel Resolver + Origin Island Edition)
-            - **Startup Instan (~1–2 detik)**: 3-way parallel audio resolver (`WEB_EMBEDDED_PLAYER` itag 18 anti-403 + `ANDROID` client + Vercel fallback) dengan probe Range HTTP 200/206, 20-menit RAM cache, dan `DefaultLoadControl` 400ms fast-start.
-            - **100% Native AndroidX Media3 ExoPlayer (`MediaSessionService`)**: video track decoding dimatikan (`C.TRACK_TYPE_VIDEO`), dynamic `User-Agent` per track, `AtomicLong activePlaySeq` guard anti lagu tumpang tindih, dan 15–45 detik buffer anti patah-patah di layar terkunci.
-            - **Native Android Hardware Audio FX (`android.media.audiofx`)**: Equalizer 5-Band, Bass Boost, Loudness/Volume Boost, Reverb/3D Room, dan Slowed/Nightcore Pitch & Speed langsung di DSP audio sistem.
-            - **Origin Island Vivo & Dynamic Island Resmi**: menggunakan `appId` whitelist resmi dengan nama & ikon tetap **SpotyFlow**, `MediaSessionService` + `DefaultMediaNotificationProvider` + `android:appCategory="audio"` + 4 kategori notifikasi persis Spotify.
-            - **Ringan & Cepat (~7–15 MB)**: bebas aset WAV dummy 200 MB.
+            ### SpotyFlow Android APK (v12.0.0 — Fast Full YouTube + Background Keep-Alive + Vivo Origin Island)
+            - **Pemutar Utama YouTube Penuh (`SFYtFull`)**: mulai bunyi cepat (~1–2 detik) dengan durasi 100% FULL (3–5+ menit) & lirik sinkron penuh (anti preview 30 detik Deezer/iTunes).
+            - **Vivo Origin Island & Dynamic Island Resmi**: tetap menggunakan `appId: com.netease.cloudmusic` (nama & ikon **SpotyFlow**) + AndroidX Media3 `MediaSessionService` (`SimpleBasePlayer` + `ForwardingPlayer` + `DefaultMediaNotificationProvider`) + 4 kategori notifikasi persis Spotify + real-time progress bar.
+            - **Latar Belakang & Layar Terkunci Lancar**: `SpotyFlowWebView` override `onWindowVisibilityChanged` + Foreground Service Media3 + `PARTIAL_WAKE_LOCK` + `WifiLock` + auto-pause `ACTION_AUDIO_BECOMING_NOISY`.
+            - **Super Ringan (~5–10 MB)**: bebas ExoPlayer bloat dan bebas aset WAV dummy 200 MB.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
