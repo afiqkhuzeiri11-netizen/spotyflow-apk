@@ -1484,8 +1484,8 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     }
 
     public static void dispatchLyricUpdate(Context ctx, String lyricText, boolean enabled) {
-        String clean = lyricText == null ? "" : lyricText.trim();
-        if (clean.length() > 140) clean = clean.substring(0, 140);
+        String rawClean = lyricText == null ? "" : lyricText.trim();
+        final String clean = rawClean.length() > 140 ? rawClean.substring(0, 140) : rawClean;
         if (clean.equals(currentLyricLine) && enabled == islandLyricsEnabled) {
             return;
         }
@@ -3150,7 +3150,7 @@ function patchBuildGradle() {
     content = content.replace(/android\s*\{/, `android {\n    ${compileOptsBlock}`);
   }
 
-  // Production Release BuildType
+  // Production Release BuildType + Safe META-INF packaging exclusions
   const releaseBlock = `release {\n            minifyEnabled false\n            shrinkResources false\n            signingConfig signingConfigs.debug\n        }`;
   if (/buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?\}/.test(content)) {
     content = content.replace(/release\s*\{[\s\S]*?\}/, releaseBlock);
@@ -3158,6 +3158,12 @@ function patchBuildGradle() {
     content = content.replace(/buildTypes\s*\{/, `buildTypes {\n        ${releaseBlock}`);
   } else {
     content = content.replace(/android\s*\{/, `android {\n    buildTypes {\n        ${releaseBlock}\n    }`);
+  }
+  if (!content.includes('packaging {') && !content.includes('packagingOptions {')) {
+    content = content.replace(
+      /buildTypes\s*\{/,
+      `packaging {\n        resources {\n            excludes += ['META-INF/LICENSE*', 'META-INF/NOTICE*', 'META-INF/DEPENDENCIES', 'META-INF/INDEX.LIST']\n        }\n    }\n    buildTypes {`
+    );
   }
 
   // Remove incompatible Media3 1.5.x dependencies if present
