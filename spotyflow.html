@@ -1939,25 +1939,28 @@
 
   <style id="sf-v3-parity-css">
 /* =========================================================================
- * SPOTYFLOW v3.0.0 — AURALYS LIQUID GLASS + EDITORIAL + 3 THEMES CSS
- * Strict GPU Perf: backdrop-filter ONLY on static floating surfaces (Dock,
- * Mini-Player, FABs, Glass Pills, Modals). ZERO blur in scroll lists/cards.
+ * SPOTYFLOW v3.0.1 — INTERACTIVE LIQUID GLASS AURALYS + EDITORIAL + 3 THEMES
+ * Single Source of Truth CSS (Legacy #sf-v2-auralys-style & #sf-liquid-overhaul-css
+ * are disabled on boot). GPU-only animations & static floating blur ONLY.
  * ========================================================================= */
 :root,
 html[data-sf3-theme="light"] {
   --sf3-bg: #F3F4F6;
   --sf3-surface: #FFFFFF;
-  --sf3-surface-2: #E9ECEF;
+  --sf3-surface-2: #ECEEF2;
   --sf3-text: #111215;
-  --sf3-muted: #60656E;
+  --sf3-muted: #5F6368;
   --sf3-border: rgba(17, 18, 21, 0.08);
+  --sf3-card-shadow: 0 6px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.92);
   --sf3-accent: #1DB954;
   --sf3-accent-soft: rgba(29, 185, 84, 0.14);
-  --sf3-glass-bg: rgba(255, 255, 255, 0.80);
-  --sf3-glass-border: rgba(255, 255, 255, 0.90);
-  --sf3-glass-shadow: 0 10px 30px rgba(17, 18, 21, 0.10), 0 2px 6px rgba(17, 18, 21, 0.05);
-  --sf3-lens-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(17, 18, 21, 0.06);
-  --sf3-pill-active-bg: rgba(17, 18, 21, 0.09);
+  --sf3-aurora-rgb: 29, 185, 84;
+  --sf3-aurora-alpha: 0.14;
+  --sf3-glass-bg: rgba(255, 255, 255, 0.78);
+  --sf3-glass-border: rgba(255, 255, 255, 0.92);
+  --sf3-glass-shadow: 0 12px 32px rgba(15, 23, 42, 0.11), 0 2px 6px rgba(15, 23, 42, 0.05);
+  --sf3-lens-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.96), inset 0 -1px 0 rgba(17, 18, 21, 0.06);
+  --sf3-pill-active-bg: rgba(17, 18, 21, 0.08);
   --sf3-btn-solid-bg: #111215;
   --sf3-btn-solid-fg: #FFFFFF;
   --sf3-switch-off: #CBD5E1;
@@ -1971,12 +1974,15 @@ html[data-sf3-theme="dark"] {
   --sf3-text: #F8FAFC;
   --sf3-muted: #9CA3AF;
   --sf3-border: rgba(255, 255, 255, 0.09);
+  --sf3-card-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   --sf3-accent: #1ED760;
   --sf3-accent-soft: rgba(30, 215, 96, 0.16);
-  --sf3-glass-bg: rgba(23, 25, 32, 0.80);
-  --sf3-glass-border: rgba(255, 255, 255, 0.14);
-  --sf3-glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
-  --sf3-lens-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.24), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  --sf3-aurora-rgb: 124, 58, 237;
+  --sf3-aurora-alpha: 0.24;
+  --sf3-glass-bg: rgba(22, 24, 32, 0.78);
+  --sf3-glass-border: rgba(255, 255, 255, 0.16);
+  --sf3-glass-shadow: 0 14px 36px rgba(0, 0, 0, 0.48);
+  --sf3-lens-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.24), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
   --sf3-pill-active-bg: rgba(255, 255, 255, 0.13);
   --sf3-btn-solid-bg: #FFFFFF;
   --sf3-btn-solid-fg: #0D0E12;
@@ -1991,12 +1997,15 @@ html[data-sf3-theme="amoled"] {
   --sf3-text: #FFFFFF;
   --sf3-muted: #94A3B8;
   --sf3-border: rgba(255, 255, 255, 0.11);
+  --sf3-card-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --sf3-accent: #1ED760;
   --sf3-accent-soft: rgba(30, 215, 96, 0.18);
-  --sf3-glass-bg: rgba(11, 12, 16, 0.86);
-  --sf3-glass-border: rgba(255, 255, 255, 0.16);
-  --sf3-glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.72);
-  --sf3-lens-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  --sf3-aurora-rgb: 30, 215, 96;
+  --sf3-aurora-alpha: 0.18;
+  --sf3-glass-bg: rgba(11, 12, 16, 0.85);
+  --sf3-glass-border: rgba(255, 255, 255, 0.18);
+  --sf3-glass-shadow: 0 14px 38px rgba(0, 0, 0, 0.78);
+  --sf3-lens-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
   --sf3-pill-active-bg: rgba(255, 255, 255, 0.14);
   --sf3-btn-solid-bg: #FFFFFF;
   --sf3-btn-solid-fg: #000000;
@@ -2004,7 +2013,7 @@ html[data-sf3-theme="amoled"] {
   --sf3-slider-track: rgba(255, 255, 255, 0.18);
 }
 
-/* Clean Diet: Hide legacy chrome & bloat via CSS ONLY — NEVER delete old DOM IDs */
+/* Clean Diet: Hide legacy chrome via CSS ONLY — NEVER delete old DOM IDs */
 .sf3-hidden-legacy,
 body.sf3-active #quiz-stage-container,
 body.sf3-active #header-pomodoro-pill,
@@ -2022,13 +2031,33 @@ body.sf3-active #sf-ambient-mesh-scrim {
   display: none !important;
 }
 
+/* Guarantee 100% readable contrast on legacy custom modals (What's New, Add Playlist, etc.) */
+body.sf3-active #custom-modal-overlay {
+  z-index: 140 !important;
+  background: rgba(0, 0, 0, 0.52) !important;
+}
+body.sf3-active #custom-modal-card,
+body.sf3-active #custom-modal-content {
+  background: var(--sf3-surface) !important;
+  color: var(--sf3-text) !important;
+  border-color: var(--sf3-border) !important;
+}
+body.sf3-active #custom-modal-card h1,
+body.sf3-active #custom-modal-card h2,
+body.sf3-active #custom-modal-card h3,
+body.sf3-active #custom-modal-card p,
+body.sf3-active #custom-modal-card li,
+body.sf3-active #custom-modal-card span {
+  color: inherit;
+}
+
 body.sf3-active {
   background: var(--sf3-bg) !important;
   color: var(--sf3-text) !important;
   overflow: hidden !important;
 }
 
-/* Main v3.0.0 Shell */
+/* Main v3.0.1 Shell */
 #sf3-app-shell {
   position: fixed;
   inset: 0;
@@ -2042,13 +2071,30 @@ body.sf3-active {
   transition: background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), color 0.24s ease;
 }
 
+/* Ambient Soft Aurora Tint at top (Zero rAF, pure GPU composited gradient) */
+#sf3-ambient-tint {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 360px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(110% 85% at 18% -10%, rgba(var(--sf3-aurora-rgb), var(--sf3-aurora-alpha)) 0%, transparent 68%),
+    radial-gradient(90% 75% at 88% 0%, rgba(124, 58, 237, calc(var(--sf3-aurora-alpha) * 0.65)) 0%, transparent 65%);
+  transition: opacity 0.45s ease;
+}
+
 #sf3-page-scroll {
+  position: relative;
+  z-index: 1;
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 168px) 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 184px) 16px;
 }
 
 #sf3-page-root {
@@ -2064,6 +2110,15 @@ html[data-sf3-style="editorial"] .sf3-glass-float {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
   border-color: var(--sf3-border) !important;
 }
+html[data-sf3-style="editorial"] #sf3-lens-bubble {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--sf3-pill-active-bg) !important;
+  box-shadow: none !important;
+}
+html[data-sf3-style="editorial"] #sf3-lens-bubble::before {
+  opacity: 0.18;
+}
 html[data-sf3-style="editorial"] .sf3-page-title {
   letter-spacing: -0.04em;
   font-weight: 900;
@@ -2076,18 +2131,19 @@ html[data-sf3-style="editorial"] .sf3-page-title {
   box-shadow: var(--sf3-glass-shadow);
 }
 html[data-sf3-style="glass"][data-sf3-blur="1"] .sf3-glass-float {
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(165%);
+  -webkit-backdrop-filter: blur(12px) saturate(165%);
 }
 html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
   box-shadow: var(--sf3-glass-shadow), var(--sf3-lens-highlight);
 }
 
-/* Scrolled Cards & Rows: ZERO backdrop-filter for locked 60-120 FPS */
+/* Scrolled Cards & Rows: ZERO backdrop-filter for locked 60-120 FPS + rich layered depth */
 .sf3-card {
   background: var(--sf3-surface);
   border: 1px solid var(--sf3-border);
   border-radius: 22px;
+  box-shadow: var(--sf3-card-shadow);
 }
 .sf3-card-soft {
   background: var(--sf3-surface-2);
@@ -2096,13 +2152,13 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
 }
 .sf3-page-title {
   font-size: 28px;
-  line-height: 1.15;
-  font-weight: 800;
+  line-height: 1.12;
+  font-weight: 900;
   letter-spacing: -0.03em;
   color: var(--sf3-text);
 }
 .sf3-sec-title {
-  font-size: 16px;
+  font-size: 16.5px;
   font-weight: 800;
   letter-spacing: -0.015em;
   color: var(--sf3-text);
@@ -2111,10 +2167,11 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
 
 /* Streak Card */
 .sf3-streak-card {
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.14), rgba(234, 88, 12, 0.05));
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.16), rgba(234, 88, 12, 0.05));
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: 22px;
   padding: 14px 16px;
+  box-shadow: 0 8px 22px rgba(249, 115, 22, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 /* Chips */
@@ -2128,13 +2185,14 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
 .sf3-chip-row::-webkit-scrollbar { display: none; }
 .sf3-chip {
   flex: 0 0 auto;
-  padding: 8px 14px;
+  padding: 8px 15px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--sf3-surface);
   color: var(--sf3-text);
   border: 1px solid var(--sf3-border);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
   cursor: pointer;
   transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.16s ease;
 }
@@ -2164,9 +2222,7 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
   white-space: nowrap;
   cursor: pointer;
 }
-.sf3-subtab.active {
-  color: var(--sf3-text);
-}
+.sf3-subtab.active { color: var(--sf3-text); }
 .sf3-subtab.active::after {
   content: '';
   position: absolute;
@@ -2178,7 +2234,7 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
   background: var(--sf3-accent);
 }
 
-/* Track Rows & Quick Grid */
+/* Track Rows */
 .sf3-row {
   display: flex;
   align-items: center;
@@ -2230,12 +2286,8 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
   transform: translateX(0);
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.sf3-switch.on {
-  background: var(--sf3-accent);
-}
-.sf3-switch.on::after {
-  transform: translateX(20px);
-}
+.sf3-switch.on { background: var(--sf3-accent); }
+.sf3-switch.on::after { transform: translateX(20px); }
 
 /* Material 3 Thick Pill Slider */
 .sf3-slider {
@@ -2259,34 +2311,21 @@ html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
   cursor: pointer;
 }
 
-/* Bottom Floating Chrome: Mini-Player + Morphing 4-Tab Liquid Glass Dock */
-#sf3-bottom-chrome {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
-  z-index: 60;
-  pointer-events: none;
-  padding: 0 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Home Floating Circular Action Buttons (Kenali Lagu + Acak) */
+/* =========================================================================
+ * ZERO-OVERLAP FLOATING CHROME: FABs + Mini-Player + Draggable Lens Dock
+ * ========================================================================= */
 #sf3-home-fabs {
   position: fixed;
   right: 16px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 158px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 162px);
   z-index: 58;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
 }
 body.sf3-dock-collapsed #sf3-home-fabs {
-  transform: translateY(64px);
+  transform: translateY(72px);
 }
 .sf3-fab-btn {
   width: 48px;
@@ -2300,18 +2339,25 @@ body.sf3-dock-collapsed #sf3-home-fabs {
   pointer-events: auto;
   transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.sf3-fab-btn:active { transform: scale(0.92); }
+.sf3-fab-btn:active { transform: scale(0.90); }
 
-/* Mini-Player Capsule */
+/* Mini-Player Capsule — strictly 10px above 62px Dock (bottom: 12 + 62 + 10 = 84px) */
 #sf3-mini-player {
-  pointer-events: auto;
-  width: 100%;
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+  margin: 0 auto;
   max-width: 520px;
-  border-radius: 24px;
+  height: 62px;
+  z-index: 62;
+  border-radius: 26px;
   overflow: hidden;
-  position: relative;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease, width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+  transition:
+    left 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    bottom 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, left, bottom;
 }
 #sf3-mini-progress-track {
   position: absolute;
@@ -2331,29 +2377,104 @@ body.sf3-dock-collapsed #sf3-home-fabs {
   will-change: transform;
 }
 .sf3-mini-inner {
+  height: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px 8px 9px;
+  padding: 0 10px 0 9px;
 }
 
-/* 4-Tab Morphing Liquid Glass Dock */
+/* Interactive Draggable 4-Tab Liquid Glass Lens Dock */
 #sf3-bottom-dock {
-  pointer-events: auto;
-  width: 100%;
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  margin: 0 auto;
   max-width: 420px;
-  height: 60px;
+  height: 62px;
+  z-index: 64;
   border-radius: 999px;
   padding: 5px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  gap: 2px;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), width 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    right 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, width;
+}
+
+/* Optical Dispersion Prismatic Glass Lens Bubble (Auralys / iOS 26 Standard) */
+#sf3-lens-bubble {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  height: 52px;
+  width: calc((100% - 10px) / 4);
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    120% 100% at 30% 20%,
+    rgba(255, 255, 255, 0.58) 0%,
+    rgba(255, 255, 255, 0.16) 55%,
+    rgba(255, 255, 255, 0.28) 100%
+  );
+  backdrop-filter: blur(10px) saturate(185%) brightness(1.06);
+  -webkit-backdrop-filter: blur(10px) saturate(185%) brightness(1.06);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.16),
+    inset 0 2px 4px rgba(255, 255, 255, 0.85),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
   will-change: transform;
 }
+html[data-sf3-theme="dark"] #sf3-lens-bubble,
+html[data-sf3-theme="amoled"] #sf3-lens-bubble {
+  background: radial-gradient(
+    120% 100% at 30% 20%,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.09) 55%,
+    rgba(255, 255, 255, 0.16) 100%
+  );
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.48),
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.42),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.35);
+}
+#sf3-lens-bubble::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 230, 170, 0.88) 0%,
+    rgba(255, 255, 255, 0.96) 28%,
+    rgba(165, 243, 252, 0.84) 64%,
+    rgba(232, 121, 249, 0.58) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+#sf3-lens-bubble.dragging {
+  transition: none !important;
+}
+
 .sf3-dock-btn {
-  height: 50px;
+  position: relative;
+  z-index: 2;
+  height: 52px;
   border-radius: 999px;
   border: none;
   background: transparent;
@@ -2366,47 +2487,157 @@ body.sf3-dock-collapsed #sf3-home-fabs {
   font-size: 10.5px;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: color 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.sf3-dock-btn:active { transform: scale(0.93); }
 .sf3-dock-btn.active {
-  background: var(--sf3-pill-active-bg);
   color: var(--sf3-text);
+  font-weight: 800;
+}
+.sf3-dock-btn.sf3-under-lens {
+  color: var(--sf3-text);
+  transform: scale(1.13) translateY(-1px);
+}
+.sf3-dock-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Collapsed Morphing State: Dock -> 58x58 Left Pill, Mini-Player slides right beside it! */
-body.sf3-dock-collapsed #sf3-bottom-chrome {
-  flex-direction: row-reverse;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  max-width: 540px;
-  margin: 0 auto;
-}
+/* Collapsed Morphing State: 60x60 Circular Lens Bottom-Left + Mini-Player Side-by-Side */
 body.sf3-dock-collapsed #sf3-bottom-dock {
-  width: 58px;
-  min-width: 58px;
-  height: 58px;
+  left: 14px;
+  right: auto;
+  margin: 0;
+  width: 60px;
+  height: 60px;
   padding: 0;
   grid-template-columns: 1fr;
+}
+body.sf3-dock-collapsed #sf3-lens-bubble {
+  inset: 4px;
+  width: auto;
+  height: auto;
+  transform: none !important;
 }
 body.sf3-dock-collapsed #sf3-bottom-dock .sf3-dock-btn:not(.active) {
   display: none;
 }
 body.sf3-dock-collapsed #sf3-bottom-dock .sf3-dock-btn.active {
-  width: 58px;
-  height: 58px;
-  background: transparent;
+  width: 60px;
+  height: 60px;
 }
 body.sf3-dock-collapsed #sf3-bottom-dock .sf3-dock-label {
   display: none;
 }
 body.sf3-dock-collapsed #sf3-mini-player {
-  flex: 1 1 auto;
-  width: auto;
+  left: 84px;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  margin: 0;
+  max-width: none;
+  height: 60px;
 }
 
-/* Fullscreen Clean v3.0.0 Player Sheet */
+/* =========================================================================
+ * EXPRESSIVE PER-ICON MICRO-ANIMATIONS (GPU Compositor-Only)
+ * ========================================================================= */
+@keyframes sfIconHomeBounce {
+  0% { transform: scaleY(1) translateY(0); }
+  30% { transform: scaleY(0.84) translateY(2px); }
+  65% { transform: scaleY(1.10) translateY(-2px); }
+  100% { transform: scaleY(1) translateY(0); }
+}
+@keyframes sfIconSearchScan {
+  0% { transform: rotate(0deg) scale(1); }
+  35% { transform: rotate(-18deg) scale(1.14); }
+  70% { transform: rotate(9deg) scale(1.04); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+@keyframes sfIconLibTilt {
+  0% { transform: rotate(0deg); }
+  35% { transform: rotate(-12deg) translateY(-1px); }
+  70% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes sfIconUserNod {
+  0% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-2.5px) scale(1.1); }
+  70% { transform: translateY(1px) scale(0.97); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes sfHeartPop {
+  0% { transform: scale(1); }
+  25% { transform: scale(0.70); }
+  60% { transform: scale(1.34); }
+  100% { transform: scale(1); }
+}
+@keyframes sfIconSpinPop {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes sfFlameFlicker {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50% { transform: scale(1.09) rotate(4deg) translateY(-1px); }
+}
+@keyframes sfPlayRingPulse {
+  0% { box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.45); }
+  70% { box-shadow: 0 0 0 11px rgba(29, 185, 84, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(29, 185, 84, 0); }
+}
+@keyframes sfEqBar {
+  0%, 100% { transform: scaleY(0.28); }
+  50% { transform: scaleY(1); }
+}
+@keyframes sfHeartBurst {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15); }
+}
+
+.sf3-anim-home { animation: sfIconHomeBounce 0.44s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sf3-anim-search { animation: sfIconSearchScan 0.48s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sf3-anim-lib { animation: sfIconLibTilt 0.46s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sf3-anim-user { animation: sfIconUserNod 0.44s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sf3-heart-pop { animation: sfHeartPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sf3-icon-spin { animation: sfIconSpinPop 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+.sf3-flame-flicker { display: inline-block; animation: sfFlameFlicker 3s ease-in-out infinite; transform-origin: bottom center; }
+.sf3-play-pulse { animation: sfPlayRingPulse 1.9s ease-out infinite; }
+body.sf3-bg-paused .sf3-flame-flicker,
+body.sf3-bg-paused .sf3-play-pulse,
+body.sf3-bg-paused .sf3-eq-bar {
+  animation-play-state: paused !important;
+}
+
+.sf3-heart-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 200;
+  animation: sfHeartBurst 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.sf3-eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 13px;
+  width: 14px;
+  flex-shrink: 0;
+}
+.sf3-eq-bar {
+  width: 3px;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--sf3-accent);
+  transform-origin: bottom center;
+  animation: sfEqBar 0.72s ease-in-out infinite;
+}
+.sf3-eq-bar:nth-child(2) { animation-delay: 0.18s; }
+.sf3-eq-bar:nth-child(3) { animation-delay: 0.34s; }
+
+/* Fullscreen Clean v3.0.1 Player Sheet */
 #sf3-player-sheet {
   position: fixed;
   inset: 0;
@@ -2463,7 +2694,7 @@ body.sf3-dock-collapsed #sf3-mini-player {
   background: var(--sf3-stage-base, #0D0E12);
 }
 
-/* Subpage Drawer Overlay (Settings, Widget Editor, Collection, History, Recap, EQ, Recognize) */
+/* Subpage Drawer Overlay */
 #sf3-subpage-overlay {
   position: fixed;
   inset: 0;
@@ -2497,7 +2728,7 @@ body.sf3-dock-collapsed #sf3-mini-player {
   flex: 1 1 auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 48px) 16px;
+  padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 56px) 16px;
 }
 
 /* Modal Sheet (Bottom/Center dialog) */
@@ -2519,7 +2750,10 @@ body.sf3-dock-collapsed #sf3-mini-player {
   overflow-y: auto;
   border-radius: 26px;
   padding: 18px;
+  background: var(--sf3-surface);
   color: var(--sf3-text);
+  border: 1px solid var(--sf3-border);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.32);
 }
 
 /* Radar pulse for Kenali Lagu */
@@ -2535,7 +2769,7 @@ body.sf3-dock-collapsed #sf3-mini-player {
   animation: sf3RadarPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
-/* Theme Harmony for Poster 3D Studio in Light/Dark/AMOLED */
+/* Theme Harmony for Poster 3D Studio */
 html[data-sf3-theme="light"] #sf202-poster3d-overlay {
   background: rgba(243, 244, 246, 0.96) !important;
   color: #111215 !important;
@@ -4335,7 +4569,7 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
-    const APP_VERSION = '3.0.0';
+    const APP_VERSION = '3.0.1';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -30818,6 +31052,7 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
       'sf_v3_widget_cfg',
       'sf_v3_search_history',
       'sf_v3_device_cache',
+      'sf_seen_whats_new_3_0_1',
       'sf_seen_whats_new_3_0_0',
       'sf_seen_whats_new_2_0_0',
       'sf_seen_whats_new_2_0_1',
@@ -31157,8 +31392,8 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
       `);
     }
 
-    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v3.0.0" (AUTO 1X) ---
-    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_3_0_0';
+    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v3.0.1" (AUTO 1X) ---
+    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_3_0_1';
 
     function dismissWhatsNewV152Modal() {
       safeStorageSet(SF_SEEN_WHATS_NEW_KEY, '1');
@@ -31168,21 +31403,21 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
     function openWhatsNewV152Modal(manual = false) {
       if (!manual && localStorage.getItem(SF_SEEN_WHATS_NEW_KEY) === '1') return;
       openCustomModal(`
-        <div class="space-y-4">
+        <div class="space-y-4" style="color:var(--sf3-text, #111215);">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#7C3AED]/20 text-[#1ED760] border border-[#1ED760]/40">v3.0.0 • 100% PARITY EDITION</span>
-              <h3 class="font-display font-extrabold text-xl mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
+              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#7C3AED]/20 text-[#1DB954] border border-[#1DB954]/40">v3.0.1 • INTERACTIVE LIQUID GLASS</span>
+              <h3 class="font-display font-extrabold text-xl mt-1.5" style="color:var(--sf3-text, #111215);">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
             </div>
-            <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center shrink-0">
+            <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:var(--sf3-surface-2, rgba(128,128,128,0.16));color:var(--sf3-text, #111215);">
               <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
             </button>
           </div>
-          <ul class="space-y-2.5 text-xs leading-relaxed opacity-90">
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">✨</span><span><strong>Liquid Glass &amp; 3 Tema (Terang, Gelap, AMOLED)</strong> — Gaya Kaca &amp; Editorial, Dock 4 Tab (Beranda, Cari, Pustaka, Kamu) yang menyusut saat scroll, serta Streak <strong>🔥 Percikan</strong> harian.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-purple-400 font-bold">🎛️</span><span><strong>Pengaturan 10 Kategori &amp; Audio Native Pro</strong> — Skip Silence, Normalisasi/Loudness, Equalizer 5-Band Hardware, Varispeed/Pitch, 120Hz, &amp; Opt-in Floating Dynamic Island.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">🧩</span><span><strong>5 Ukuran Widget Home Screen + Editor Live Preview</strong> — Pemutar 1×1, 2×2, 2×4, 4×1, 4×2 yang kustomisasi kaca &amp; sudutnya sinkron langsung dengan Home Screen Android!</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-sky-400 font-bold">📱</span><span><strong>6 Koleksi Pustaka + Musik Perangkat + Poster 3D Depth</strong> — Putar MP3/FLAC lokal perangkat offline, unduh semua lagu disukai, &amp; buat Poster 3D AI ML Kit!</span></li>
+          <ul class="space-y-2.5 text-xs leading-relaxed" style="color:var(--sf3-text, #111215);opacity:0.92;">
+            <li class="flex items-start gap-2.5"><span style="color:#1DB954;font-weight:800;">🫧</span><span><strong>Gelembung Lensa Kaca Prisma Interaktif</strong> — Tekan &amp; geser gelembung kaca di Dock 4 Tab dengan jari secara real-time 60–120 FPS lengkap dengan efek pegas &amp; pembiasan warna optik!</span></li>
+            <li class="flex items-start gap-2.5"><span style="color:#7C3AED;font-weight:800;">✨</span><span><strong>Animasi Mikro Ekspresif Per-Ikon</strong> — Beranda, Cari, Pustaka, Kamu, Play/Pause, Heart Pop + partikel, &amp; api Streak kini hidup setiap disentuh.</span></li>
+            <li class="flex items-start gap-2.5"><span style="color:#0EA5E9;font-weight:800;">🎨</span><span><strong>Latar Ambient Aurora &amp; Zero Bug Kontras</strong> — Bebas CSS bentrok, bebas kotak hitam placeholder, dan 100% terbaca tajam di Tema Terang, Gelap, maupun AMOLED!</span></li>
+            <li class="flex items-start gap-2.5"><span style="color:#F97316;font-weight:800;">📲</span><span><strong>Install APK 1-Klik di Web</strong> — Unduh &amp; install <code>SpotyFlow.apk</code> langsung dari tab Kamu atau <code>/download</code> tanpa repot buka GitHub.</span></li>
           </ul>
           <button type="button" onclick="dismissWhatsNewV152Modal()" class="w-full py-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-sm font-extrabold transition-colors shadow-lg">
             Mulai Mendengarkan
@@ -38605,7 +38840,7 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
 
   <script id="sf-v3-parity-js">
 /* =========================================================================
- * 28. SPOTYFLOW v3.0.0 — 100% PARITY EDITION (MODULAR ENGINE: window.SF300)
+ * 28. SPOTYFLOW v3.0.1 — 100% PARITY EDITION (MODULAR ENGINE: window.SF300)
  * Stages 1–4: Liquid Glass/Editorial + 3 Themes + Morphing 4-Tab Dock +
  * Streak + Clean Fullscreen Stage + 10-Category Settings + Native Audio Pro
  * + 5-Band EQ + Kenali Lagu + 5-Widget Live Editor + 6 Pustaka Collections
@@ -38777,15 +39012,87 @@ window.SF300 = (function createSpotyFlow300Module() {
     return t.artist?.name || t.channelTitle || 'SpotyFlow';
   }
 
+  const ART_PALETTES = [
+    ['#6366F1', '#A855F7', '99, 102, 241'],
+    ['#0EA5E9', '#14B8A6', '14, 165, 233'],
+    ['#F97316', '#EC4899', '249, 115, 22'],
+    ['#10B981', '#059669', '16, 185, 129'],
+    ['#8B5CF6', '#EC4899', '139, 92, 246'],
+    ['#3B82F6', '#6366F1', '59, 130, 246'],
+  ];
+  const artFallbackCache = new Map();
+
+  function pickPaletteIndex(seed) {
+    const s = String(seed || 'SpotyFlow');
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
+    return h % ART_PALETTES.length;
+  }
+
+  function makeArtCover(seed) {
+    const idx = pickPaletteIndex(seed);
+    if (artFallbackCache.has(idx)) return artFallbackCache.get(idx);
+    const [c1, c2] = ART_PALETTES[idx];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs><rect width="240" height="240" fill="url(#g)"/><circle cx="195" cy="48" r="78" fill="rgba(255,255,255,0.16)"/><path d="M104 156a20 20 0 1 1-14-19V84l64-14v66a20 20 0 1 1-14-19V87l-36 8v61z" fill="rgba(255,255,255,0.92)"/></svg>`;
+    const uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    artFallbackCache.set(idx, uri);
+    return uri;
+  }
+
+  function isWebBrowserMode() {
+    try {
+      if (window.SpotyFlowMediaBridge) return false;
+      if (window.Capacitor?.isNativePlatform?.()) return false;
+      if (typeof isRunningInNativeApk === 'function' && isRunningInNativeApk()) return false;
+      if (String(navigator.userAgent || '').includes('SpotyFlowApp/')) return false;
+      return true;
+    } catch {
+      return true;
+    }
+  }
+
+  function updateAuroraTintForTrack(t) {
+    try {
+      const idx = pickPaletteIndex(t?.title || t?.id || 'SpotyFlow');
+      document.documentElement.style.setProperty('--sf3-aurora-rgb', ART_PALETTES[idx][2]);
+    } catch {}
+  }
+
+  function spawnHeartParticles(el) {
+    try {
+      const rect = el ? el.getBoundingClientRect() : null;
+      if (!rect) return;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const colors = ['#1ED760', '#F43F5E', '#EC4899', '#FB7185', '#FBBF24', '#A855F7'];
+      for (let i = 0; i < 6; i++) {
+        const ang = (Math.PI * 2 * i) / 6 + (Math.random() * 0.35);
+        const dist = 22 + Math.random() * 14;
+        const p = document.createElement('span');
+        p.className = 'sf3-heart-particle';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.background = colors[i % colors.length];
+        p.style.setProperty('--dx', Math.round(Math.cos(ang) * dist) + 'px');
+        p.style.setProperty('--dy', Math.round(Math.sin(ang) * dist) + 'px');
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 560);
+      }
+    } catch {}
+  }
+
   function trackCover(t) {
-    if (!t) return '/icon-512.png';
+    const fallback = makeArtCover(t?.title || t?.id || 'SpotyFlow');
+    if (!t) return fallback;
     try {
       if (typeof getCover === 'function') {
         const c = getCover(t, 'medium');
-        if (c) return c;
+        if (c && !String(c).includes('icon-512.png') && !String(c).includes('icon-192.png')) return c;
       }
     } catch {}
-    return t.cover || t.coverUrl || t.album?.cover_medium || t.album?.cover || '/icon-512.png';
+    const cand = t.cover || t.coverUrl || t.album?.cover_medium || t.album?.cover || '';
+    if (!cand || String(cand).includes('icon-512.png') || String(cand).includes('icon-192.png')) return fallback;
+    return cand;
   }
 
   function fmtTime(sec) {
@@ -38961,7 +39268,7 @@ window.SF300 = (function createSpotyFlow300Module() {
       return `
         <div class="sf3-streak-card flex items-center justify-between gap-3 cursor-pointer" onclick="window.SF300.complete.openRecap()">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(249,115,22,0.18);">🔥</div>
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(249,115,22,0.18);"><span class="sf3-flame-flicker">🔥</span></div>
             <div class="min-w-0">
               <div class="flex items-center gap-2">
                 <span class="font-extrabold text-[15px]">Percikan ${s.days} hari</span>
@@ -39038,13 +39345,24 @@ window.SF300 = (function createSpotyFlow300Module() {
   }
 
   const FALLBACK_SEEDS = [
-    { id: 'sf_seed_1', title: 'Sialan', artist: { name: 'Adrian Khalif, Juicy Luicy' }, album: { title: 'Sialan' }, duration: 241, cover: '/icon-512.png' },
-    { id: 'sf_seed_2', title: 'Mati-Matian', artist: { name: 'Mahalini' }, album: { title: 'Mati-Matian' }, duration: 244, cover: '/icon-512.png' },
-    { id: 'sf_seed_3', title: 'Die With A Smile', artist: { name: 'Lady Gaga, Bruno Mars' }, album: { title: 'Die With A Smile' }, duration: 251, cover: '/icon-512.png' },
-    { id: 'sf_seed_4', title: 'BIRDS OF A FEATHER', artist: { name: 'Billie Eilish' }, album: { title: 'HIT ME HARD AND SOFT' }, duration: 210, cover: '/icon-512.png' },
-    { id: 'sf_seed_5', title: 'Gala Bunga Matahari', artist: { name: 'Sal Priadi' }, album: { title: 'Markers and Such Pens Flashdisks' }, duration: 210, cover: '/icon-512.png' },
-    { id: 'sf_seed_6', title: 'Nanti Kita Seperti Ini', artist: { name: 'Batas Senja' }, album: { title: 'Nanti Kita Seperti Ini' }, duration: 228, cover: '/icon-512.png' },
+    { id: 'sf_seed_1', title: 'Sialan', artist: { name: 'Adrian Khalif, Juicy Luicy' }, album: { title: 'Sialan' }, duration: 241, cover: '' },
+    { id: 'sf_seed_2', title: 'Mati-Matian', artist: { name: 'Mahalini' }, album: { title: 'Mati-Matian' }, duration: 244, cover: '' },
+    { id: 'sf_seed_3', title: 'Die With A Smile', artist: { name: 'Lady Gaga, Bruno Mars' }, album: { title: 'Die With A Smile' }, duration: 251, cover: '' },
+    { id: 'sf_seed_4', title: 'BIRDS OF A FEATHER', artist: { name: 'Billie Eilish' }, album: { title: 'HIT ME HARD AND SOFT' }, duration: 210, cover: '' },
+    { id: 'sf_seed_5', title: 'Gala Bunga Matahari', artist: { name: 'Sal Priadi' }, album: { title: 'Markers and Such Pens Flashdisks' }, duration: 210, cover: '' },
+    { id: 'sf_seed_6', title: 'Nanti Kita Seperti Ini', artist: { name: 'Batas Senja' }, album: { title: 'Nanti Kita Seperti Ini' }, duration: 228, cover: '' },
   ];
+  let hydratedHomeTracks = null;
+  async function hydrateSeedCoversOnce() {
+    if (hydratedHomeTracks || getUserTracksPool().length >= 6) return;
+    try {
+      const hits = await apiSearchTracks('top hits Indonesia pop viral 2025', 9);
+      if (Array.isArray(hits) && hits.length >= 4) {
+        hydratedHomeTracks = hits;
+        if (activeTab === 'beranda') pages.render();
+      }
+    } catch {}
+  }
 
   async function apiSearchTracks(query, limit = 16) {
     const q = String(query || '').trim();
@@ -39088,6 +39406,134 @@ window.SF300 = (function createSpotyFlow300Module() {
     setTimeout(updateMiniAndStageUI, 120);
   }
 
+  const DOCK_TABS = ['beranda', 'cari', 'pustaka', 'kamu'];
+  const DOCK_ANIM_CLASS = {
+    beranda: 'sf3-anim-home',
+    cari: 'sf3-anim-search',
+    pustaka: 'sf3-anim-lib',
+    kamu: 'sf3-anim-user',
+  };
+
+  function triggerDockIconAnim(tab) {
+    try {
+      const btn = document.querySelector(`#sf3-bottom-dock .sf3-dock-btn[data-tab="${tab}"] .sf3-dock-icon`);
+      const cls = DOCK_ANIM_CLASS[tab];
+      if (!btn || !cls) return;
+      btn.classList.remove(cls);
+      void btn.offsetWidth;
+      btn.classList.add(cls);
+      setTimeout(() => btn.classList.remove(cls), 520);
+    } catch {}
+  }
+
+  function snapLensBubbleToTab(tab, instant = false) {
+    const bubble = document.getElementById('sf3-lens-bubble');
+    const dock = document.getElementById('sf3-bottom-dock');
+    if (!bubble || !dock) return;
+    const idx = Math.max(0, DOCK_TABS.indexOf(tab));
+    const innerW = Math.max(200, dock.clientWidth - 10);
+    const slotW = innerW / 4;
+    if (instant) bubble.classList.add('dragging');
+    bubble.style.width = slotW.toFixed(1) + 'px';
+    bubble.style.transform = `translate3d(${(idx * slotW).toFixed(1)}px, 0, 0) scale(1)`;
+    if (instant) {
+      requestAnimationFrame(() => bubble.classList.remove('dragging'));
+    }
+  }
+
+  function attachInteractiveLensDrag() {
+    const dock = document.getElementById('sf3-bottom-dock');
+    const bubble = document.getElementById('sf3-lens-bubble');
+    if (!dock || !bubble) return;
+
+    let dragging = false;
+    let moved = false;
+    let pointerId = null;
+    let startX = 0;
+    let lastX = 0;
+    let lastTs = 0;
+    let hoveredIdx = DOCK_TABS.indexOf(activeTab);
+
+    function setUnderLens(idx) {
+      dock.querySelectorAll('.sf3-dock-btn').forEach((b, i) => {
+        b.classList.toggle('sf3-under-lens', i === idx);
+      });
+    }
+
+    function clearUnderLens() {
+      dock.querySelectorAll('.sf3-dock-btn').forEach((b) => b.classList.remove('sf3-under-lens'));
+    }
+
+    dock.addEventListener('pointerdown', (e) => {
+      if (document.body.classList.contains('sf3-dock-collapsed')) {
+        document.body.classList.remove('sf3-dock-collapsed');
+        requestAnimationFrame(() => snapLensBubbleToTab(activeTab, false));
+        return;
+      }
+      dragging = true;
+      moved = false;
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      lastX = e.clientX;
+      lastTs = performance.now();
+      try { dock.setPointerCapture(pointerId); } catch {}
+      try { navigator.vibrate?.(10); } catch {}
+
+      const rect = dock.getBoundingClientRect();
+      const slotW = Math.max(40, (rect.width - 10) / 4);
+      const relX = Math.max(0, Math.min(rect.width - 10 - slotW, (e.clientX - rect.left - 5) - slotW / 2));
+      hoveredIdx = Math.max(0, Math.min(3, Math.floor(((e.clientX - rect.left - 5) / Math.max(1, rect.width - 10)) * 4)));
+      bubble.classList.remove('dragging');
+      bubble.style.width = slotW.toFixed(1) + 'px';
+      bubble.style.transform = `translate3d(${relX.toFixed(1)}px, -3px, 0) scale(1.16)`;
+      setUnderLens(hoveredIdx);
+    });
+
+    dock.addEventListener('pointermove', (e) => {
+      if (!dragging || e.pointerId !== pointerId) return;
+      const rect = dock.getBoundingClientRect();
+      const innerW = Math.max(160, rect.width - 10);
+      const slotW = innerW / 4;
+      const now = performance.now();
+      const dt = Math.max(8, now - lastTs);
+      const vx = (e.clientX - lastX) / dt; // px/ms
+      lastX = e.clientX;
+      lastTs = now;
+      if (Math.abs(e.clientX - startX) > 6) moved = true;
+
+      const relX = Math.max(0, Math.min(innerW - slotW, (e.clientX - rect.left - 5) - slotW / 2));
+      const skew = Math.max(-9, Math.min(9, vx * -4.2));
+      const stretchX = 1.18 + Math.min(0.08, Math.abs(vx) * 0.04);
+      const nextIdx = Math.max(0, Math.min(3, Math.round(relX / Math.max(1, slotW))));
+      if (nextIdx !== hoveredIdx) {
+        hoveredIdx = nextIdx;
+        try { navigator.vibrate?.(6); } catch {}
+        setUnderLens(hoveredIdx);
+      }
+      bubble.classList.add('dragging');
+      bubble.style.transform = `translate3d(${relX.toFixed(1)}px, -4px, 0) scale(${stretchX.toFixed(3)}, 1.15) skewX(${skew.toFixed(2)}deg)`;
+    });
+
+    function finishDrag(e) {
+      if (!dragging || (pointerId !== null && e.pointerId !== pointerId)) return;
+      dragging = false;
+      try { if (pointerId !== null) dock.releasePointerCapture(pointerId); } catch {}
+      pointerId = null;
+      bubble.classList.remove('dragging');
+      clearUnderLens();
+
+      const rect = dock.getBoundingClientRect();
+      const innerW = Math.max(160, rect.width - 10);
+      const targetIdx = Math.max(0, Math.min(3, Math.floor(((e.clientX - rect.left - 5) / innerW) * 4)));
+      const targetTab = DOCK_TABS[moved ? hoveredIdx : targetIdx] || activeTab;
+      nav.go(targetTab);
+    }
+
+    dock.addEventListener('pointerup', finishDrag);
+    dock.addEventListener('pointercancel', finishDrag);
+    window.addEventListener('resize', () => snapLensBubbleToTab(activeTab, true));
+  }
+
   function mountShell() {
     if (document.getElementById('sf3-app-shell')) return;
     document.body.classList.add('sf3-active');
@@ -39095,49 +39541,50 @@ window.SF300 = (function createSpotyFlow300Module() {
     const shell = document.createElement('div');
     shell.id = 'sf3-app-shell';
     shell.innerHTML = `
+      <div id="sf3-ambient-tint" aria-hidden="true"></div>
       <div id="sf3-page-scroll">
         <div id="sf3-page-root"></div>
       </div>
 
       <div id="sf3-home-fabs">
         <button type="button" class="sf3-fab-btn sf3-glass-float" title="Kenali Lagu" aria-label="Kenali Lagu" onclick="window.SF300.audioTools.openRecognizeModal()">${SVG_ICONS.mic}</button>
-        <button type="button" class="sf3-fab-btn sf3-glass-float" title="Putar Acak" aria-label="Putar Acak" onclick="window.SF300.pages.shufflePlayAll()">${SVG_ICONS.shuffle}</button>
+        <button type="button" class="sf3-fab-btn sf3-glass-float" title="Putar Acak" aria-label="Putar Acak" onclick="this.classList.remove('sf3-icon-spin');void this.offsetWidth;this.classList.add('sf3-icon-spin');window.SF300.pages.shufflePlayAll()">${SVG_ICONS.shuffle}</button>
       </div>
 
-      <div id="sf3-bottom-chrome">
-        <div id="sf3-mini-player" class="sf3-glass-float">
-          <div id="sf3-mini-progress-track"><div id="sf3-mini-progress-fill"></div></div>
-          <div class="sf3-mini-inner">
-            <div class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer" onclick="window.SF300.stage.open()">
-              <img id="sf3-mini-cover" src="/icon-512.png" alt="Cover" class="w-11 h-11 rounded-full object-cover shrink-0 border border-black/10" />
-              <div class="min-w-0 flex-1">
-                <div id="sf3-mini-title" class="text-[13.5px] font-extrabold truncate">SpotyFlow</div>
-                <div id="sf3-mini-artist" class="text-[11.5px] sf3-muted truncate">Ketuk lagu untuk memutar</div>
-              </div>
+      <div id="sf3-mini-player" class="sf3-glass-float">
+        <div id="sf3-mini-progress-track"><div id="sf3-mini-progress-fill"></div></div>
+        <div class="sf3-mini-inner">
+          <div class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer" onclick="window.SF300.stage.open()">
+            <img id="sf3-mini-cover" src="${makeArtCover('SpotyFlow')}" alt="Cover" class="w-11 h-11 rounded-full object-cover shrink-0 border border-black/10" />
+            <div class="min-w-0 flex-1">
+              <div id="sf3-mini-title" class="text-[13.5px] font-extrabold truncate">SpotyFlow</div>
+              <div id="sf3-mini-artist" class="text-[11.5px] sf3-muted truncate">Ketuk lagu untuk memutar</div>
             </div>
-            <button type="button" id="sf3-mini-like" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" aria-label="Suka" onclick="window.SF300.stage.toggleLike()">${SVG_ICONS.heartOut}</button>
-            <button type="button" id="sf3-mini-play" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" aria-label="Putar atau Jeda" onclick="window.SF300.stage.togglePlay()">${SVG_ICONS.play}</button>
-            <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" aria-label="Berikutnya" onclick="window.SF300.stage.next()">${SVG_ICONS.next}</button>
           </div>
+          <button type="button" id="sf3-mini-like" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" aria-label="Suka" onclick="window.SF300.stage.toggleLike(this)">${SVG_ICONS.heartOut}</button>
+          <button type="button" id="sf3-mini-play" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" aria-label="Putar atau Jeda" onclick="window.SF300.stage.togglePlay()">${SVG_ICONS.play}</button>
+          <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" aria-label="Berikutnya" onclick="window.SF300.stage.next()">${SVG_ICONS.next}</button>
         </div>
-
-        <nav id="sf3-bottom-dock" class="sf3-glass-float" aria-label="Navigasi Utama">
-          <button type="button" class="sf3-dock-btn active" data-tab="beranda" onclick="window.SF300.nav.onDockTap('beranda')">${SVG_ICONS.beranda}<span class="sf3-dock-label">Beranda</span></button>
-          <button type="button" class="sf3-dock-btn" data-tab="cari" onclick="window.SF300.nav.onDockTap('cari')">${SVG_ICONS.cari}<span class="sf3-dock-label">Cari</span></button>
-          <button type="button" class="sf3-dock-btn" data-tab="pustaka" onclick="window.SF300.nav.onDockTap('pustaka')">${SVG_ICONS.pustaka}<span class="sf3-dock-label">Pustaka</span></button>
-          <button type="button" class="sf3-dock-btn" data-tab="kamu" onclick="window.SF300.nav.onDockTap('kamu')">${SVG_ICONS.kamu}<span class="sf3-dock-label">Kamu</span></button>
-        </nav>
       </div>
+
+      <nav id="sf3-bottom-dock" class="sf3-glass-float" aria-label="Navigasi Utama">
+        <div id="sf3-lens-bubble" aria-hidden="true"></div>
+        <button type="button" class="sf3-dock-btn active" data-tab="beranda"><span class="sf3-dock-icon">${SVG_ICONS.beranda}</span><span class="sf3-dock-label">Beranda</span></button>
+        <button type="button" class="sf3-dock-btn" data-tab="cari"><span class="sf3-dock-icon">${SVG_ICONS.cari}</span><span class="sf3-dock-label">Cari</span></button>
+        <button type="button" class="sf3-dock-btn" data-tab="pustaka"><span class="sf3-dock-icon">${SVG_ICONS.pustaka}</span><span class="sf3-dock-label">Pustaka</span></button>
+        <button type="button" class="sf3-dock-btn" data-tab="kamu"><span class="sf3-dock-icon">${SVG_ICONS.kamu}</span><span class="sf3-dock-label">Kamu</span></button>
+      </nav>
 
       <div id="sf3-player-sheet" aria-hidden="true"></div>
       <div id="sf3-subpage-overlay" aria-hidden="true"></div>
       <div id="sf3-dialog-backdrop" onclick="if(event.target===this)window.SF300.nav.closeDialog()">
-        <div id="sf3-dialog-card" class="sf3-glass-float"></div>
+        <div id="sf3-dialog-card"></div>
       </div>
     `;
     document.body.appendChild(shell);
+    attachInteractiveLensDrag();
 
-    // Scroll listener for Morphing Dock
+    // Scroll listener for Morphing Dock (> 50px)
     const scroller = document.getElementById('sf3-page-scroll');
     let lastScrollTop = 0;
     scroller.addEventListener('scroll', () => {
@@ -39146,10 +39593,13 @@ window.SF300 = (function createSpotyFlow300Module() {
         return;
       }
       const st = scroller.scrollTop;
-      if (st > 44 && st > lastScrollTop + 6) {
+      if (st > 50 && st > lastScrollTop + 6) {
         document.body.classList.add('sf3-dock-collapsed');
       } else if (st < lastScrollTop - 8 || st <= 20) {
-        document.body.classList.remove('sf3-dock-collapsed');
+        if (document.body.classList.contains('sf3-dock-collapsed')) {
+          document.body.classList.remove('sf3-dock-collapsed');
+          requestAnimationFrame(() => snapLensBubbleToTab(activeTab, false));
+        }
       }
       lastScrollTop = Math.max(0, st);
     }, { passive: true });
@@ -39177,8 +39627,9 @@ window.SF300 = (function createSpotyFlow300Module() {
 
   const nav = {
     onDockTap(tab) {
-      if (document.body.classList.contains('sf3-dock-collapsed') && tab === activeTab) {
+      if (document.body.classList.contains('sf3-dock-collapsed')) {
         document.body.classList.remove('sf3-dock-collapsed');
+        requestAnimationFrame(() => snapLensBubbleToTab(activeTab, false));
         return;
       }
       this.go(tab);
@@ -39189,6 +39640,8 @@ window.SF300 = (function createSpotyFlow300Module() {
       document.querySelectorAll('#sf3-bottom-dock .sf3-dock-btn').forEach((btn) => {
         btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
       });
+      snapLensBubbleToTab(tab, false);
+      triggerDockIconAnim(tab);
       const fabs = document.getElementById('sf3-home-fabs');
       if (fabs) fabs.style.display = tab === 'beranda' ? 'flex' : 'none';
       const scroller = document.getElementById('sf3-page-scroll');
@@ -39269,11 +39722,15 @@ window.SF300 = (function createSpotyFlow300Module() {
     const cover = esc(trackCover(t));
     const dur = t.duration || t.durationSec ? fmtTime(t.duration || t.durationSec) : '';
     const isCur = window.AppState?.currentTrack && String(window.AppState.currentTrack.id) === String(t.id);
+    const isCurPlaying = isCur && Boolean(window.AppState?.isPlaying);
     return `
       <div class="sf3-row" onclick="window.SF300.pages.playFromRendered(${idx}, '${esc(listTag)}')">
-        <img src="${cover}" alt="" loading="lazy" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-black/5" onerror="this.src='/icon-512.png'" />
+        <img src="${cover}" alt="" loading="lazy" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-black/5" onerror="this.onerror=null;this.src=window.SF300._artFallback('${title}')" />
         <div class="min-w-0 flex-1">
-          <div class="text-[14px] font-bold truncate" style="${isCur ? 'color:var(--sf3-accent);' : ''}">${title}</div>
+          <div class="flex items-center gap-2">
+            ${isCurPlaying ? '<span class="sf3-eq-bars" aria-hidden="true"><span class="sf3-eq-bar"></span><span class="sf3-eq-bar"></span><span class="sf3-eq-bar"></span></span>' : ''}
+            <span class="text-[14px] font-bold truncate" style="${isCur ? 'color:var(--sf3-accent);' : ''}">${title}</span>
+          </div>
           <div class="text-[12px] sf3-muted truncate">${artist}${dur ? ' • ' + dur : ''}</div>
         </div>
         <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center sf3-muted shrink-0" aria-label="Menu lagu" onclick="event.stopPropagation();window.SF300.audioTools.openTrackMenu(${idx})">⋮</button>
@@ -39363,32 +39820,31 @@ window.SF300 = (function createSpotyFlow300Module() {
     },
     _renderBeranda() {
       const pool = getUserTracksPool();
-      const quickItems = (pool.length ? pool : FALLBACK_SEEDS).slice(0, 6);
+      const basePool = pool.length ? pool : (hydratedHomeTracks || FALLBACK_SEEDS);
+      const quickItems = basePool.slice(0, 6);
       const andalanList = activeMood && moodTracksCache[activeMood]
         ? moodTracksCache[activeMood]
-        : (pool.length >= 3 ? pool.slice(0, 12) : FALLBACK_SEEDS);
+        : (pool.length >= 3 ? pool.slice(0, 12) : (hydratedHomeTracks || FALLBACK_SEEDS));
       registerPlayableList(andalanList);
       const gridCols = statePrefs.gridLayout === 'large' ? 'grid-cols-2' : 'grid-cols-3';
       const user = window.AppState?.user || safeJsonParse(localStorage.getItem('sf_user_profile'), null);
       const initials = esc((user?.name || 'S').slice(0, 1).toUpperCase());
+      const isGlass = statePrefs.uiStyle !== 'editorial';
 
       return `
         <div class="space-y-5">
           <div class="flex items-center justify-between gap-3 pt-1">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-widest sf3-muted">SpotyFlow v3.0</p>
-              <h1 class="sf3-page-title mt-0.5">${esc(getGreeting())}</h1>
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="button" class="w-10 h-10 rounded-full sf3-card flex items-center justify-center text-base" title="Poster 3D Studio" onclick="window.SF202?.poster3d?.open?.(window.AppState?.currentTrack)">🎨</button>
-              <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm shadow-sm" style="background:var(--sf3-accent);color:#000;" onclick="window.SF300.settings.openMenu()">${initials}</button>
+            <h1 class="sf3-page-title">${esc(getGreeting())}</h1>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" class="w-10 h-10 rounded-full sf3-glass-float flex items-center justify-center text-base" title="${isGlass ? 'Gaya Kaca (Ketuk untuk Editorial)' : 'Gaya Editorial (Ketuk untuk Kaca)'}" onclick="window.SF300.pages.toggleQuickStyle()">${isGlass ? '✨' : '📰'}</button>
+              <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm shadow-sm" style="background:var(--sf3-accent);color:#000;" title="Pengaturan" onclick="window.SF300.settings.openMenu()">${initials}</button>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2.5">
             ${quickItems.map((t, i) => `
               <button type="button" class="sf3-card flex items-center gap-2.5 p-1.5 pr-3 text-left overflow-hidden active:scale-[0.98] transition-transform" style="border-radius:16px;" onclick="window.SF300.pages.playQuick(${i})">
-                <img src="${esc(trackCover(t))}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0" onerror="this.src='/icon-512.png'" />
+                <img src="${esc(trackCover(t))}" alt="" class="w-12 h-12 rounded-[13px] object-cover shrink-0 shadow-sm" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(t.title)}')" />
                 <div class="min-w-0 flex-1">
                   <div class="text-[12.5px] font-extrabold leading-tight line-clamp-2">${esc(t.title)}</div>
                 </div>
@@ -39413,7 +39869,7 @@ window.SF300 = (function createSpotyFlow300Module() {
               ${andalanList.slice(0, 9).map((t, idx) => `
                 <div class="cursor-pointer active:scale-[0.97] transition-transform" onclick="window.SF300.pages.playFromRendered(${idx}, 'Andalanmu')">
                   <div class="aspect-square rounded-2xl overflow-hidden sf3-card mb-1.5">
-                    <img src="${esc(trackCover(t))}" alt="" loading="lazy" class="w-full h-full object-cover" onerror="this.src='/icon-512.png'" />
+                    <img src="${esc(trackCover(t))}" alt="" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(t.title)}')" />
                   </div>
                   <div class="text-[12.5px] font-bold truncate">${esc(t.title)}</div>
                   <div class="text-[11px] sf3-muted truncate">${esc(trackArtist(t))}</div>
@@ -39424,9 +39880,15 @@ window.SF300 = (function createSpotyFlow300Module() {
         </div>
       `;
     },
+    toggleQuickStyle() {
+      const next = statePrefs.uiStyle === 'editorial' ? 'glass' : 'editorial';
+      savePrefs({ uiStyle: next });
+      toast(next === 'glass' ? 'Gaya Kaca (Liquid Glass) aktif ✨' : 'Gaya Editorial (0% Blur) aktif 📰', 'sparkles');
+      this.render();
+    },
     playQuick(idx) {
       const pool = getUserTracksPool();
-      const quickItems = (pool.length ? pool : FALLBACK_SEEDS).slice(0, 6);
+      const quickItems = (pool.length ? pool : (hydratedHomeTracks || FALLBACK_SEEDS)).slice(0, 6);
       playTrackSafe(quickItems, idx, 'Putar Cepat');
     },
     _renderCari() {
@@ -39643,6 +40105,19 @@ window.SF300 = (function createSpotyFlow300Module() {
             </div>
           </div>
 
+          ${isWebBrowserMode() ? `
+            <div class="sf3-card p-4 flex items-center justify-between gap-3" style="background:linear-gradient(135deg, rgba(29,185,84,0.16), rgba(14,165,233,0.10));border-color:rgba(29,185,84,0.30);">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(29,185,84,0.20);">📲</div>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-[14px] leading-tight">Install Aplikasi Android (SpotyFlow.apk)</div>
+                  <div class="text-[11.5px] sf3-muted mt-0.5 leading-snug">Versi v3.0.1 • Putar layar mati, Dynamic Island, Poster 3D &amp; Widget</div>
+                </div>
+              </div>
+              <button type="button" class="px-3.5 py-2 rounded-full text-xs font-extrabold text-black shrink-0 shadow" style="background:var(--sf3-accent);" onclick="window.SF300.complete.triggerWebApkDownload()">Download APK</button>
+            </div>
+          ` : ''}
+
           <div class="sf3-card overflow-hidden">
             <div class="sf3-settings-row" onclick="window.SF300.settings.openMenu()">
               <div class="flex items-center gap-3"><span class="text-lg">⚙️</span><div><div class="font-bold text-[14.5px]">Pengaturan</div><div class="text-xs sf3-muted">10 kategori: Audio, Tampilan, Privasi, Backup</div></div></div>
@@ -39657,7 +40132,7 @@ window.SF300 = (function createSpotyFlow300Module() {
               <span class="sf3-muted text-lg">›</span>
             </div>
             <div class="sf3-settings-row" onclick="window.SF300.settings.openCategory('tentang')">
-              <div class="flex items-center gap-3"><span class="text-lg">ℹ️</span><div><div class="font-bold text-[14.5px]">Tentang SpotyFlow</div><div class="text-xs sf3-muted">v3.0.0 • Build 300</div></div></div>
+              <div class="flex items-center gap-3"><span class="text-lg">ℹ️</span><div><div class="font-bold text-[14.5px]">Tentang SpotyFlow</div><div class="text-xs sf3-muted">v3.0.1 • Build 301</div></div></div>
               <span class="sf3-muted text-lg">›</span>
             </div>
           </div>
@@ -39701,18 +40176,37 @@ window.SF300 = (function createSpotyFlow300Module() {
       if (typeof playPrev === 'function') playPrev();
       setTimeout(updateMiniAndStageUI, 150);
     },
-    toggleLike() {
+    toggleLike(btnEl) {
+      const t = window.AppState?.currentTrack;
+      const wasLiked = t?.id && typeof isTrackLiked === 'function' ? isTrackLiked(t.id) : false;
       if (typeof toggleLikeCurrent === 'function') toggleLikeCurrent();
       if (typeof syncNativeMediaBridge === 'function') syncNativeMediaBridge(true);
+      const targetBtn = btnEl || document.getElementById('sf3-stage-like') || document.getElementById('sf3-mini-like');
+      if (targetBtn) {
+        targetBtn.classList.remove('sf3-heart-pop');
+        void targetBtn.offsetWidth;
+        targetBtn.classList.add('sf3-heart-pop');
+        if (!wasLiked) spawnHeartParticles(targetBtn);
+      }
       setTimeout(updateMiniAndStageUI, 60);
     },
-    toggleShuffleBtn() {
+    toggleShuffleBtn(btnEl) {
+      if (btnEl) {
+        btnEl.classList.remove('sf3-icon-spin');
+        void btnEl.offsetWidth;
+        btnEl.classList.add('sf3-icon-spin');
+      }
       if (typeof toggleShuffle === 'function') toggleShuffle();
-      this.render();
+      setTimeout(() => this.render(), 240);
     },
-    toggleRepeatBtn() {
+    toggleRepeatBtn(btnEl) {
+      if (btnEl) {
+        btnEl.classList.remove('sf3-icon-spin');
+        void btnEl.offsetWidth;
+        btnEl.classList.add('sf3-icon-spin');
+      }
       if (typeof toggleRepeat === 'function') toggleRepeat();
-      this.render();
+      setTimeout(() => this.render(), 240);
     },
     setMediaMode(isVideo) {
       if (!statePrefs.videoMode && isVideo) return;
@@ -39756,7 +40250,7 @@ window.SF300 = (function createSpotyFlow300Module() {
       nav.openDialog(`
         <div class="space-y-2">
           <div class="flex items-center gap-3 pb-2 border-b" style="border-color:var(--sf3-border);">
-            <img src="${esc(trackCover(t))}" class="w-12 h-12 rounded-xl object-cover" onerror="this.src='/icon-512.png'" />
+            <img src="${esc(trackCover(t))}" class="w-12 h-12 rounded-xl object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('SpotyFlow')" />
             <div class="min-w-0 flex-1">
               <div class="font-extrabold text-sm truncate">${esc(t.title)}</div>
               <div class="text-xs sf3-muted truncate">${esc(trackArtist(t))}</div>
@@ -39775,7 +40269,7 @@ window.SF300 = (function createSpotyFlow300Module() {
     shareCurrent() {
       const t = window.AppState?.currentTrack;
       if (!t) return;
-      const text = `Mendengarkan "${t.title}" oleh ${trackArtist(t)} di SpotyFlow v3.0.0 🎵`;
+      const text = `Mendengarkan "${t.title}" oleh ${trackArtist(t)} di SpotyFlow v3.0.1 🎵`;
       if (navigator.share) {
         navigator.share({ title: t.title, text, url: 'https://spotyflow.vercel.app' }).catch(() => {});
       } else if (navigator.clipboard) {
@@ -39785,7 +40279,7 @@ window.SF300 = (function createSpotyFlow300Module() {
     render() {
       const el = document.getElementById('sf3-player-sheet');
       if (!el) return;
-      const t = window.AppState?.currentTrack || { title: 'SpotyFlow', artist: { name: 'Pilih lagu untuk memutar' }, cover: '/icon-512.png' };
+      const t = window.AppState?.currentTrack || { title: 'SpotyFlow', artist: { name: 'Pilih lagu untuk memutar' }, cover: '' };
       const cover = esc(trackCover(t));
       const liked = t.id && typeof isTrackLiked === 'function' ? isTrackLiked(t.id) : false;
       const playing = Boolean(window.AppState?.isPlaying);
@@ -39805,7 +40299,7 @@ window.SF300 = (function createSpotyFlow300Module() {
           ${stageVideoMode && statePrefs.videoMode && ytId ? `
             <iframe src="https://www.youtube.com/embed/${esc(ytId)}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0" class="w-full h-full border-0" allow="autoplay; encrypted-media"></iframe>
           ` : `
-            <img src="${cover}" alt="" class="sf3-stage-hero-img" onerror="this.src='/icon-512.png'" />
+            <img src="${cover}" alt="" class="sf3-stage-hero-img" onerror="this.onerror=null;this.src=window.SF300._artFallback('SpotyFlow')" />
           `}
           <div class="sf3-stage-hero-fade"></div>
 
@@ -39838,7 +40332,7 @@ window.SF300 = (function createSpotyFlow300Module() {
                 <div id="sf3-stage-mini-lyric" class="text-[12.5px] font-semibold mt-1.5 truncate" style="color:#1ED760;min-height:18px;">${activeLyric ? '♪ ' + activeLyric : ''}</div>
               ` : ''}
             </div>
-            <button type="button" id="sf3-stage-like" class="w-11 h-11 rounded-full flex items-center justify-center bg-white/10 shrink-0" onclick="window.SF300.stage.toggleLike()">${liked ? SVG_ICONS.heartFill : SVG_ICONS.heartOut}</button>
+            <button type="button" id="sf3-stage-like" class="w-11 h-11 rounded-full flex items-center justify-center bg-white/10 shrink-0" onclick="window.SF300.stage.toggleLike(this)">${liked ? SVG_ICONS.heartFill : SVG_ICONS.heartOut}</button>
           </div>
 
           <div class="space-y-1.5">
@@ -39850,11 +40344,11 @@ window.SF300 = (function createSpotyFlow300Module() {
           </div>
 
           <div class="flex items-center justify-between px-1">
-            <button type="button" class="w-11 h-11 rounded-full flex items-center justify-center" style="color:${shufOn ? '#1ED760' : 'rgba(255,255,255,0.72)'};" onclick="window.SF300.stage.toggleShuffleBtn()">${SVG_ICONS.shuffle}</button>
+            <button type="button" class="w-11 h-11 rounded-full flex items-center justify-center" style="color:${shufOn ? '#1ED760' : 'rgba(255,255,255,0.72)'};" onclick="window.SF300.stage.toggleShuffleBtn(this)">${SVG_ICONS.shuffle}</button>
             <button type="button" class="w-12 h-12 rounded-full flex items-center justify-center text-white" onclick="window.SF300.stage.prev()">${SVG_ICONS.prev}</button>
-            <button type="button" id="sf3-stage-play" class="w-16 h-16 rounded-full flex items-center justify-center bg-white text-black shadow-xl active:scale-95 transition-transform" onclick="window.SF300.stage.togglePlay()">${playing ? SVG_ICONS.pause : SVG_ICONS.play}</button>
+            <button type="button" id="sf3-stage-play" class="w-16 h-16 rounded-full flex items-center justify-center bg-white text-black shadow-xl active:scale-95 transition-transform ${playing ? 'sf3-play-pulse' : ''}" onclick="window.SF300.stage.togglePlay()">${playing ? SVG_ICONS.pause : SVG_ICONS.play}</button>
             <button type="button" class="w-12 h-12 rounded-full flex items-center justify-center text-white" onclick="window.SF300.stage.next()">${SVG_ICONS.next}</button>
-            <button type="button" class="w-11 h-11 rounded-full flex items-center justify-center relative" style="color:${repMode !== 'off' ? '#1ED760' : 'rgba(255,255,255,0.72)'};" onclick="window.SF300.stage.toggleRepeatBtn()">${SVG_ICONS.repeat}${repMode === 'one' ? '<span style="position:absolute;font-size:9px;font-weight:900;bottom:7px;right:8px;">1</span>' : ''}</button>
+            <button type="button" class="w-11 h-11 rounded-full flex items-center justify-center relative" style="color:${repMode !== 'off' ? '#1ED760' : 'rgba(255,255,255,0.72)'};" onclick="window.SF300.stage.toggleRepeatBtn(this)">${SVG_ICONS.repeat}${repMode === 'one' ? '<span style="position:absolute;font-size:9px;font-weight:900;bottom:7px;right:8px;">1</span>' : ''}</button>
           </div>
 
           <div class="flex items-center gap-3 px-1">
@@ -39890,12 +40384,18 @@ window.SF300 = (function createSpotyFlow300Module() {
       const mLik = document.getElementById('sf3-mini-like');
       const mPly = document.getElementById('sf3-mini-play');
       const cov = trackCover(t);
-      if (mCov && mCov.getAttribute('src') !== cov) mCov.src = cov;
+      if (mCov && mCov.getAttribute('src') !== cov) {
+        mCov.src = cov;
+        updateAuroraTintForTrack(t);
+      }
       if (mTit) mTit.textContent = t.title || 'SpotyFlow';
       if (mArt) mArt.textContent = trackArtist(t);
       const liked = t.id && typeof isTrackLiked === 'function' ? isTrackLiked(t.id) : false;
       if (mLik) mLik.innerHTML = liked ? SVG_ICONS.heartFill : SVG_ICONS.heartOut;
-      if (mPly) mPly.innerHTML = playing ? SVG_ICONS.pause : SVG_ICONS.play;
+      if (mPly) {
+        mPly.innerHTML = playing ? SVG_ICONS.pause : SVG_ICONS.play;
+        mPly.classList.toggle('sf3-play-pulse', playing);
+      }
 
       if (stageOpen) {
         const sCur = document.getElementById('sf3-stage-cur');
@@ -39981,7 +40481,7 @@ window.SF300 = (function createSpotyFlow300Module() {
         { id: 'cadangan', icon: '📦', title: 'Cadangan dan impor', sub: 'Ekspor & pulihkan data likes, playlist, tema (.json)' },
         { id: 'androidauto', icon: '🚗', title: 'Android Auto', sub: 'Putar otomatis di mobil & kontrol setir Bluetooth' },
         { id: 'tautan', icon: '🔗', title: 'Tautan', sub: 'Putar langsung tautan YouTube / Spotify di SpotyFlow' },
-        { id: 'tentang', icon: 'ℹ️', title: 'Tentang SpotyFlow', sub: 'v3.0.0 (Build 300) • Cek pembaruan & Apa yang Baru' },
+        { id: 'tentang', icon: 'ℹ️', title: 'Tentang SpotyFlow', sub: 'v3.0.1 (Build 300) • Cek pembaruan & Apa yang Baru' },
       ];
       nav.openSubpage('Pengaturan', `
         <div class="sf3-card overflow-hidden">
@@ -40318,18 +40818,24 @@ window.SF300 = (function createSpotyFlow300Module() {
         html = `
           <div class="space-y-4">
             <div class="sf3-card p-5 text-center space-y-2">
-              <img src="/icon-512.png" class="w-16 h-16 rounded-2xl mx-auto shadow-md" alt="SpotyFlow" />
-              <div class="text-lg font-extrabold">SpotyFlow v3.0.0</div>
-              <div class="text-xs sf3-muted">100% Parity Edition • Build 300</div>
+              <div class="w-16 h-16 rounded-2xl mx-auto shadow-md flex items-center justify-center text-3xl text-white" style="background:linear-gradient(135deg,#1ED760,#0EA5E9,#7C3AED);">♪</div>
+              <div class="text-lg font-extrabold">SpotyFlow v3.0.1</div>
+              <div class="text-xs sf3-muted">Interactive Liquid Glass Auralys • Build 301</div>
               <p class="text-xs sf3-muted pt-1">Engine: AndroidX Media3 ExoPlayer 1.4.1 + NewPipe v0.27.1 + Google ML Kit Offline Depth + 5 Dynamic Glass Widgets.</p>
             </div>
             <div class="sf3-card overflow-hidden">
+              ${isWebBrowserMode() ? `
+                <div class="sf3-settings-row" onclick="window.SF300.complete.triggerWebApkDownload()">
+                  <div class="font-bold text-sm" style="color:var(--sf3-accent);">📲 Unduh &amp; Install APK (v3.0.1)</div>
+                  <span class="sf3-muted">›</span>
+                </div>
+              ` : ''}
               <div class="sf3-settings-row" onclick="window.SF300.settings.checkAppUpdate()">
                 <div class="font-bold text-sm">🔄 Cek Pembaruan Aplikasi</div>
                 <span class="sf3-muted">›</span>
               </div>
               <div class="sf3-settings-row" onclick="if(typeof openWhatsNewV152Modal==='function')openWhatsNewV152Modal(true)">
-                <div class="font-bold text-sm">✨ Lihat Apa yang Baru di v3.0.0</div>
+                <div class="font-bold text-sm">✨ Lihat Apa yang Baru di v3.0.1</div>
                 <span class="sf3-muted">›</span>
               </div>
             </div>
@@ -40405,7 +40911,7 @@ window.SF300 = (function createSpotyFlow300Module() {
     exportBackupJson() {
       const bundle = {
         app: 'SpotyFlow',
-        version: '3.0.0',
+        version: '3.0.1',
         exportedAt: new Date().toISOString(),
         prefs: statePrefs,
         streak: streakState,
@@ -40469,9 +40975,9 @@ window.SF300 = (function createSpotyFlow300Module() {
       try {
         const r = await fetch('/api/app/version');
         const j = await r.json();
-        toast(`SpotyFlow v${j.version || '3.0.0'} (Build ${j.versionCode || 300}) — Sudah versi terbaru! ✅`, 'check');
+        toast(`SpotyFlow v${j.version || '3.0.1'} (Build ${j.versionCode || 300}) — Sudah versi terbaru! ✅`, 'check');
       } catch {
-        toast('SpotyFlow v3.0.0 aktif', 'info');
+        toast('SpotyFlow v3.0.1 aktif', 'info');
       }
     },
   };
@@ -40643,7 +41149,7 @@ window.SF300 = (function createSpotyFlow300Module() {
             ${q.length ? q.slice(0, 40).map((t, i) => `
               <div class="sf3-row" onclick="window.SF300.nav.closeDialog();window.SF300.pages.playFromRendered(${i}, 'Antrean')">
                 ${statePrefs.qShowNumbers ? `<span class="w-5 text-[11px] font-bold sf3-muted">${i + 1}</span>` : ''}
-                <img src="${esc(trackCover(t))}" class="w-10 h-10 rounded-lg object-cover shrink-0" onerror="this.src='/icon-512.png'" />
+                <img src="${esc(trackCover(t))}" class="w-10 h-10 rounded-lg object-cover shrink-0" onerror="this.onerror=null;this.src=window.SF300._artFallback('SpotyFlow')" />
                 <div class="min-w-0 flex-1">
                   <div class="text-xs font-bold truncate" style="${i === curIdx ? 'color:var(--sf3-accent);' : ''}">${esc(t.title)}</div>
                   <div class="text-[11px] sf3-muted truncate">${esc(trackArtist(t))}</div>
@@ -40693,7 +41199,7 @@ window.SF300 = (function createSpotyFlow300Module() {
       nav.openDialog(`
         <div class="space-y-1.5">
           <div class="flex items-center gap-3 pb-2 border-b" style="border-color:var(--sf3-border);">
-            <img src="${esc(trackCover(t))}" class="w-11 h-11 rounded-xl object-cover" onerror="this.src='/icon-512.png'" />
+            <img src="${esc(trackCover(t))}" class="w-11 h-11 rounded-xl object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('SpotyFlow')" />
             <div class="min-w-0 flex-1">
               <div class="font-extrabold text-sm truncate">${esc(t.title)}</div>
               <div class="text-xs sf3-muted truncate">${esc(trackArtist(t))}</div>
@@ -40739,7 +41245,7 @@ window.SF300 = (function createSpotyFlow300Module() {
     },
     _renderLivePreviewHtml() {
       const c = widgetCfg;
-      const t = window.AppState?.currentTrack || { title: 'Die With A Smile', artist: { name: 'Lady Gaga, Bruno Mars' }, cover: '/icon-512.png' };
+      const t = window.AppState?.currentTrack || { title: 'Die With A Smile', artist: { name: 'Lady Gaga, Bruno Mars' }, cover: '' };
       const cov = esc(trackCover(t));
       const radiusPx = Math.round((c.cornerRadiusPct / 100) * 34);
       const borderW = (1 + (c.glassThickness / 100) * 2.5).toFixed(1);
@@ -40770,13 +41276,13 @@ window.SF300 = (function createSpotyFlow300Module() {
             ${c.style === 'glass' || c.style === 'clear_glass' ? `<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,${shineOp}),transparent 65%);pointer-events:none;"></div>` : ''}
             ${previewWidgetSize === '1x1' ? `
               <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
-                <img src="${cov}" style="width:64px;height:64px;border-radius:${covRad};object-fit:cover;" onerror="this.src='/icon-512.png'" />
+                <img src="${cov}" style="width:64px;height:64px;border-radius:${covRad};object-fit:cover;" onerror="this.onerror=null;this.src=window.SF300._artFallback('SpotyFlow')" />
                 <span style="position:absolute;width:28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;${playBg};font-size:12px;">▶</span>
               </div>
             ` : `
               <div class="relative z-10 space-y-2.5">
                 <div class="flex items-center gap-3">
-                  ${c.showCover ? `<img src="${cov}" style="width:${previewWidgetSize === '4x1' ? '44px' : '62px'};height:${previewWidgetSize === '4x1' ? '44px' : '62px'};border-radius:${covRad};object-fit:cover;flex-shrink:0;" onerror="this.src='/icon-512.png'" />` : ''}
+                  ${c.showCover ? `<img src="${cov}" style="width:${previewWidgetSize === '4x1' ? '44px' : '62px'};height:${previewWidgetSize === '4x1' ? '44px' : '62px'};border-radius:${covRad};object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.src=window.SF300._artFallback('SpotyFlow')" />` : ''}
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between gap-1">
                       <div style="font-size:${titleFz};font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(t.title)}</div>
@@ -40940,7 +41446,7 @@ window.SF300 = (function createSpotyFlow300Module() {
         title = 'Diunduh';
         const ids = new Set(window.SF200?.getOfflineIds?.() || []);
         const metaMap = safeJsonParse(localStorage.getItem('sf_offline_meta_v2'), {});
-        tracks = Array.from(ids).map((id) => metaMap[id] || { id, title: 'Lagu Offline ' + id, artist: { name: 'Tersimpan di APK' }, cover: '/icon-512.png' });
+        tracks = Array.from(ids).map((id) => metaMap[id] || { id, title: 'Lagu Offline ' + id, artist: { name: 'Tersimpan di APK' }, cover: '' });
       } else if (colId === 'cached') {
         title = 'Tersimpan di cache';
         tracks = Array.isArray(window.AppState?.recentTracks) ? window.AppState.recentTracks : safeJsonParse(localStorage.getItem('sf_recent_tracks'), []);
@@ -41009,7 +41515,7 @@ window.SF300 = (function createSpotyFlow300Module() {
             durationSec: x.durationSec,
             localUri: x.localUri,
             isLocalDevice: true,
-            cover: '/icon-512.png',
+            cover: '',
           }));
           try { localStorage.setItem(DEVICE_CACHE_KEY, JSON.stringify(deviceTracks)); } catch {}
           if (!silent) {
@@ -41031,7 +41537,7 @@ window.SF300 = (function createSpotyFlow300Module() {
           artist: { name: 'Diunggah Lokal' },
           album: { title: 'Diunggah' },
           objectUrl: URL.createObjectURL(f),
-          cover: '/icon-512.png',
+          cover: '',
         });
       }
       toast(`${files.length} file audio ditambahkan!`, 'check');
@@ -41173,18 +41679,63 @@ window.SF300 = (function createSpotyFlow300Module() {
       nav.go('cari');
       await pages.runSearch(firstLine);
     },
+    triggerWebApkDownload() {
+      try {
+        const a = document.createElement('a');
+        a.href = '/api/download-apk';
+        a.download = 'SpotyFlow.apk';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch {
+        window.location.href = '/api/download-apk';
+      }
+      nav.openDialog(`
+        <div class="space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="inline-block text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">SPOTYFLOW v3.0.1 ANDROID</span>
+              <h3 class="font-extrabold text-base mt-1.5">📥 Mengunduh SpotyFlow v3.0.1 (.apk)...</h3>
+            </div>
+            <button type="button" class="w-8 h-8 rounded-full sf3-card-soft flex items-center justify-center text-sm font-bold" onclick="window.SF300.nav.closeDialog()">✕</button>
+          </div>
+          <ol class="space-y-2.5 text-xs leading-relaxed">
+            <li class="flex items-start gap-2.5"><span class="w-5 h-5 rounded-full sf3-card-soft flex items-center justify-center font-extrabold shrink-0">1</span><span>Buka file <code>SpotyFlow.apk</code> di notifikasi atau folder Unduhan browser HP kamu.</span></li>
+            <li class="flex items-start gap-2.5"><span class="w-5 h-5 rounded-full sf3-card-soft flex items-center justify-center font-extrabold shrink-0">2</span><span>Jika muncul pop-up keamanan Android, ketuk <strong>"Izinkan dari sumber ini"</strong>.</span></li>
+            <li class="flex items-start gap-2.5"><span class="w-5 h-5 rounded-full sf3-card-soft flex items-center justify-center font-extrabold shrink-0">3</span><span>Ketuk <strong>"Install"</strong> lalu nikmati audio layar mati, 5 Widget Kaca, &amp; Poster 3D!</span></li>
+          </ol>
+          <div class="flex gap-2 pt-1">
+            <a href="/download" class="flex-1 py-2.5 rounded-full sf3-card-soft text-center text-xs font-extrabold" style="color:var(--sf3-text);text-decoration:none;">Buka Halaman Download (/download)</a>
+            <button type="button" class="px-4 py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.nav.closeDialog()">Oke</button>
+          </div>
+        </div>
+      `);
+    },
   };
 
   // ---------------- 10. Boot & Seamless Hook Integration ----------------
   let bootDone = false;
   let uiTicker = null;
 
+  function disableCollidingLegacyCss() {
+    for (const id of ['sf-v2-auralys-style', 'sf-liquid-overhaul-css']) {
+      try {
+        const el = document.getElementById(id);
+        if (el) el.disabled = true;
+      } catch {}
+    }
+  }
+
   function boot() {
     if (bootDone) return;
     bootDone = true;
+    disableCollidingLegacyCss();
     applyPrefsToDomAndNative();
     mountShell();
     nav.go('beranda');
+    requestAnimationFrame(() => snapLensBubbleToTab('beranda', true));
+    hydrateSeedCoversOnce();
 
     // Sync native widget config if saved on Android
     try {
@@ -41197,10 +41748,20 @@ window.SF300 = (function createSpotyFlow300Module() {
       }
     } catch {}
 
-    // Override openFullscreenStage & closeFullscreenStage to route cleanly to v3 Stage
+    // Override openFullscreenStage, closeFullscreenStage & openSettingsModal cleanly
     window._sfLegacyOpenFullscreenStage = window.openFullscreenStage;
     window.openFullscreenStage = function () { stage.open(); };
     window.closeFullscreenStage = function () { stage.close(); };
+
+    // Pause idle animations automatically when app is backgrounded
+    const prevBg = window.__sfSetAppBackgrounded;
+    window.__sfSetAppBackgrounded = function (isBg) {
+      document.body.classList.toggle('sf3-bg-paused', Boolean(isBg));
+      if (typeof prevBg === 'function') prevBg(isBg);
+    };
+    document.addEventListener('visibilitychange', () => {
+      document.body.classList.toggle('sf3-bg-paused', document.hidden);
+    });
 
     // Lightweight 500ms ticker for progress bar, stage sync & Streak counter (0 rAF battery drain)
     if (uiTicker) clearInterval(uiTicker);
@@ -41226,7 +41787,7 @@ window.SF300 = (function createSpotyFlow300Module() {
   }
 
   return {
-    version: '3.0.0',
+    version: '3.0.1',
     prefs: { get: () => Object.assign({}, statePrefs), save: savePrefs, apply: applyPrefsToDomAndNative },
     streak,
     nav,
@@ -41236,6 +41797,7 @@ window.SF300 = (function createSpotyFlow300Module() {
     audioTools,
     widgetSettings,
     complete,
+    _artFallback: makeArtCover,
     _getRenderedTrack: (idx) => currentRenderedList[idx],
     boot,
   };

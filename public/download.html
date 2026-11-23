@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F3F4F6" />
+  <title>Download SpotyFlow v3.0.1 (.apk) — Liquid Glass Music Player</title>
+  <link rel="icon" type="image/png" href="/icon-192.png" />
+  <style>
+    :root {
+      --bg: #F3F4F6;
+      --surface: #FFFFFF;
+      --surface-soft: #ECEEF2;
+      --text: #111215;
+      --muted: #5F6368;
+      --border: rgba(17, 18, 21, 0.08);
+      --accent: #1DB954;
+      --glass-bg: rgba(255, 255, 255, 0.78);
+      --glass-border: rgba(255, 255, 255, 0.92);
+      --shadow: 0 18px 48px rgba(15, 23, 42, 0.10);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0D0E12;
+        --surface: #171920;
+        --surface-soft: #21242E;
+        --text: #F8FAFC;
+        --muted: #9CA3AF;
+        --border: rgba(255, 255, 255, 0.09);
+        --accent: #1ED760;
+        --glass-bg: rgba(23, 25, 32, 0.78);
+        --glass-border: rgba(255, 255, 255, 0.14);
+        --shadow: 0 20px 54px rgba(0, 0, 0, 0.55);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 440px at 15% -5%, rgba(29, 185, 84, 0.18), transparent 65%),
+        radial-gradient(760px 420px at 90% 5%, rgba(124, 58, 237, 0.14), transparent 65%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding: 24px 16px 48px;
+      display: flex;
+      justify-content: center;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hero {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px) saturate(165%);
+      -webkit-backdrop-filter: blur(12px) saturate(165%);
+      border-radius: 28px;
+      padding: 28px 22px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .logo {
+      width: 76px;
+      height: 76px;
+      border-radius: 22px;
+      margin: 0 auto 14px;
+      background: linear-gradient(135deg, #1ED760, #0EA5E9, #7C3AED);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 32px rgba(29, 185, 84, 0.28);
+      color: #fff;
+      font-size: 36px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      background: rgba(29, 185, 84, 0.15);
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; }
+    .sub { margin-top: 8px; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 20px;
+      padding: 15px 22px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #05130A;
+      font-weight: 900;
+      font-size: 15px;
+      text-decoration: none;
+      box-shadow: 0 12px 26px rgba(29, 185, 84, 0.34);
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .cta:active { transform: scale(0.97); }
+    .back-link {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 6px 22px rgba(15, 23, 42, 0.05);
+    }
+    .card h2 { font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+    .list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .list li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.48; }
+    .num {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 800;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="logo" aria-hidden="true">♪</div>
+      <div class="badge" id="ver-badge">SPOTYFLOW v3.0.1 • BUILD 301 • ANDROID APK</div>
+      <h1>SpotyFlow untuk Android</h1>
+      <p class="sub">Pemutar musik Liquid Glass interaktif ala Auralys dengan putar latar belakang layar mati, 5 Widget Home Screen, Ekualiser 5-Band Hardware, dan Poster 3D Depth AI Offline.</p>
+      <a class="cta" href="/api/download-apk" id="btn-dl-apk">📲 Download SpotyFlow v3.0.1 (.apk)</a>
+      <a class="back-link" href="/">← Kembali ke Pemutar Web SpotyFlow</a>
+    </section>
+
+    <section class="card">
+      <h2>Cara Install di Android (3 Langkah Cepat)</h2>
+      <ol class="list">
+        <li><span class="num">1</span><span>Ketuk tombol <strong>Download SpotyFlow v3.0.1 (.apk)</strong> di atas hingga file <code>SpotyFlow.apk</code> selesai terunduh.</span></li>
+        <li><span class="num">2</span><span>Buka file <code>SpotyFlow.apk</code> dari notifikasi atau folder Unduhan browser. Jika muncul pop-up keamanan, ketuk <strong>Izinkan dari sumber ini</strong>.</span></li>
+        <li><span class="num">3</span><span>Ketuk <strong>Install</strong> lalu buka SpotyFlow — seluruh fitur native Android langsung aktif!</span></li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Apa yang Baru di SpotyFlow v3.0.1</h2>
+      <ul class="list">
+        <li><span>✨</span><span><strong>Interactive Liquid Glass Lens Bubble:</strong> Tekan &amp; geser gelembung lensa kaca prisma di Dock 4 Tab secara real-time 60–120 FPS dengan efek pegas &amp; animasi mikro per-ikon.</span></li>
+        <li><span>⚡</span><span><strong>Audio Native Zero-Stutter (Media3 ExoPlayer 1.4.1):</strong> Tetap jalan lancar saat layar mati, Skip Silence, Loudness Enhancer, 5-Band Hardware EQ, &amp; mode Offline <code>.m4a</code>.</span></li>
+        <li><span>🧩</span><span><strong>5 Ukuran Widget Home Screen Dinamis:</strong> Pemutar 1×1, 2×2, 2×4, 4×1, &amp; 4×2 yang kilau kaca &amp; kebulatan sudutnya bisa diatur langsung di aplikasi.</span></li>
+        <li><span>🧊</span><span><strong>Poster Lagu 3D Depth Effect (ML Kit Offline):</strong> Pisahkan subjek fotomu secara otomatis dan pasang kartu lagu 3D melayang di belakang subjek + simpan HD ke Galeri.</span></li>
+      </ul>
+    </section>
+  </main>
+  <script>
+    fetch('/api/app/version')
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d || !d.version) return;
+        const b = document.getElementById('ver-badge');
+        const btn = document.getElementById('btn-dl-apk');
+        if (b) b.textContent = 'SPOTYFLOW v' + d.version + ' • BUILD ' + (d.versionCode || 301) + ' • ANDROID APK';
+        if (btn) btn.textContent = '📲 Download SpotyFlow v' + d.version + ' (.apk)';
+      })
+      .catch(() => {});
+  </script>
+</body>
+</html>

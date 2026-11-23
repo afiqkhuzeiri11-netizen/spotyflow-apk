@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (v3.0.0 100% Parity Edition · SDK 34)
+name: Build SpotyFlow Android APK (v3.0.1 Interactive Liquid Glass Auralys · SDK 34)
 
 on:
   workflow_dispatch:
@@ -91,8 +91,8 @@ jobs:
           grep -q "jitpack.io" android/build.gradle
           grep -q "compileSdkVersion = 34" android/variables.gradle
           grep -q "targetSdkVersion = 34" android/variables.gradle
-          grep -q "versionCode 300" android/app/build.gradle
-          grep -q 'versionName "3.0.0"' android/app/build.gradle
+          grep -q "versionCode 301" android/app/build.gradle
+          grep -q 'versionName "3.0.1"' android/app/build.gradle
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
           grep -q "coreLibraryDesugaringEnabled true" android/app/build.gradle
@@ -130,7 +130,7 @@ jobs:
           chmod +x gradlew
           GRADLE_OPTS="-Xmx4096m" ./gradlew assembleRelease --no-daemon
 
-      - name: Export SpotyFlow.apk (Release v3.0.0) & Show Size
+      - name: Export SpotyFlow.apk (Release v3.0.1) & Show Size
         run: |
           test -f android/app/build/outputs/apk/release/app-release.apk
           cp android/app/build/outputs/apk/release/app-release.apk SpotyFlow.apk
@@ -139,7 +139,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-v3.0.0-Release
+          name: SpotyFlow-APK-v3.0.1-Release
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -147,13 +147,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow v3.0.0
+          name: SpotyFlow v3.0.1
           body: |
-            ### SpotyFlow v3.0.0 — 100% Parity Edition (Auralys Liquid Glass + Native Audio Pro + 5 Dynamic Widgets)
-            - **UI Liquid Glass & Editorial + 3 Tema Lengkap (Terang, Gelap, AMOLED)** + **Morphing Dock 4 Tab** (`Beranda`, `Cari`, `Pustaka`, `Kamu`) yang menyusut mulus saat scroll + **Streak `🔥 Percikan`** + **Fullscreen Player Full-Bleed** dengan sisa waktu negatif (`-0:37`), Volume & Bluetooth output picker!
-            - **Pengaturan 10 Kategori Lengkap & Audio Native Pro**: Skip Silence, Loudness Enhancer & Normalisasi, Hardware Equalizer 5-Band, Audio Offload, Varispeed/Pitch, Tetap Putar di Game, Jeda saat Bisu, Lanjut via Bluetooth, Refresh Rate 120Hz, & Opt-in Floating Dynamic Island!
-            - **5 Ukuran Widget Home Screen Dinamis (`1×1`, `2×2`, `2×4`, `4×1`, `4×2`)** + Editor `Pengaturan Widget` dengan Live Preview 60 FPS (Kilau kaca, Ketebalan kaca, Kebulatan sudut, Bentuk cover, Ukuran teks, Streak)!
-            - **6 Koleksi Pustaka Aktif + Pemindai Musik Lokal Perangkat (`Di perangkat`)** + **Poster 3D Depth Effect ML Kit Offline** + **Zero-Stutter 4G ExoPlayer**!
+            ### SpotyFlow v3.0.1 — Audit Total Bug + Interactive Draggable Liquid Glass Lens Bubble (Auralys Standard)
+            - **Gelembung Lensa Kaca Prisma Interaktif (`#sf3-lens-bubble`)**: Tekan & geser dengan jari secara real-time 60–120 FPS di Dock 4 Tab dengan refraksi prisma warna optik, elastisitas pegas, efek *hover-under-lens*, dan *spring snap* mulus!
+            - **Animasi Mikro Ekspresif Per-Ikon**: Beranda bounce, Cari scan, Pustaka tilt, Kamu nod, Play/Pause glow pulse, Heart Pop + 6 partikel mini, Shuffle/Repeat spin, Streak api berkedip lembut, & Active EQ bars.
+            - **Ambient Aurora Depth & Bebas CSS Bentrok**: Pendar warna sampul halus di latar Terang/Gelap, 0% placeholder hitam/hijau, modal kontras tinggi 100% terbaca di semua tema, & 1-klik Install APK di Web (`/api/download-apk` & `/download`)!
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true

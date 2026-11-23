@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '3.0.0';
-const NATIVE_APK_VERSION_CODE = 300;
+const VERSION = '3.0.1';
+const NATIVE_APK_VERSION_CODE = 301;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -1996,11 +1996,64 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.get('/api/download-apk', (_req, res) => {
+const DEFAULT_GITHUB_APK_REPO = 'afiqkhuzeiri11-netizen/spotyflow-apk';
+const FALLBACK_APK_DIRECT_URL = `https://github.com/${DEFAULT_GITHUB_APK_REPO}/releases/latest/download/SpotyFlow.apk`;
+let cachedLatestApkUrl = '';
+let cachedLatestApkAt = 0;
+
+async function resolveLatestApkDownloadUrl() {
+  const envUrl = String(process.env.LATEST_APK_URL || '').trim();
+  if (envUrl) return envUrl;
+  const now = Date.now();
+  if (cachedLatestApkUrl && (now - cachedLatestApkAt) < 10 * 60 * 1000) {
+    return cachedLatestApkUrl;
+  }
+  try {
+    let repoSlug = DEFAULT_GITHUB_APK_REPO;
+    try {
+      const pkg = require('./package.json');
+      const rawRepo = typeof pkg.repository === 'string' ? pkg.repository : (pkg.repository?.url || '');
+      const m = rawRepo.match(/github\.com[:/]([^/]+\/[^/.]+)/i);
+      if (m && m[1]) repoSlug = m[1];
+    } catch {}
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3500);
+    const resp = await fetch(`https://api.github.com/repos/${repoSlug}/releases/latest`, {
+      headers: { 'User-Agent': 'SpotyFlow-Server/3.0.1', Accept: 'application/vnd.github+json' },
+      signal: ctrl.signal,
+    });
+    clearTimeout(t);
+    if (resp.ok) {
+      const rel = await resp.json();
+      const assets = Array.isArray(rel?.assets) ? rel.assets : [];
+      const apkAsset = assets.find((a) => /\.apk$/i.test(String(a?.name || ''))) || assets[0];
+      if (apkAsset?.browser_download_url) {
+        cachedLatestApkUrl = String(apkAsset.browser_download_url);
+        cachedLatestApkAt = now;
+        return cachedLatestApkUrl;
+      }
+    }
+  } catch {}
+  return FALLBACK_APK_DIRECT_URL;
+}
+
+app.get(['/download', '/download.html'], (_req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  const candidates = [
+    path.join(__dirname, 'download.html'),
+    path.join(__dirname, 'public', 'download.html'),
+  ];
+  for (const fp of candidates) {
+    if (fs.existsSync(fp)) {
+      return res.sendFile(fp);
+    }
+  }
+  return res.redirect(302, '/api/download-apk');
+});
+
+app.get('/api/download-apk', async (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  const apkUrl =
-    String(process.env.LATEST_APK_URL || '').trim() ||
-    'https://github.com/afiqkhuzeiri11-netizen/spotyflow-apk/releases/latest/download/SpotyFlow.apk';
+  const apkUrl = await resolveLatestApkDownloadUrl();
   return res.redirect(302, apkUrl);
 });
 
@@ -2014,14 +2067,15 @@ app.get(['/api/app-version', '/api/app/version'], (_req, res) => {
     buildId: APP_BUILD_ID,
     latestNativeVersionCode: NATIVE_APK_VERSION_CODE,
     minNativeVersionCode: 1,
-    apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
+    apkUrl: '/api/download-apk',
+    downloadPageUrl: '/download',
     otaEnabled: true,
     releaseNotes: [
-      'SpotyFlow v3.0.0 — 100% Parity Edition: Light/Dark/AMOLED Liquid Glass, Morphing Dock, 10-Category Settings, 5 Dynamic Widgets, Native EQ/Offload/Varispeed & 3D Depth Poster Studio',
-      'Jalur Play Instan < 0.7 Detik via Direct InnerTube ANDROID_VR + Native videoId Search tanpa muter Vercel + Auto-Retry 2-Lapis ke NewPipeExtractor',
-      'Rombak Total GUI: Living Multi-Orb Mesh Liquid Glass (iOS 26 / Auralys) & True Editorial Serif Matte (60–120 FPS)',
-      'Poster Maker Studio 4 Tab Layar Penuh: Pilih Lagu Dulu, Upload Foto Galeri Sendiri, 5 Template HD & Simpan Langsung ke Galeri HP (Pictures/SpotyFlow)',
-      'Prefetch Cerdas 2 Lagu Berikutnya + Indikator Kecepatan Audio Opsional + Lirik Live Dynamic Island & 3 Widget Android',
+      'SpotyFlow v3.0.1 — Audit Total Bug Sistem, Interactive Draggable Liquid Glass Lens Bubble ala Auralys, Animasi Mikro Per-Ikon, Ambient Aurora Depth, & Install APK 1-Klik di Web',
+      'Gelembung Lensa Kaca Prisma Interaktif di Dock 4 Tab: tekan & geser real-time 60-120 FPS dengan spring snap, efek pembiasan tepi optik, & hover-under-lens',
+      'Animasi Mikro Ekspresif di setiap ikon (Beranda, Cari, Pustaka, Kamu, Play/Pause, Heart Pop + Partikel, Shuffle/Repeat, Streak Api, Active EQ Bars)',
+      '100% Bersih dari CSS Bentrok & Placeholder Hitam/Hijau + Modal Kontras Sempurna di Tema Terang, Gelap & AMOLED',
+      'Install APK Langsung 1-Klik dari Web Browser HP (/api/download-apk & /download) tanpa harus buka GitHub',
     ],
     updatedAt: new Date().toISOString(),
   });
