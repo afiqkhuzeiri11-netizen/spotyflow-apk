@@ -45,8 +45,15 @@ function findGitExecutable() {
 
 console.log(`[spotyflow-verify-gate] Running strict checks in: ${ROOT}`);
 
-// 1. node --check on core JS files
-for (const rel of ['server.js', 'scripts/build-apk-www.js', 'scripts/patch-android-apk.js']) {
+// 1. node --check on core JS files & modular public/sf/*.js
+const coreJs = ['server.js', 'scripts/build-apk-www.js', 'scripts/patch-android-apk.js'];
+const sfDir = path.join(ROOT, 'public/sf');
+if (fs.existsSync(sfDir)) {
+  for (const f of fs.readdirSync(sfDir).filter((x) => x.endsWith('.js')).sort()) {
+    coreJs.push(`public/sf/${f}`);
+  }
+}
+for (const rel of coreJs) {
   const abs = path.join(ROOT, rel);
   if (!fs.existsSync(abs)) {
     fail(`node --check ${rel}`, 'File not found');
@@ -139,23 +146,25 @@ if (secretHits.length === 0) {
   fail('No hardcoded secrets (GOCSPX- / AQ.Ab8)', secretHits.join('; '));
 }
 
-// 6. Run npm run build:apk and verify static Tailwind CSS > 15 KB & no cdn.tailwindcss.com
+// 6. Run npm run build:apk and verify modular www/sf/* bundle & no cdn.tailwindcss.com
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const buildRes = runCmd(npmCmd, ['run', 'build:apk'], { shell: process.platform === 'win32' });
 if (buildRes.status !== 0) {
   fail('npm run build:apk', (buildRes.stderr || buildRes.stdout || 'Build failed').trim().slice(-300));
 } else {
-  const cssPath = path.join(ROOT, 'www/assets/tailwind.min.css');
+  const sfCssPath = path.join(ROOT, 'www/sf/sf-auralys.css');
+  const twCssPath = path.join(ROOT, 'www/assets/tailwind.min.css');
   const wwwHtmlPath = path.join(ROOT, 'www/index.html');
-  if (!fs.existsSync(cssPath)) {
-    fail('www/assets/tailwind.min.css > 15 KB', 'File missing after build:apk');
+  if (fs.existsSync(sfCssPath)) {
+    const size = fs.statSync(sfCssPath).size;
+    if (size > 10 * 1024) pass('www/sf/sf-auralys.css > 10 KB', `${(size / 1024).toFixed(1)} KB`);
+    else fail('www/sf/sf-auralys.css > 10 KB', `Only ${size} bytes`);
+  } else if (fs.existsSync(twCssPath)) {
+    const size = fs.statSync(twCssPath).size;
+    if (size > 15 * 1024) pass('www/assets/tailwind.min.css > 15 KB', `${(size / 1024).toFixed(1)} KB`);
+    else fail('www/assets/tailwind.min.css > 15 KB', `Only ${size} bytes`);
   } else {
-    const size = fs.statSync(cssPath).size;
-    if (size > 15 * 1024) {
-      pass('www/assets/tailwind.min.css > 15 KB', `${(size / 1024).toFixed(1)} KB`);
-    } else {
-      fail('www/assets/tailwind.min.css > 15 KB', `Only ${size} bytes`);
-    }
+    fail('Static CSS bundle missing', 'Neither www/sf/sf-auralys.css nor www/assets/tailwind.min.css found');
   }
   if (!fs.existsSync(wwwHtmlPath)) {
     fail('www/index.html free of cdn.tailwindcss.com', 'www/index.html missing');

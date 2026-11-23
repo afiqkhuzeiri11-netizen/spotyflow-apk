@@ -3452,14 +3452,20 @@ public class MainActivity extends BridgeActivity {
 
         super.onCreate(savedInstanceState);
 
-        // Pastikan area status bar & gesture bar Android 15/16 (edge-to-edge) selalu gelap pekat #050505 dengan ikon putih tajam
+        // SpotyFlow v4.0.0 True Edge-to-Edge Fullscreen (transparan penuh atas & bawah tanpa strip hitam!)
         try {
-            getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#050505")));
+            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(Color.TRANSPARENT);
+            if (Build.VERSION.SDK_INT >= 29) {
+                getWindow().setNavigationBarContrastEnforced(false);
+            }
+            getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#F4F5F7")));
             WindowInsetsControllerCompat insetsController =
                     WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
             if (insetsController != null) {
-                insetsController.setAppearanceLightStatusBars(false);
-                insetsController.setAppearanceLightNavigationBars(false);
+                insetsController.setAppearanceLightStatusBars(true);
+                insetsController.setAppearanceLightNavigationBars(true);
             }
         } catch (Throwable ignored) {
         }
@@ -4157,6 +4163,28 @@ public class MainActivity extends BridgeActivity {
         }
 
         @JavascriptInterface
+        public void setSystemBarTheme(final boolean isLight) {
+            runOnUiThread(() -> {
+                try {
+                    WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+                    getWindow().setStatusBarColor(Color.TRANSPARENT);
+                    getWindow().setNavigationBarColor(Color.TRANSPARENT);
+                    if (Build.VERSION.SDK_INT >= 29) {
+                        getWindow().setNavigationBarContrastEnforced(false);
+                    }
+                    getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor(isLight ? "#F4F5F7" : "#0D0E12")));
+                    WindowInsetsControllerCompat ctrl =
+                            WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+                    if (ctrl != null) {
+                        ctrl.setAppearanceLightStatusBars(isLight);
+                        ctrl.setAppearanceLightNavigationBars(isLight);
+                    }
+                } catch (Throwable ignored) {
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void setImmersiveStatusBar(final boolean enabled) {
             runOnUiThread(() -> {
                 try {
@@ -4554,16 +4582,16 @@ function patchBuildGradle() {
     content = content.replace(/applicationId\s+["'][^"']+["']/, `applicationId "${APP_ID}"`);
   }
 
-  // Official SpotyFlow v3.0.2 versionCode 302 & versionName "3.0.2" + minSdk >= 23 for ML Kit
+  // Official SpotyFlow v4.0.0 versionCode 400 & versionName "4.0.0" + minSdk >= 23 for ML Kit
   if (/versionCode\s+\d+/.test(content)) {
-    content = content.replace(/versionCode\s+\d+/, 'versionCode 302');
+    content = content.replace(/versionCode\s+\d+/, 'versionCode 400');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 302');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 400');
   }
   if (/versionName\s+["'][^"']+["']/.test(content)) {
-    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "3.0.2"');
+    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "4.0.0"');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "3.0.2"');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "4.0.0"');
   }
   content = content.replace(/minSdkVersion\s+(\d+)/, (m, v) => (parseInt(v, 10) < 23 ? 'minSdkVersion 24' : m));
 
@@ -4991,7 +5019,8 @@ function verifyPatchedProject() {
     [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 34') && variablesGradle.includes('targetSdkVersion = 34')), 'variables.gradle missing compileSdk/targetSdk = 34'],
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('versionCode 302') && gradle.includes('versionName "3.0.2"'), 'build.gradle missing versionCode 302 / versionName "3.0.2"'],
+    [gradle.includes('versionCode 400') && gradle.includes('versionName "4.0.0"'), 'build.gradle missing versionCode 400 / versionName "4.0.0"'],
+    [act.includes('setDecorFitsSystemWindows') && act.includes('setSystemBarTheme'), 'MainActivity missing Edge-to-Edge or setSystemBarTheme'],
     [gradle.includes('coreLibraryDesugaringEnabled true'), 'build.gradle missing coreLibraryDesugaringEnabled true'],
     [gradle.includes('com.android.tools:desugar_jdk_libs_nio:2.0.4'), 'build.gradle missing desugar_jdk_libs_nio:2.0.4'],
     [gradle.includes('com.github.teamnewpipe:NewPipeExtractor:v0.27.1'), 'build.gradle missing NewPipeExtractor:v0.27.1'],

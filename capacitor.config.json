@@ -3,22 +3,10 @@
   "appName": "SpotyFlow",
   "webDir": "www",
   "server": {
-    "androidScheme": "https",
-    "cleartext": true
+    "androidScheme": "https"
   },
   "android": {
     "allowMixedContent": true,
-    "backgroundColor": "#050505"
-  },
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 1200,
-      "backgroundColor": "#050505",
-      "showSpinner": false
-    },
-    "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#050505"
-    }
+    "backgroundColor": "#F4F5F7"
   }
 }

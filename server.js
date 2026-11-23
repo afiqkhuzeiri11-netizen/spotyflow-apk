@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '3.0.2';
-const NATIVE_APK_VERSION_CODE = 302;
+const VERSION = '4.0.0';
+const NATIVE_APK_VERSION_CODE = 400;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -7820,6 +7820,20 @@ function sendPwaAsset(res, filename, contentType, cacheControl) {
 }
 
 app.get(['/', '/index.html', '/spotyflow.html'], sendMainHtml);
+
+app.use(
+  '/sf',
+  express.static(path.join(PUBLIC_DIR, 'sf'), {
+    index: false,
+    fallthrough: false,
+    setHeaders(res, filePath) {
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === '.css') res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      else if (ext === '.js') res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    },
+  })
+);
 
 app.get('/manifest.json', (_req, res) =>
   sendPwaAsset(res, 'manifest.json', 'application/manifest+json; charset=utf-8', 'public, max-age=3600')

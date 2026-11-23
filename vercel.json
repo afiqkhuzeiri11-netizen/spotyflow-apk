@@ -25,6 +25,7 @@
           "sw.js",
           "public/index.html",
           "public/download.html",
+          "public/sf/**",
           "public/manifest.json",
           "public/sw.js",
           "public/icon-192.png",

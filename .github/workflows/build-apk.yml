@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (v3.0.2 Full Search + Artist/Album/User Profile · SDK 34)
+name: Build SpotyFlow Android APK (v4.0.0 Clean Modular Auralys · SDK 34)
 
 on:
   workflow_dispatch:
@@ -32,13 +32,23 @@ jobs:
       - name: Install NPM Dependencies
         run: npm install
 
-      - name: Build Production Web Assets & Compile Static Tailwind CSS (www/)
+      - name: Build Production Modular Web Assets (www/ + www/sf/)
         run: |
           npm run build:apk
-          test -f www/assets/tailwind.min.css
+          test -f www/sf/sf-auralys.css
+          test -f www/sf/sf-store.js
+          test -f www/sf/sf-api.js
+          test -f www/sf/sf-audio.js
+          test -f www/sf/sf-lyrics.js
+          test -f www/sf/sf-ui-dock.js
+          test -f www/sf/sf-ui-views.js
+          test -f www/sf/sf-ui-player.js
+          test -f www/sf/sf-ui-settings.js
+          test -f www/sf/sf-poster3d.js
+          test -f www/sf/sf-main.js
           ! grep -q "cdn.tailwindcss.com" www/index.html
-          grep -q "./assets/tailwind.min.css" www/index.html
-          ls -lh www/assets/tailwind.min.css
+          grep -q "./sf/sf-auralys.css" www/index.html
+          ls -lh www/sf/
 
       - name: Add & Sync Capacitor 6 Android Platform (SDK 34)
         run: |
@@ -91,8 +101,10 @@ jobs:
           grep -q "jitpack.io" android/build.gradle
           grep -q "compileSdkVersion = 34" android/variables.gradle
           grep -q "targetSdkVersion = 34" android/variables.gradle
-          grep -q "versionCode 302" android/app/build.gradle
-          grep -q 'versionName "3.0.2"' android/app/build.gradle
+          grep -q "versionCode 400" android/app/build.gradle
+          grep -q 'versionName "4.0.0"' android/app/build.gradle
+          grep -q "setDecorFitsSystemWindows" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "setSystemBarTheme" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
           grep -q "coreLibraryDesugaringEnabled true" android/app/build.gradle
@@ -130,7 +142,7 @@ jobs:
           chmod +x gradlew
           GRADLE_OPTS="-Xmx4096m" ./gradlew assembleRelease --no-daemon
 
-      - name: Export SpotyFlow.apk (Release v3.0.2) & Show Size
+      - name: Export SpotyFlow.apk (Release v4.0.0) & Show Size
         run: |
           test -f android/app/build/outputs/apk/release/app-release.apk
           cp android/app/build/outputs/apk/release/app-release.apk SpotyFlow.apk
@@ -139,7 +151,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-v3.0.2-Release
+          name: SpotyFlow-APK-v4.0.0-Release
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -147,13 +159,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow v3.0.2
+          name: SpotyFlow v4.0.0
           body: |
-            ### SpotyFlow v3.0.2 — Pencarian Multi-Sumber Lengkap + Profil Artis, Album & Profil Pengguna
-            - **Perbaikan Total Sistem Pencarian & API APK (`API_BASE` + `/api/search/all`)**: Pencarian kini menampilkan **Hasil Teratas**, **Artis** (foto bulat + jumlah pengikut), **Lagu** (sampul HD + nama artis & album bisa diklik), **Album**, **Playlist**, & saran pencarian real-time di Web maupun APK Android!
-            - **Halaman Profil Artis & Halaman Album Penuh**: Ketuk nama artis untuk membuka banner profil, pengikut, tombol Ikuti, Top 25 lagu populer, diskografi album, & artis serupa; ketuk album untuk daftar trek lengkap & simpan album!
-            - **Kartu Profil Pengguna & Edit Profil di Tab Kamu**: Foto profil/avatar kustom, nama, bio, statistik Disukai/Playlist/Diikuti, & sinkronisasi dengan Pustaka (tab Artis & Album tersimpan aktif penuh!).
-            - **Interactive Draggable Liquid Glass Lens Bubble + Animasi Per-Ikon + 1-Klik Install APK di Web (`/download`)**!
+            ### SpotyFlow v4.0.0 — Clean Modular System (10 Dedicated Managers + True Liquid Glass Auralys + Edge-to-Edge Native)
+            - **Arsitektur Modular Bersih (0% Konflik CSS/JS Lama)**: 10 pengatur mandiri (`sf-store`, `sf-api`, `sf-audio`, `sf-lyrics`, `sf-ui-dock`, `sf-ui-views`, `sf-ui-player`, `sf-ui-settings`, `sf-poster3d`, `sf-main`) dengan 1 EventBus tunggal (`SF.bus`) & 1 stylesheet murni (`sf-auralys.css`).
+            - **True Native Edge-to-Edge Fullscreen**: Status bar & navigation bar transparan otomatis mengikuti tema Terang/Gelap/AMOLED tanpa strip hitam dan tanpa bar URL.
+            - **Interactive Draggable Liquid Glass Lens Dock + 100% SVG Monokrom Tajam**: Gelembung lensa kaca prisma 60–120 FPS yang bisa ditekan & digeser jari + Morphing Dock saat scroll.
+            - **100% Live Sync Mini-Player, Pemutar Penuh, & Lirik Penuh**: Lirik sinkron dengan terjemahan/romaji/offset/cari manual, 10 kategori pengaturan nyata, Editor 5 Widget Home Screen, Ekualiser 5-Band, Kenali Lagu, Dengar Bersama, & Poster 3D Depth AI ML Kit!
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true

@@ -1,11 +1,13 @@
-const SHELL_CACHE = 'spotyflow-shell-v79';
-const RUNTIME_CACHE = 'spotyflow-runtime-v79';
+const SHELL_CACHE = 'spotyflow-shell-v82';
+const RUNTIME_CACHE = 'spotyflow-runtime-v82';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/sf/sf-auralys.css',
+  '/sf/sf-main.js',
 ];
 
 self.addEventListener('install', (event) => {
