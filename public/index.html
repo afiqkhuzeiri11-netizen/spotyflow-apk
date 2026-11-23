@@ -1708,6 +1708,118 @@
       }
     }
   </style>
+
+  <!-- =====================================================================
+       SPOTYFLOW v2.0.1 — AURALYS 1-5 SONGS MULTI-CARD POSTER STUDIO CSS
+       ===================================================================== -->
+  <style id="sf-poster-auralys-css">
+    #sf-poster-auralys-modal {
+      background: #0A0B0F;
+      color: #FFFFFF;
+      overscroll-behavior: contain;
+    }
+    #sf-poster-auralys-modal .sf-au-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: rgba(255, 255, 255, 0.84);
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 140ms ease;
+    }
+    #sf-poster-auralys-modal .sf-au-pill:active {
+      transform: scale(0.96);
+    }
+    #sf-poster-auralys-modal .sf-au-pill.sf-au-pill-active {
+      background: #FFFFFF;
+      color: #09090D;
+      border-color: #FFFFFF;
+      box-shadow: 0 6px 18px rgba(255, 255, 255, 0.18);
+    }
+    /* Modern Android 15 / Auralys Thick Slider */
+    #sf-poster-auralys-modal .sf-au-slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    #sf-poster-auralys-modal .sf-au-slider-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.88);
+    }
+    #sf-poster-auralys-modal .sf-au-slider-val {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.72);
+      font-variant-numeric: tabular-nums;
+    }
+    #sf-poster-auralys-modal input[type="range"].sf-auralys-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 18px;
+      border-radius: 9999px;
+      outline: none;
+      cursor: pointer;
+      background: linear-gradient(
+        to right,
+        #FFFFFF 0%,
+        #FFFFFF var(--val-pct, 35%),
+        rgba(255, 255, 255, 0.12) var(--val-pct, 35%),
+        rgba(255, 255, 255, 0.12) 100%
+      );
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      touch-action: pan-y;
+    }
+    #sf-poster-auralys-modal input[type="range"].sf-auralys-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 6px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #FFFFFF;
+      border: 1.5px solid #0A0B0F;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+      cursor: grab;
+    }
+    #sf-poster-auralys-modal input[type="range"].sf-auralys-slider::-moz-range-thumb {
+      width: 6px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #FFFFFF;
+      border: 1.5px solid #0A0B0F;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+      cursor: grab;
+    }
+    #sf-poster-auralys-modal .sf-au-card-opt {
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      text-align: left;
+      transition: background-color 180ms ease, border-color 180ms ease, transform 140ms ease;
+    }
+    #sf-poster-auralys-modal .sf-au-card-opt:active {
+      transform: scale(0.97);
+    }
+    #sf-poster-auralys-modal .sf-au-card-opt.sf-au-card-opt-active {
+      background: #FFFFFF;
+      color: #09090D;
+      border-color: #FFFFFF;
+      box-shadow: 0 8px 22px rgba(255, 255, 255, 0.15);
+    }
+  </style>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
   <!-- Living Multi-Orb Ambient Mesh Canvas (SpotyFlow v2.0.1 True Liquid Glass) -->
@@ -14966,11 +15078,11 @@
 
           ${typeof renderWeeklyMiniWrappedCardHtml === 'function' ? renderWeeklyMiniWrappedCardHtml() : ''}
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button type="button" onclick="window.SF201?.posterStudio?.open(AppState.currentTrack)" class="sf-tap text-left rounded-2xl p-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/18 to-[#18181B] border border-purple-400/35 hover:border-purple-300/70 transition-all flex items-center justify-between gap-3">
+            <button type="button" onclick="window.SF201?.posterStudio?.open(AppState.currentTrack || null)" class="sf-tap text-left rounded-2xl p-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/18 to-[#18181B] border border-purple-400/35 hover:border-purple-300/70 transition-all flex items-center justify-between gap-3">
               <div class="min-w-0">
-                <span class="font-mono text-[9.5px] font-extrabold uppercase tracking-widest text-purple-300">STUDIO 4 TAB</span>
+                <span class="font-mono text-[9.5px] font-extrabold uppercase tracking-widest text-purple-300">AURALYS STUDIO</span>
                 <p class="font-display font-extrabold text-sm sm:text-base text-white mt-0.5">🎨 Poster Maker Studio</p>
-                <p class="text-[11px] text-white/65 truncate">Pilih lagu, upload foto sendiri, 5 gaya HD &amp; simpan Galeri</p>
+                <p class="text-[11px] text-white/65 truncate">Kolase 1–5 lagu miring 3D, foto sendiri, 5 tab &amp; simpan Galeri</p>
               </div>
               <i data-lucide="palette" aria-hidden="true" class="w-5 h-5 text-purple-300 shrink-0"></i>
             </button>
@@ -33710,119 +33822,209 @@
       })();
 
       // -------------------------------------------------------------------
-      // C. FIX C — 4-TAB FULLSCREEN POSTER MAKER STUDIO ALA AURALYS
+      // C. FIX C (REVISI FINAL) — AURALYS 1-5 SONGS MULTI-CARD POSTER STUDIO
       // -------------------------------------------------------------------
       const posterStudio = (function createSF201PosterStudio() {
         const RATIOS = {
-          '9:16': { w: 1080, h: 1920, label: 'Story 9:16', sub: '1080×1920' },
-          '4:5':  { w: 1080, h: 1350, label: 'Feed 4:5',   sub: '1080×1350' },
-          '1:1':  { w: 1080, h: 1080, label: 'Square 1:1', sub: '1080×1080' },
+          '9:16': { w: 1080, h: 1920, icon: '📱', label: '9:16 TikTok' },
+          '16:9': { w: 1920, h: 1080, icon: '📺', label: '16:9 YouTube' },
+          '4:5':  { w: 1080, h: 1350, icon: '📐', label: '4:5 Feed' },
+          '1:1':  { w: 1080, h: 1080, icon: '⬜', label: '1:1 Square' },
         };
-        const TEMPLATES = [
-          { id: 'glass',       name: 'Liquid Glass', desc: 'Kartu kaca berkilau + latar blur', icon: '🫧' },
-          { id: 'editorial',   name: 'Editorial',    desc: 'Majalah cetak + palet 5 warna + barcode', icon: '📰' },
-          { id: 'photo_quote', name: 'Photo Quote',  desc: 'Foto penuh + gradasi + lirik ekspresif', icon: '📸' },
-          { id: 'lyric_card',  name: 'Lyric Card',   desc: 'Fokus lirik rata kiri ala Apple/Auralys', icon: '💬' },
-          { id: 'polaroid',    name: 'Polaroid',     desc: 'Bingkai polaroid klasik + tanggal hari ini', icon: '🖼️' },
-        ];
-        const QUICK_SWATCHES = ['#0B0D14', '#1E1B4B', '#3B0764', '#0F3D3E', '#7F1D1D', '#F4F1EA'];
-        const DEFAULT_PALETTE = ['#1E40AF', '#7C3AED', '#0E7490', '#E5C99B', '#0F172A'];
 
+        const CARD_STYLES = [
+          { id: 'dark_glass',  name: 'Kaca Gelap',   desc: 'Gelap berkilau khas Auralys', swatch: 'linear-gradient(135deg,#1A1C26,#0D0F16)' },
+          { id: 'liquid',      name: 'Liquid Glass', desc: 'Kaca bening transparan iOS 26', swatch: 'linear-gradient(135deg,rgba(255,255,255,0.34),rgba(255,255,255,0.08))' },
+          { id: 'matte_black', name: 'Hitam Pekat',  desc: 'Solid obsidian tajam & kontras', swatch: '#0E0E11' },
+          { id: 'light_frost', name: 'Kaca Terang',  desc: 'Putih frosted teks hitam tegas', swatch: 'linear-gradient(135deg,#FFFFFF,#E2E8F0)' },
+          { id: 'cover_tint',  name: 'Warna Sampul', desc: 'Tiap kartu ikut warna sampulnya', swatch: 'linear-gradient(135deg,#4C1D95,#1E3A8A)' },
+          { id: 'polaroid',    name: 'Polaroid',     desc: 'Bingkai krem estetik minimalis', swatch: '#F5F2EA' },
+        ];
+
+        const BG_MODES = [
+          { id: 'burgundy',   name: 'Burgundy Gelap',    c1: '#2A121C', c2: '#12090D', c3: '#3B1628' },
+          { id: 'auto_cover', name: 'Auto Warna Sampul', c1: '#1E40AF', c2: '#7C3AED', c3: '#0E7490' },
+          { id: 'obsidian',   name: 'Hitam Obsidian',    c1: '#09090D', c2: '#050508', c3: '#14141C' },
+          { id: 'midnight',   name: 'Biru Tengah Malam', c1: '#0C1E3E', c2: '#060D1E', c3: '#1D4ED8' },
+          { id: 'velvet',     name: 'Ungu Velvet',       c1: '#2E1065', c2: '#0F0722', c3: '#6D28D9' },
+          { id: 'cream',      name: 'Krem Editorial',    c1: '#F4F1EA', c2: '#E7E2D5', c3: '#DDD6C6' },
+          { id: 'custom',     name: 'Warna Kustom',      c1: '#2A121C', c2: '#12090D', c3: '#2A121C' },
+        ];
+
+        const BG_SWATCHES = ['#2A121C', '#09090D', '#0C1E3E', '#2E1065', '#063B36', '#4A1818', '#1F2937', '#F4F1EA'];
+        const CARD_FALLBACK_GRADS = [
+          ['#3B1D5E', '#1E3A8A'],
+          ['#7C2D12', '#4C1D95'],
+          ['#0F766E', '#1E293B'],
+          ['#831843', '#312E81'],
+          ['#1D4ED8', '#0F172A'],
+        ];
+
+        const imageCache = new Map();
+        let grainCanvas = null;
         let state = null;
         let previewRaf = 0;
         let searchDebounce = null;
         let searchAbort = null;
-        let lyricsAbort = null;
-        let grainPatternCanvas = null;
+        let pendingTrackPhotoIdx = -1;
 
-        function cleanTrackTitleForPoster(raw) {
+        function cleanTitle(raw) {
           return String(raw || '')
             .replace(/\s*[\(\[]\s*(official\s*(music\s*)?video|official\s*audio|official\s*lyric\s*video|lyric\s*video|lyrics|mv|hd|4k|audio|visualizer|live\s*performance)[^\)\]]*[\)\]]/gi, '')
             .replace(/\s+/g, ' ')
             .trim() || 'SpotyFlow Track';
         }
 
-        function makeDefaultState(initialTrack) {
-          const tr = initialTrack || AppState?.currentTrack || AppState?.likedTracks?.[0] || AppState?.recentTracks?.[0] || {
-            id: 'sf_demo',
-            title: 'SpotyFlow Hi-Fi',
-            artist: { name: 'SpotyFlow Studio' },
-            album: { title: 'Auralys Edition' },
-            duration: 210,
-          };
-          return {
-            activeTab: 'track',       // 'track' | 'photo' | 'style' | 'settings'
-            trackSource: 'current',   // 'current' | 'liked' | 'recent' | 'search'
-            searchQuery: '',
-            searchResults: [],
-            searchLoading: false,
-            track: tr,
-            coverImg: null,
-            palette: DEFAULT_PALETTE.slice(),
-            lyricsLines: [],
-            lyricsLoading: false,
-            selectedLyricIndices: [],
-            customQuote: '',
-            // Photo controls
-            photoSource: 'cover',     // 'cover' | 'upload'
-            uploadedImg: null,
-            uploadedThumbUrl: '',
-            photoPlacement: 'replace_cover', // 'replace_cover' | 'background' | 'full_poster'
-            zoom: 100,
-            panX: 0,
-            panY: 0,
-            // Template & Settings
-            template: 'glass',
-            ratio: '9:16',
-            bgMode: 'auto',           // 'auto' | 'dark' | 'cream' | 'custom'
-            bgCustomColor: '#1E1B4B',
-            bgBlur: 22,
-            bgDimmer: 38,
-            cornerRadius: 28,
-            filmGrain: true,
-            customTitle: cleanTrackTitleForPoster(tr.title),
-            customArtist: String(tr.artist?.name || 'SpotyFlow'),
-            fontStyle: 'sans',        // 'sans' | 'serif' | 'mono'
-            textColorMode: 'auto',    // 'auto' | 'white' | 'black'
-            showProgress: true,
-            showLyrics: true,
-            showPalette: true,
-            showDate: true,
-            showWatermark: true,
-          };
+        function getTrackKey(tr) {
+          if (!tr) return '';
+          return String(tr.id || `${tr.title || ''}_${tr.artist?.name || ''}`);
         }
 
-        function getFontFamily(style, bold = false) {
-          if (style === 'serif') return `Georgia, "Times New Roman", serif`;
-          if (style === 'mono') return `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace`;
-          return `"Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif`;
+        function buildProxyUrl(rawUrl) {
+          const u = String(rawUrl || '').trim();
+          if (!u || u.startsWith('data:') || u.startsWith('blob:') || u.startsWith('/')) return u;
+          const base = typeof API_BASE === 'string' ? API_BASE : '';
+          return `${base}/api/proxy-image?url=${encodeURIComponent(u)}`;
         }
 
-        function getTodayFormatted() {
+        function extractDominantRgb(img) {
           try {
-            return new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+            const c = document.createElement('canvas');
+            c.width = 24; c.height = 24;
+            const ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, 24, 24);
+            const d = ctx.getImageData(0, 0, 24, 24).data;
+            let r = 0, g = 0, b = 0, n = 0;
+            for (let i = 0; i < d.length; i += 16) {
+              if (d[i + 3] < 160) continue;
+              r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+            }
+            if (!n) return [124, 58, 237];
+            return [Math.round(r / n), Math.round(g / n), Math.round(b / n)];
           } catch {
-            return new Date().toISOString().slice(0, 10);
+            return [124, 58, 237];
           }
+        }
+
+        function loadCoverCached(rawUrl) {
+          const clean = String(rawUrl || '').trim();
+          if (!clean || clean.includes('icon-192.png')) return Promise.resolve(null);
+          if (imageCache.has(clean)) return Promise.resolve(imageCache.get(clean));
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.decoding = 'async';
+            const tm = setTimeout(() => resolve(null), 5000);
+            img.onload = () => {
+              clearTimeout(tm);
+              const entry = { img, rgb: extractDominantRgb(img) };
+              if (imageCache.size >= 40) {
+                const firstKey = imageCache.keys().next().value;
+                if (firstKey) imageCache.delete(firstKey);
+              }
+              imageCache.set(clean, entry);
+              resolve(entry);
+            };
+            img.onerror = () => { clearTimeout(tm); resolve(null); };
+            img.src = buildProxyUrl(clean);
+          });
+        }
+
+        function downscaleLocalImageFile(file) {
+          return new Promise((resolve) => {
+            if (!file) { resolve(null); return; }
+            const reader = new FileReader();
+            reader.onerror = () => resolve(null);
+            reader.onload = () => {
+              const rawImg = new Image();
+              rawImg.onerror = () => resolve(null);
+              rawImg.onload = () => {
+                const MAX_DIM = 1600;
+                const iw = rawImg.naturalWidth || 1;
+                const ih = rawImg.naturalHeight || 1;
+                const scale = Math.min(1, MAX_DIM / Math.max(iw, ih));
+                const rw = Math.max(1, Math.round(iw * scale));
+                const rh = Math.max(1, Math.round(ih * scale));
+                const off = document.createElement('canvas');
+                off.width = rw;
+                off.height = rh;
+                off.getContext('2d').drawImage(rawImg, 0, 0, rw, rh);
+                const dataUrl = off.toDataURL('image/jpeg', 0.92);
+                const safeImg = new Image();
+                safeImg.onerror = () => resolve(null);
+                safeImg.onload = () => resolve({ img: safeImg, dataUrl, rgb: extractDominantRgb(safeImg) });
+                safeImg.src = dataUrl;
+              };
+              rawImg.src = String(reader.result || '');
+            };
+            reader.readAsDataURL(file);
+          });
         }
 
         function getGrainCanvas() {
-          if (grainPatternCanvas) return grainPatternCanvas;
+          if (grainCanvas) return grainCanvas;
           const gc = document.createElement('canvas');
-          gc.width = 128;
-          gc.height = 128;
+          gc.width = 128; gc.height = 128;
           const gctx = gc.getContext('2d');
-          const imgData = gctx.createImageData(128, 128);
-          for (let i = 0; i < imgData.data.length; i += 4) {
+          const id = gctx.createImageData(128, 128);
+          for (let i = 0; i < id.data.length; i += 4) {
             const v = Math.floor(Math.random() * 255);
-            imgData.data[i] = v;
-            imgData.data[i + 1] = v;
-            imgData.data[i + 2] = v;
-            imgData.data[i + 3] = 20;
+            id.data[i] = v; id.data[i + 1] = v; id.data[i + 2] = v; id.data[i + 3] = 22;
           }
-          gctx.putImageData(imgData, 0, 0);
-          grainPatternCanvas = gc;
+          gctx.putImageData(id, 0, 0);
+          grainCanvas = gc;
           return gc;
+        }
+
+        function makeDefaultState(initialTrack) {
+          const hasInitial = Boolean(initialTrack);
+          const tracks = hasInitial ? [initialTrack] : [];
+          return {
+            step: hasInitial ? 'edit' : 'pick',
+            pickTab: 'liked',
+            searchQuery: '',
+            searchResults: [],
+            searchLoading: false,
+            tracks,
+            trackCovers: new Map(),
+            customTrackCovers: new Map(),
+            loadingCovers: false,
+
+            ratio: '9:16',
+            activeTab: 'foto',
+
+            bgPhotoImg: null,
+            bgPhotoThumb: '',
+            bgPhotoZoom: 100,
+            bgPhotoPanY: 0,
+            bgDarkness: 17,
+            bgBlur: 0,
+            cardGlow: 35,
+
+            layoutMode: 'auralys',
+            cardSize: 100,
+            cardTilt: 45,
+            cardSpacing: 100,
+            showControls: true,
+            showSeekHeart: true,
+            showArtist: true,
+            showWatermark: true,
+
+            cardStyle: 'dark_glass',
+            cardOpacity: 82,
+            cardRadius: 22,
+
+            bgMode: 'burgundy',
+            bgCustomColor: '#2A121C',
+
+            sparkleEnabled: true,
+            sparkleIntensity: 65,
+            sparkleSeed: 1,
+            shadow3d: 60,
+            vignette: 35,
+            filmGrain: false,
+            headerText: '',
+          };
         }
 
         function roundedRectPath(ctx, x, y, w, h, r) {
@@ -33840,12 +34042,10 @@
           ctx.closePath();
         }
 
-        // ANTI-STRETCH IMAGE COVER HELPER (Zoom + PanX + PanY + Radius)
-        function drawImageCover(ctx, img, x, y, w, h, opts = {}) {
-          const zoom = Math.max(100, Math.min(220, Number(opts.zoom ?? 100))) / 100;
-          const panX = Math.max(-100, Math.min(100, Number(opts.panX ?? 0))) / 100;
-          const panY = Math.max(-100, Math.min(100, Number(opts.panY ?? 0))) / 100;
-          const radius = Number(opts.radius ?? 0);
+        function drawImageCover(ctx, img, x, y, w, h, zoom = 100, panX = 0, panY = 0, radius = 0, fallbackIdx = 0) {
+          const z = Math.max(100, Math.min(220, Number(zoom) || 100)) / 100;
+          const px = Math.max(-100, Math.min(100, Number(panX) || 0)) / 100;
+          const py = Math.max(-100, Math.min(100, Number(panY) || 0)) / 100;
 
           ctx.save();
           if (radius > 0) {
@@ -33858,213 +34058,420 @@
           }
 
           if (!img || !img.naturalWidth || !img.naturalHeight) {
-            const pal = state?.palette || DEFAULT_PALETTE;
+            const pair = CARD_FALLBACK_GRADS[fallbackIdx % CARD_FALLBACK_GRADS.length];
             const g = ctx.createLinearGradient(x, y, x + w, y + h);
-            g.addColorStop(0, pal[0] || '#1E40AF');
-            g.addColorStop(0.55, pal[1] || '#7C3AED');
-            g.addColorStop(1, pal[2] || '#0E7490');
+            g.addColorStop(0, pair[0]);
+            g.addColorStop(1, pair[1]);
             ctx.fillStyle = g;
             ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = 'rgba(255,255,255,0.42)';
+            ctx.font = `700 ${Math.round(Math.min(w, h) * 0.38)}px system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('♪', x + w / 2, y + h / 2);
             ctx.restore();
             return;
           }
 
           const iw = img.naturalWidth;
           const ih = img.naturalHeight;
-          const baseScale = Math.max(w / iw, h / ih);
-          const scale = baseScale * zoom;
+          const scale = Math.max(w / iw, h / ih) * z;
           const drawW = iw * scale;
           const drawH = ih * scale;
           const maxShiftX = Math.max(0, (drawW - w) / 2);
           const maxShiftY = Math.max(0, (drawH - h) / 2);
-          const dx = x + (w - drawW) / 2 + panX * maxShiftX;
-          const dy = y + (h - drawH) / 2 + panY * maxShiftY;
+          const dx = x + (w - drawW) / 2 + px * maxShiftX;
+          const dy = y + (h - drawH) / 2 + py * maxShiftY;
           ctx.drawImage(img, dx, dy, drawW, drawH);
           ctx.restore();
         }
 
-        // ANTI-OVERFLOW WRAPPED TEXT HELPER
-        function drawWrappedLines(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3, align = 'left') {
-          const clean = String(text || '').replace(/\r/g, '').trim();
-          if (!clean) return y;
-          ctx.textAlign = align;
-          const paragraphs = clean.split('\n');
-          const lines = [];
-
-          for (const para of paragraphs) {
-            const words = para.trim().split(/\s+/).filter(Boolean);
-            if (!words.length) continue;
-            let cur = words[0];
-            for (let i = 1; i < words.length; i++) {
-              const test = cur + ' ' + words[i];
-              if (ctx.measureText(test).width <= maxWidth) {
-                cur = test;
-              } else {
-                lines.push(cur);
-                cur = words[i];
-                if (lines.length >= maxLines) break;
-              }
+        function drawEllipsisText(ctx, text, x, y, maxWidth) {
+          const clean = String(text || '').trim();
+          if (!clean) return;
+          let out = clean;
+          if (ctx.measureText(out).width > maxWidth) {
+            while (out.length > 1 && ctx.measureText(out + '…').width > maxWidth) {
+              out = out.slice(0, -1);
             }
-            if (lines.length < maxLines) lines.push(cur);
-            if (lines.length >= maxLines) break;
+            out += '…';
+          }
+          ctx.fillText(out, x, y);
+        }
+
+        function drawBlurredPhotoBackground(ctx, img, W, H, zoom, panY, blurPct) {
+          if (blurPct <= 1) {
+            drawImageCover(ctx, img, 0, 0, W, H, zoom, 0, panY, 0, 0);
+            return;
+          }
+          const factor = Math.max(2, Math.round(2 + (blurPct / 100) * 26));
+          const sw = Math.max(16, Math.round(W / factor));
+          const sh = Math.max(16, Math.round(H / factor));
+          const tmp1 = document.createElement('canvas');
+          tmp1.width = sw; tmp1.height = sh;
+          const tctx1 = tmp1.getContext('2d');
+          tctx1.imageSmoothingEnabled = true;
+          tctx1.imageSmoothingQuality = 'high';
+          drawImageCover(tctx1, img, 0, 0, sw, sh, zoom, 0, panY, 0, 0);
+
+          const tmp2 = document.createElement('canvas');
+          tmp2.width = Math.max(16, Math.round(sw * 0.72));
+          tmp2.height = Math.max(16, Math.round(sh * 0.72));
+          const tctx2 = tmp2.getContext('2d');
+          tctx2.imageSmoothingEnabled = true;
+          tctx2.imageSmoothingQuality = 'high';
+          tctx2.drawImage(tmp1, 0, 0, tmp2.width, tmp2.height);
+
+          ctx.save();
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(tmp2, -16, -16, W + 32, H + 32);
+          ctx.restore();
+        }
+
+        function drawSparkle4Point(ctx, cx, cy, size, alpha) {
+          if (alpha <= 0.02 || size <= 1) return;
+          ctx.save();
+          const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 1.45);
+          halo.addColorStop(0, `rgba(255, 255, 255, ${(alpha * 0.92).toFixed(3)})`);
+          halo.addColorStop(0.32, `rgba(255, 245, 255, ${(alpha * 0.42).toFixed(3)})`);
+          halo.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(cx, cy, size * 1.45, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, alpha * 1.1).toFixed(3)})`;
+          ctx.beginPath();
+          const inner = size * 0.16;
+          for (let i = 0; i < 8; i++) {
+            const r = i % 2 === 0 ? size : inner;
+            const ang = (i * Math.PI) / 4;
+            const px = cx + Math.cos(ang) * r;
+            const py = cy + Math.sin(ang) * r;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        function drawVectorHeart(ctx, cx, cy, s, color) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(0, s * 0.35);
+          ctx.bezierCurveTo(-s * 0.55, -s * 0.15, -s * 0.95, -s * 0.55, -s * 0.42, -s * 0.85);
+          ctx.bezierCurveTo(-s * 0.12, -s * 1.0, 0, -s * 0.62, 0, -s * 0.52);
+          ctx.bezierCurveTo(0, -s * 0.62, s * 0.12, -s * 1.0, s * 0.42, -s * 0.85);
+          ctx.bezierCurveTo(s * 0.95, -s * 0.55, s * 0.55, -s * 0.15, 0, s * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        function drawMiniControls(ctx, cx, cy, s, color) {
+          ctx.save();
+          ctx.fillStyle = color;
+          const bw = s * 0.28;
+          const bh = s * 0.96;
+          const bgap = s * 0.24;
+          roundedRectPath(ctx, cx - bgap / 2 - bw, cy - bh / 2, bw, bh, bw * 0.35);
+          ctx.fill();
+          roundedRectPath(ctx, cx + bgap / 2, cy - bh / 2, bw, bh, bw * 0.35);
+          ctx.fill();
+
+          const prevX = cx - s * 2.25;
+          roundedRectPath(ctx, prevX - s * 0.48, cy - s * 0.38, s * 0.16, s * 0.76, s * 0.06);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(prevX - s * 0.26, cy);
+          ctx.lineTo(prevX + s * 0.38, cy - s * 0.40);
+          ctx.lineTo(prevX + s * 0.38, cy + s * 0.40);
+          ctx.closePath();
+          ctx.fill();
+
+          const nextX = cx + s * 2.25;
+          roundedRectPath(ctx, nextX + s * 0.32, cy - s * 0.38, s * 0.16, s * 0.76, s * 0.06);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(nextX + s * 0.26, cy);
+          ctx.lineTo(nextX - s * 0.38, cy - s * 0.40);
+          ctx.lineTo(nextX - s * 0.38, cy + s * 0.40);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        function computeCardPlacements(count, ratio, layoutMode, hasHeader) {
+          const n = Math.max(1, Math.min(5, count));
+          const isLandscape = ratio === '16:9';
+          const isSquare = ratio === '1:1';
+          const yOff = hasHeader ? 0.035 : 0;
+
+          if (layoutMode === 'grid') {
+            if (isLandscape) {
+              const xs = n === 1 ? [0.5] : n === 2 ? [0.33, 0.67] : n === 3 ? [0.22, 0.5, 0.78] : n === 4 ? [0.17, 0.39, 0.61, 0.83] : [0.13, 0.315, 0.5, 0.685, 0.87];
+              return xs.map((x) => ({ cx: x, cy: 0.52 + yOff, tilt: 0, sc: n === 5 ? 0.82 : n === 4 ? 0.94 : 1.05 }));
+            }
+            if (n === 1) return [{ cx: 0.5, cy: 0.50 + yOff, tilt: 0, sc: 1.32 }];
+            if (n === 2) return [{ cx: 0.5, cy: 0.31 + yOff, tilt: 0, sc: 1.05 }, { cx: 0.5, cy: 0.69 + yOff, tilt: 0, sc: 1.05 }];
+            if (n === 3) return [{ cx: 0.30, cy: 0.33 + yOff, tilt: 0, sc: 0.96 }, { cx: 0.70, cy: 0.33 + yOff, tilt: 0, sc: 0.96 }, { cx: 0.50, cy: 0.69 + yOff, tilt: 0, sc: 0.96 }];
+            if (n === 4) return [
+              { cx: 0.30, cy: 0.32 + yOff, tilt: 0, sc: 0.95 },
+              { cx: 0.70, cy: 0.32 + yOff, tilt: 0, sc: 0.95 },
+              { cx: 0.30, cy: 0.69 + yOff, tilt: 0, sc: 0.95 },
+              { cx: 0.70, cy: 0.69 + yOff, tilt: 0, sc: 0.95 },
+            ];
+            return [
+              { cx: 0.29, cy: 0.26 + yOff, tilt: 0, sc: 0.84 },
+              { cx: 0.71, cy: 0.26 + yOff, tilt: 0, sc: 0.84 },
+              { cx: 0.29, cy: 0.76 + yOff, tilt: 0, sc: 0.84 },
+              { cx: 0.71, cy: 0.76 + yOff, tilt: 0, sc: 0.84 },
+              { cx: 0.50, cy: 0.51 + yOff, tilt: 0, sc: 0.92 },
+            ];
           }
 
-          const finalLines = lines.slice(0, maxLines);
-          finalLines.forEach((line, idx) => {
-            let txt = line;
-            if (ctx.measureText(txt).width > maxWidth) {
-              while (txt.length > 1 && ctx.measureText(txt + '…').width > maxWidth) {
-                txt = txt.slice(0, -1);
-              }
-              txt += '…';
+          if (layoutMode === 'fan') {
+            const spread = isLandscape ? 0.68 : 0.56;
+            const out = [];
+            for (let i = 0; i < n; i++) {
+              const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
+              out.push({
+                cx: 0.5 + t * (spread * 0.52),
+                cy: (isLandscape ? 0.53 : 0.51) + Math.abs(t) * (isLandscape ? 0.08 : 0.14) + yOff,
+                tilt: t * 14,
+                sc: n >= 4 ? (0.94 - Math.abs(t) * 0.06) : 1.05,
+              });
             }
-            ctx.fillText(txt, x, y + idx * lineHeight);
-          });
-          return y + finalLines.length * lineHeight;
-        }
-
-        function extractPalette5FromImage(img) {
-          try {
-            const c = document.createElement('canvas');
-            c.width = 40; c.height = 40;
-            const ctx = c.getContext('2d', { willReadFrequently: true });
-            ctx.drawImage(img, 0, 0, 40, 40);
-            const data = ctx.getImageData(0, 0, 40, 40).data;
-            const buckets = new Map();
-            for (let i = 0; i < data.length; i += 12) {
-              const r = Math.round(data[i] / 32) * 32;
-              const g = Math.round(data[i + 1] / 32) * 32;
-              const b = Math.round(data[i + 2] / 32) * 32;
-              const key = `${Math.min(255, r)},${Math.min(255, g)},${Math.min(255, b)}`;
-              buckets.set(key, (buckets.get(key) || 0) + 1);
-            }
-            const sorted = Array.from(buckets.entries())
-              .sort((a, b) => b[1] - a[1])
-              .map(([k]) => k.split(',').map(Number));
-            const picked = [];
-            for (const rgb of sorted) {
-              if (picked.length >= 5) break;
-              const distinct = picked.every((p) => (
-                Math.abs(p[0] - rgb[0]) + Math.abs(p[1] - rgb[1]) + Math.abs(p[2] - rgb[2]) > 72
-              ));
-              if (distinct) picked.push(rgb);
-            }
-            while (picked.length < 5) {
-              picked.push([30 + picked.length * 36, 58 + picked.length * 24, 138 + picked.length * 18]);
-            }
-            return picked.map(([r, g, b]) => '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join(''));
-          } catch {
-            return DEFAULT_PALETTE.slice();
+            return out;
           }
-        }
 
-        function loadCoverImageSafe(track) {
-          const url = track && typeof getCover === 'function' ? getCover(track, 'big') : '';
-          if (!url || url.includes('icon-192.png')) return Promise.resolve(null);
-          const src = (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('/'))
-            ? url
-            : `${typeof API_BASE === 'string' ? API_BASE : ''}/api/proxy-image?url=${encodeURIComponent(url)}`;
-          return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            const tm = setTimeout(() => resolve(null), 5000);
-            img.onload = () => { clearTimeout(tm); resolve(img); };
-            img.onerror = () => { clearTimeout(tm); resolve(null); };
-            img.src = src;
-          });
-        }
-
-        function parseLyricsTextToLines(raw) {
-          if (!raw) return [];
-          const out = [];
-          if (Array.isArray(raw)) {
-            raw.forEach((item) => {
-              const txt = typeof item === 'string' ? item : String(item?.text || item?.line || '');
-              const clean = txt.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
-              if (clean && !/^[\[(]?(instrumental|musik|music|intro|outro)[\])]?$/i.test(clean)) out.push(clean);
-            });
-            return out.slice(0, 80);
-          }
-          String(raw).split('\n').forEach((line) => {
-            const clean = line.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
-            if (clean && clean.length >= 2 && !/^[\[(]?(instrumental|musik|music|intro|outro)[\])]?$/i.test(clean)) {
-              out.push(clean);
+          if (layoutMode === 'diagonal') {
+            const out = [];
+            for (let i = 0; i < n; i++) {
+              const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
+              out.push({
+                cx: 0.5 + t * (isLandscape ? 0.34 : 0.23),
+                cy: 0.50 + t * (isLandscape ? 0.12 : 0.27) + yOff,
+                tilt: (i % 2 === 0 ? -5 : 5),
+                sc: n === 5 ? 0.84 : n === 4 ? 0.92 : 1.02,
+              });
             }
-          });
-          return out.slice(0, 80);
+            return out;
+          }
+
+          if (isLandscape) {
+            if (n === 1) return [{ cx: 0.50, cy: 0.51 + yOff, tilt: -2, sc: 1.25 }];
+            if (n === 2) return [{ cx: 0.34, cy: 0.48 + yOff, tilt: -6, sc: 1.12 }, { cx: 0.66, cy: 0.54 + yOff, tilt: 5, sc: 1.12 }];
+            if (n === 3) return [
+              { cx: 0.23, cy: 0.52 + yOff, tilt: -7, sc: 1.04 },
+              { cx: 0.50, cy: 0.47 + yOff, tilt: 2,  sc: 1.08 },
+              { cx: 0.77, cy: 0.53 + yOff, tilt: 6,  sc: 1.04 },
+            ];
+            if (n === 4) return [
+              { cx: 0.17, cy: 0.52 + yOff, tilt: -6, sc: 0.96 },
+              { cx: 0.39, cy: 0.46 + yOff, tilt: 5,  sc: 0.96 },
+              { cx: 0.61, cy: 0.54 + yOff, tilt: -4, sc: 0.96 },
+              { cx: 0.83, cy: 0.48 + yOff, tilt: 6,  sc: 0.96 },
+            ];
+            return [
+              { cx: 0.15, cy: 0.44 + yOff, tilt: -7, sc: 0.86 },
+              { cx: 0.33, cy: 0.57 + yOff, tilt: 5,  sc: 0.86 },
+              { cx: 0.50, cy: 0.44 + yOff, tilt: -2, sc: 0.92 },
+              { cx: 0.67, cy: 0.57 + yOff, tilt: -5, sc: 0.86 },
+              { cx: 0.85, cy: 0.44 + yOff, tilt: 7,  sc: 0.86 },
+            ];
+          }
+
+          const ySpread = isSquare ? 0.86 : 1.0;
+          const adjY = (y) => 0.50 + (y - 0.50) * ySpread + yOff;
+          if (n === 1) return [{ cx: 0.50, cy: adjY(0.50), tilt: -2, sc: 1.35 }];
+          if (n === 2) return [
+            { cx: 0.36, cy: adjY(0.34), tilt: -6, sc: 1.06 },
+            { cx: 0.64, cy: adjY(0.66), tilt: 5,  sc: 1.06 },
+          ];
+          if (n === 3) return [
+            { cx: 0.34, cy: adjY(0.27), tilt: -6, sc: 0.98 },
+            { cx: 0.68, cy: adjY(0.50), tilt: 5,  sc: 0.98 },
+            { cx: 0.36, cy: adjY(0.74), tilt: -4, sc: 0.98 },
+          ];
+          if (n === 4) return [
+            { cx: 0.31, cy: adjY(0.31), tilt: -5, sc: 0.96 },
+            { cx: 0.70, cy: adjY(0.29), tilt: 6,  sc: 0.96 },
+            { cx: 0.30, cy: adjY(0.68), tilt: 4,  sc: 0.96 },
+            { cx: 0.70, cy: adjY(0.69), tilt: -5, sc: 0.96 },
+          ];
+          return [
+            { cx: 0.29, cy: adjY(0.24), tilt: -6, sc: 0.86 },
+            { cx: 0.71, cy: adjY(0.24), tilt: 6,  sc: 0.86 },
+            { cx: 0.29, cy: adjY(0.76), tilt: 5,  sc: 0.86 },
+            { cx: 0.71, cy: adjY(0.76), tilt: -5, sc: 0.86 },
+            { cx: 0.50, cy: adjY(0.50), tilt: -2, sc: 0.98 },
+          ];
         }
 
-        async function fetchLyricsForPosterTrack(track) {
-          if (!state || !track) return;
-          if (lyricsAbort) { try { lyricsAbort.abort(); } catch {} }
-          lyricsAbort = new AbortController();
-          state.lyricsLoading = true;
-          state.lyricsLines = [];
-          state.selectedLyricIndices = [];
-          renderActiveTabBody();
+        function drawMusicMiniCard(ctx, item, idx, cfg, scaleRef) {
+          const { x, y, cardW, cardH, tiltRad, S } = cfg;
+          const op = Math.max(0.3, Math.min(1, Number(state.cardOpacity || 82) / 100));
+          const rad = Math.max(6, Number(state.cardRadius || 22)) * S * scaleRef;
+          const styleId = state.cardStyle || 'dark_glass';
+          const isLight = styleId === 'light_frost' || styleId === 'polaroid';
+          const covEntry = state.customTrackCovers.get(getTrackKey(item)) || state.trackCovers.get(getTrackKey(item)) || null;
+          const rgb = covEntry?.rgb || [180, 120, 220];
 
-          try {
-            // 1. Check current live lyrics if same track!
-            if (AppState?.currentTrack && String(AppState.currentTrack.id) === String(track.id)) {
-              const liveLines = parseLyricsTextToLines(AppState.syncedLyrics?.length ? AppState.syncedLyrics : AppState.plainLyrics);
-              if (liveLines.length) {
-                state.lyricsLines = liveLines;
-                state.selectedLyricIndices = liveLines.slice(0, 2).map((_, i) => i);
-                state.lyricsLoading = false;
-                renderActiveTabBody();
-                schedulePreviewRender();
-                return;
-              }
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(tiltRad);
+
+          const hx = -cardW / 2;
+          const hy = -cardH / 2;
+
+          const glowPct = Number(state.cardGlow || 0) / 100;
+          if (glowPct > 0.02) {
+            ctx.save();
+            ctx.shadowColor = styleId === 'cover_tint'
+              ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${(0.65 * glowPct).toFixed(3)})`
+              : `rgba(255, 255, 255, ${(0.38 * glowPct).toFixed(3)})`;
+            ctx.shadowBlur = (24 + glowPct * 48) * S * scaleRef;
+            ctx.fillStyle = 'rgba(255,255,255,0.03)';
+            roundedRectPath(ctx, hx, hy, cardW, cardH, rad);
+            ctx.fill();
+            ctx.restore();
+          }
+
+          ctx.save();
+          const shPct = Number(state.shadow3d || 0) / 100;
+          if (shPct > 0.01) {
+            ctx.shadowColor = `rgba(0, 0, 0, ${(0.72 * shPct).toFixed(3)})`;
+            ctx.shadowBlur = (20 + shPct * 42) * S * scaleRef;
+            ctx.shadowOffsetY = (8 + shPct * 18) * S * scaleRef;
+          }
+
+          if (styleId === 'liquid') {
+            const g = ctx.createLinearGradient(hx, hy, hx + cardW, hy + cardH);
+            g.addColorStop(0, `rgba(255, 255, 255, ${(0.24 * op).toFixed(3)})`);
+            g.addColorStop(1, `rgba(255, 255, 255, ${(0.08 * op).toFixed(3)})`);
+            ctx.fillStyle = g;
+          } else if (styleId === 'matte_black') {
+            ctx.fillStyle = `rgba(14, 14, 17, ${Math.max(0.75, op).toFixed(3)})`;
+          } else if (styleId === 'light_frost') {
+            ctx.fillStyle = `rgba(248, 250, 252, ${Math.max(0.68, op).toFixed(3)})`;
+          } else if (styleId === 'polaroid') {
+            ctx.fillStyle = `rgba(247, 244, 236, ${Math.max(0.84, op).toFixed(3)})`;
+          } else if (styleId === 'cover_tint') {
+            const dr = Math.round(rgb[0] * 0.36 + 10);
+            const dg = Math.round(rgb[1] * 0.36 + 10);
+            const db = Math.round(rgb[2] * 0.36 + 14);
+            ctx.fillStyle = `rgba(${dr}, ${dg}, ${db}, ${op.toFixed(3)})`;
+          } else {
+            const g = ctx.createLinearGradient(hx, hy, hx, hy + cardH);
+            g.addColorStop(0, `rgba(28, 30, 40, ${op.toFixed(3)})`);
+            g.addColorStop(1, `rgba(14, 16, 22, ${Math.min(0.96, op + 0.08).toFixed(3)})`);
+            ctx.fillStyle = g;
+          }
+
+          roundedRectPath(ctx, hx, hy, cardW, cardH, rad);
+          ctx.fill();
+          ctx.restore();
+
+          ctx.save();
+          roundedRectPath(ctx, hx, hy, cardW, cardH, rad);
+          const rimGrad = ctx.createLinearGradient(hx, hy, hx, hy + cardH);
+          if (isLight) {
+            rimGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
+            rimGrad.addColorStop(1, 'rgba(0,0,0,0.12)');
+          } else {
+            const rimBoost = 0.24 + glowPct * 0.36;
+            rimGrad.addColorStop(0, `rgba(255, 255, 255, ${Math.min(0.78, rimBoost + 0.16).toFixed(3)})`);
+            rimGrad.addColorStop(1, `rgba(255, 255, 255, ${(rimBoost * 0.45).toFixed(3)})`);
+          }
+          ctx.strokeStyle = rimGrad;
+          ctx.lineWidth = Math.max(1.2, 2.0 * S * scaleRef);
+          ctx.stroke();
+          ctx.restore();
+
+          const pad = cardW * 0.072;
+          const artSize = cardW - pad * 2;
+          const artX = hx + pad;
+          const artY = hy + pad;
+          const artRad = styleId === 'polaroid' ? Math.max(4, rad * 0.35) : Math.max(8, rad * 0.65);
+          drawImageCover(ctx, covEntry?.img || null, artX, artY, artSize, artSize, 100, 0, 0, artRad, idx);
+
+          const textPrimary = isLight ? '#0D0E12' : '#FFFFFF';
+          const textSecondary = isLight ? 'rgba(13,14,18,0.62)' : 'rgba(255,255,255,0.66)';
+          const trackBg = isLight ? 'rgba(13,14,18,0.16)' : 'rgba(255,255,255,0.22)';
+
+          let curY = artY + artSize + cardW * 0.088;
+          const heartReserve = state.showSeekHeart ? cardW * 0.12 : 0;
+          ctx.save();
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillStyle = textPrimary;
+          const titlePx = Math.round(cardW * 0.078);
+          ctx.font = `800 ${titlePx}px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+          drawEllipsisText(ctx, cleanTitle(item.title), artX, curY, artSize - heartReserve);
+
+          if (state.showSeekHeart) {
+            drawVectorHeart(ctx, artX + artSize - cardW * 0.045, curY - titlePx * 0.12, cardW * 0.044, textPrimary);
+          }
+
+          if (state.showArtist) {
+            curY += cardW * 0.068;
+            ctx.fillStyle = textSecondary;
+            ctx.font = `600 ${Math.round(cardW * 0.056)}px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+            drawEllipsisText(ctx, String(item.artist?.name || 'SpotyFlow'), artX, curY, artSize - heartReserve * 0.5);
+          }
+          ctx.restore();
+
+          if (state.showSeekHeart) {
+            curY += cardW * 0.066;
+            const barH = Math.max(2.5, cardW * 0.015);
+            const prog = 0.34 + ((idx * 17 + (state.sparkleSeed || 1) * 11) % 41) / 100;
+            ctx.save();
+            ctx.fillStyle = trackBg;
+            roundedRectPath(ctx, artX, curY, artSize, barH, barH / 2);
+            ctx.fill();
+            ctx.fillStyle = textPrimary;
+            roundedRectPath(ctx, artX, curY, artSize * prog, barH, barH / 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(artX + artSize * prog, curY + barH / 2, barH * 1.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+
+          if (state.showControls) {
+            const ctrlY = hy + cardH - cardW * 0.095;
+            drawMiniControls(ctx, 0, ctrlY, cardW * 0.062, textPrimary);
+          }
+
+          if (state.sparkleEnabled && state.sparkleIntensity > 0) {
+            const spAlpha = Math.max(0.15, Number(state.sparkleIntensity || 65) / 100);
+            const spSize = cardW * (0.085 + spAlpha * 0.065);
+            const pattern = (idx + (state.sparkleSeed || 1)) % 3;
+            if (pattern === 0) {
+              drawSparkle4Point(ctx, hx + cardW - rad * 0.15, hy + rad * 0.15, spSize, spAlpha);
+              drawSparkle4Point(ctx, hx + rad * 0.2, hy + cardH - rad * 0.2, spSize * 0.72, spAlpha * 0.82);
+            } else if (pattern === 1) {
+              drawSparkle4Point(ctx, hx + rad * 0.18, hy + rad * 0.18, spSize * 0.92, spAlpha);
+              drawSparkle4Point(ctx, hx + cardW - rad * 0.18, hy + cardH - rad * 0.25, spSize * 0.65, spAlpha * 0.75);
+            } else {
+              drawSparkle4Point(ctx, hx + cardW - rad * 0.18, hy + cardH * 0.28, spSize * 0.85, spAlpha * 0.9);
             }
-            const base = typeof API_BASE === 'string' ? API_BASE : '';
-            const qs = new URLSearchParams({
-              title: cleanTrackTitleForPoster(track.title),
-              artist: String(track.artist?.name || ''),
-              duration: String(Math.round(Number(track.duration || 0))),
-            });
-            const resp = await fetch(`${base}/api/lyrics?${qs.toString()}`, { signal: lyricsAbort.signal });
-            if (!resp.ok) throw new Error('lyrics_fail');
-            const json = await resp.json();
-            const lines = parseLyricsTextToLines(json?.syncedLyrics || json?.plainLyrics || json?.lyrics || '');
-            if (!state || String(state.track?.id) !== String(track.id)) return;
-            state.lyricsLines = lines;
-            state.selectedLyricIndices = lines.slice(0, 2).map((_, i) => i);
-          } catch {}
-          if (state) {
-            state.lyricsLoading = false;
-            renderActiveTabBody();
-            schedulePreviewRender();
           }
+
+          ctx.restore();
         }
 
-        function getActiveQuoteText() {
-          if (!state || !state.showLyrics) return '';
-          if (String(state.customQuote || '').trim()) return String(state.customQuote).trim();
-          if (state.selectedLyricIndices.length && state.lyricsLines.length) {
-            return state.selectedLyricIndices
-              .slice()
-              .sort((a, b) => a - b)
-              .map((idx) => state.lyricsLines[idx])
-              .filter(Boolean)
-              .join('\n');
-          }
-          return '';
-        }
-
-        function getResolvedTextColors(isLightBg) {
-          const mode = state?.textColorMode || 'auto';
-          const light = mode === 'black' ? true : (mode === 'white' ? false : isLightBg);
-          return light
-            ? { primary: '#0B0B0F', secondary: 'rgba(11, 11, 15, 0.65)', subtle: 'rgba(11, 11, 15, 0.44)', rule: 'rgba(11, 11, 15, 0.16)' }
-            : { primary: '#FFFFFF', secondary: 'rgba(255, 255, 255, 0.72)', subtle: 'rgba(255, 255, 255, 0.48)', rule: 'rgba(255, 255, 255, 0.22)' };
-        }
-
-        function renderPosterToCanvas(canvas, fullResolution = false) {
+        function renderAuralysPoster(canvas, isExportHd = false) {
           if (!canvas || !state) return;
           const spec = RATIOS[state.ratio] || RATIOS['9:16'];
-          const W = fullResolution ? spec.w : Math.round(spec.w * 0.45);
-          const H = fullResolution ? spec.h : Math.round(spec.h * 0.45);
-          const S = W / 1080; // Scale factor relative to 1080px HD width
+          const W = isExportHd ? spec.w : Math.round(spec.w * 0.5);
+          const H = isExportHd ? spec.h : Math.round(spec.h * 0.5);
+          const S = Math.min(W, H) / 1080;
 
           if (canvas.width !== W || canvas.height !== H) {
             canvas.width = W;
@@ -34073,436 +34480,124 @@
           const ctx = canvas.getContext('2d');
           ctx.clearRect(0, 0, W, H);
 
-          const useUpload = state.photoSource === 'upload' && state.uploadedImg;
-          const bgImg = (useUpload && (state.photoPlacement === 'background' || state.photoPlacement === 'full_poster'))
-            ? state.uploadedImg
-            : state.coverImg;
-          const fgImg = (useUpload && state.photoPlacement === 'replace_cover')
-            ? state.uploadedImg
-            : state.coverImg;
-          const fullPhotoMode = Boolean(useUpload && state.photoPlacement === 'full_poster');
-          const imgCropOpts = (imgIsUpload) => imgIsUpload
-            ? { zoom: state.zoom, panX: state.panX, panY: state.panY }
-            : { zoom: 100, panX: 0, panY: 0 };
-
-          const pal = state.palette || DEFAULT_PALETTE;
-          const title = String(state.customTitle || state.track?.title || 'SpotyFlow').trim();
-          const artist = String(state.customArtist || state.track?.artist?.name || 'SpotyFlow').trim();
-          const quoteText = getActiveQuoteText();
-          const radius = Number(state.cornerRadius || 28) * S;
-          const fontFam = getFontFamily(state.fontStyle);
-
-          // Determine if background is light
-          const isCreamDefault = state.template === 'editorial' && state.bgMode === 'auto';
-          const isLightBg = (state.bgMode === 'cream') || isCreamDefault;
-
-          // 1. DRAW BACKGROUND
-          const drawSolidOrPhotoBg = (forceFullClearPhoto = false) => {
-            if (forceFullClearPhoto) {
-              drawImageCover(ctx, useUpload ? state.uploadedImg : state.coverImg, 0, 0, W, H, {
-                ...imgCropOpts(useUpload),
-                radius: 0,
-              });
-              // Smooth editorial dark bottom vignette
-              const vig = ctx.createLinearGradient(0, H * 0.28, 0, H);
-              vig.addColorStop(0, `rgba(6, 8, 14, ${Math.min(0.65, (state.bgDimmer / 100) * 0.5)})`);
-              vig.addColorStop(0.62, `rgba(6, 8, 14, ${Math.min(0.88, 0.35 + (state.bgDimmer / 100) * 0.65)})`);
-              vig.addColorStop(1, 'rgba(4, 5, 10, 0.92)');
-              ctx.fillStyle = vig;
+          if (state.bgPhotoImg) {
+            drawBlurredPhotoBackground(ctx, state.bgPhotoImg, W, H, state.bgPhotoZoom, state.bgPhotoPanY, state.bgBlur);
+          } else {
+            const bgDef = BG_MODES.find((b) => b.id === state.bgMode) || BG_MODES[0];
+            if (state.bgMode === 'auto_cover') {
+              const firstTr = state.tracks[0];
+              const cov = firstTr ? (state.customTrackCovers.get(getTrackKey(firstTr)) || state.trackCovers.get(getTrackKey(firstTr))) : null;
+              const rgb = cov?.rgb || [124, 58, 237];
+              ctx.fillStyle = '#09090F';
               ctx.fillRect(0, 0, W, H);
-              return;
-            }
-            if (state.bgMode === 'dark') {
-              ctx.fillStyle = '#09090D';
+              const g1 = ctx.createRadialGradient(W * 0.2, H * 0.22, 10 * S, W * 0.2, H * 0.22, Math.max(W, H) * 0.72);
+              g1.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.82)`);
+              g1.addColorStop(1, 'rgba(9, 9, 15, 0)');
+              ctx.fillStyle = g1;
               ctx.fillRect(0, 0, W, H);
-            } else if (state.bgMode === 'cream' || isCreamDefault) {
-              ctx.fillStyle = '#F4F1EA';
+              const g2 = ctx.createRadialGradient(W * 0.82, H * 0.76, 10 * S, W * 0.82, H * 0.76, Math.max(W, H) * 0.68);
+              g2.addColorStop(0, `rgba(${Math.min(255, rgb[2] + 35)}, ${Math.max(20, rgb[0] - 20)}, ${Math.min(255, rgb[1] + 55)}, 0.58)`);
+              g2.addColorStop(1, 'rgba(9, 9, 15, 0)');
+              ctx.fillStyle = g2;
               ctx.fillRect(0, 0, W, H);
             } else if (state.bgMode === 'custom') {
-              ctx.fillStyle = state.bgCustomColor || '#1E1B4B';
+              const col = state.bgCustomColor || '#2A121C';
+              const g = ctx.createLinearGradient(0, 0, 0, H);
+              g.addColorStop(0, col);
+              g.addColorStop(1, '#09090D');
+              ctx.fillStyle = g;
               ctx.fillRect(0, 0, W, H);
             } else {
-              // Auto Cover / Upload Background with controllable blur & dimmer
-              ctx.save();
-              const blurPx = Math.max(0, Number(state.bgBlur || 0)) * S * 1.4;
-              if (blurPx > 0.5 && typeof ctx.filter === 'string') {
-                ctx.filter = `blur(${blurPx.toFixed(1)}px) saturate(145%)`;
-              }
-              const pad = Math.ceil(blurPx * 2.2);
-              drawImageCover(ctx, bgImg, -pad, -pad, W + pad * 2, H + pad * 2, {
-                ...imgCropOpts(bgImg === state.uploadedImg),
-                radius: 0,
-              });
-              ctx.restore();
-
-              const dimAlpha = Math.max(0, Math.min(0.88, Number(state.bgDimmer || 38) / 100));
-              const shade = ctx.createLinearGradient(0, 0, 0, H);
-              shade.addColorStop(0, `rgba(6, 8, 16, ${Math.max(0.18, dimAlpha * 0.72)})`);
-              shade.addColorStop(1, `rgba(6, 8, 16, ${Math.min(0.92, dimAlpha + 0.16)})`);
-              ctx.fillStyle = shade;
+              const g = ctx.createLinearGradient(0, 0, W * 0.4, H);
+              g.addColorStop(0, bgDef.c1);
+              g.addColorStop(1, bgDef.c2);
+              ctx.fillStyle = g;
               ctx.fillRect(0, 0, W, H);
-            }
-          };
-
-          // Helper: Draw 5-color palette bar
-          const drawPaletteBar = (x, y, totalW, barH) => {
-            if (!state.showPalette) return;
-            const gap = 8 * S;
-            const swW = (totalW - gap * 4) / 5;
-            pal.slice(0, 5).forEach((hex, idx) => {
+              const orb = ctx.createRadialGradient(W * 0.5, H * 0.35, 10 * S, W * 0.5, H * 0.35, Math.max(W, H) * 0.65);
+              orb.addColorStop(0, bgDef.c3);
+              orb.addColorStop(1, 'rgba(0,0,0,0)');
               ctx.save();
-              ctx.fillStyle = hex;
-              roundedRectPath(ctx, x + idx * (swW + gap), y, swW, barH, 6 * S);
-              ctx.fill();
-              ctx.restore();
-            });
-          };
-
-          // Helper: Draw mini seekbar
-          const drawProgressBar = (x, y, barW, colPrimary, colTrack) => {
-            if (!state.showProgress) return;
-            const h = 7 * S;
-            ctx.save();
-            ctx.fillStyle = colTrack;
-            roundedRectPath(ctx, x, y, barW, h, h / 2);
-            ctx.fill();
-            ctx.fillStyle = colPrimary;
-            roundedRectPath(ctx, x, y, barW * 0.42, h, h / 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + barW * 0.42, y + h / 2, 7.5 * S, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-          };
-
-          // Helper: Draw Watermark & Date footer
-          const drawFooterStamp = (colSubtle) => {
-            const padX = 72 * S;
-            const footY = H - 56 * S;
-            ctx.save();
-            ctx.font = `600 ${Math.round(22 * S)}px "JetBrains Mono", monospace`;
-            ctx.fillStyle = colSubtle;
-            if (state.showWatermark) {
-              ctx.textAlign = 'left';
-              ctx.fillText('SPOTYFLOW', padX, footY);
-            }
-            if (state.showDate) {
-              ctx.textAlign = 'right';
-              ctx.fillText(getTodayFormatted(), W - padX, footY);
-            }
-            ctx.restore();
-          };
-
-          // 2. RENDER TEMPLATE
-          const tpl = fullPhotoMode ? 'photo_quote' : state.template;
-
-          if (tpl === 'photo_quote') {
-            drawSolidOrPhotoBg(true);
-            const tc = getResolvedTextColors(false);
-            const padX = 76 * S;
-            const maxW = W - padX * 2;
-
-            // Expressive lyrics/quote in lower third
-            const badgeH = 112 * S;
-            const badgeY = H - 110 * S - badgeH;
-            if (quoteText) {
-              ctx.save();
-              ctx.fillStyle = tc.primary;
-              ctx.font = `800 ${Math.round((state.ratio === '1:1' ? 48 : 58) * S)}px ${fontFam}`;
-              ctx.shadowColor = 'rgba(0,0,0,0.45)';
-              ctx.shadowBlur = 24 * S;
-              const lineCount = Math.min(4, quoteText.split('\n').length + 1);
-              const lh = Math.round((state.ratio === '1:1' ? 62 : 74) * S);
-              const quoteStartY = Math.max(H * 0.32, badgeY - 70 * S - lineCount * lh);
-              drawWrappedLines(ctx, `“${quoteText}”`, padX, quoteStartY, maxW, lh, 4, 'left');
+              ctx.globalAlpha = 0.45;
+              ctx.fillStyle = orb;
+              ctx.fillRect(0, 0, W, H);
               ctx.restore();
             }
-
-            // Mini glass track badge
-            ctx.save();
-            ctx.fillStyle = 'rgba(255,255,255,0.13)';
-            roundedRectPath(ctx, padX, badgeY, maxW, badgeH, 24 * S);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.28)';
-            ctx.lineWidth = 2 * S;
-            ctx.stroke();
-            ctx.restore();
-
-            const thumbS = 78 * S;
-            drawImageCover(ctx, state.coverImg, padX + 17 * S, badgeY + 17 * S, thumbS, thumbS, { radius: 14 * S });
-            ctx.save();
-            ctx.fillStyle = tc.primary;
-            ctx.font = `800 ${Math.round(30 * S)}px ${fontFam}`;
-            drawWrappedLines(ctx, title, padX + thumbS + 34 * S, badgeY + 52 * S, maxW - thumbS - 56 * S, 36 * S, 1, 'left');
-            ctx.fillStyle = tc.secondary;
-            ctx.font = `600 ${Math.round(23 * S)}px ${fontFam}`;
-            drawWrappedLines(ctx, artist, padX + thumbS + 34 * S, badgeY + 86 * S, maxW - thumbS - 56 * S, 30 * S, 1, 'left');
-            ctx.restore();
-
-            if (state.showPalette) {
-              drawPaletteBar(padX, badgeY - 30 * S, 220 * S, 12 * S);
-            }
-            drawFooterStamp(tc.subtle);
-
-          } else if (tpl === 'editorial') {
-            drawSolidOrPhotoBg(false);
-            const tc = getResolvedTextColors(isLightBg);
-            const padX = 82 * S;
-            const innerW = W - padX * 2;
-            const topY = (state.ratio === '1:1' ? 64 : 96) * S;
-
-            // Top Magazine Masthead
-            ctx.save();
-            ctx.fillStyle = tc.subtle;
-            ctx.font = `700 ${Math.round(20 * S)}px "JetBrains Mono", monospace`;
-            ctx.textAlign = 'left';
-            ctx.fillText('ISSUE NO. 02 • AUDIO ARCHIVE', padX, topY);
-            ctx.textAlign = 'right';
-            ctx.fillText(getTodayFormatted(), W - padX, topY);
-            ctx.strokeStyle = tc.rule;
-            ctx.lineWidth = 2 * S;
-            ctx.beginPath();
-            ctx.moveTo(padX, topY + 20 * S);
-            ctx.lineTo(W - padX, topY + 20 * S);
-            ctx.stroke();
-            ctx.restore();
-
-            // Big Square Cover
-            const artSize = Math.min(innerW, state.ratio === '1:1' ? 500 * S : (state.ratio === '4:5' ? 680 * S : 840 * S));
-            const artX = (W - artSize) / 2;
-            const artY = topY + 46 * S;
-            drawImageCover(ctx, fgImg, artX, artY, artSize, artSize, {
-              ...imgCropOpts(fgImg === state.uploadedImg),
-              radius: Math.min(radius, 24 * S),
-            });
-
-            // 5-Color Palette Swatch Bar
-            let curY = artY + artSize + 28 * S;
-            if (state.showPalette) {
-              drawPaletteBar(artX, curY, artSize, 22 * S);
-              curY += 46 * S;
-            } else {
-              curY += 16 * S;
-            }
-
-            // Editorial Serif Headline + Tracked Artist
-            ctx.save();
-            ctx.fillStyle = tc.primary;
-            const edFont = state.fontStyle === 'mono' ? getFontFamily('mono') : 'Georgia, "Times New Roman", serif';
-            ctx.font = `700 ${Math.round((state.ratio === '1:1' ? 54 : 68) * S)}px ${edFont}`;
-            curY = drawWrappedLines(ctx, title, padX, curY + 42 * S, innerW, Math.round((state.ratio === '1:1' ? 62 : 76) * S), 2, 'left');
-            ctx.fillStyle = tc.secondary;
-            ctx.font = `700 ${Math.round(24 * S)}px "JetBrains Mono", monospace`;
-            curY = drawWrappedLines(ctx, artist.toUpperCase(), padX, curY + 12 * S, innerW, 34 * S, 1, 'left');
-            ctx.restore();
-
-            if (quoteText && state.ratio !== '1:1') {
-              ctx.save();
-              ctx.fillStyle = tc.secondary;
-              ctx.font = `italic ${Math.round(28 * S)}px Georgia, serif`;
-              curY = drawWrappedLines(ctx, `“${quoteText}”`, padX, curY + 26 * S, innerW, 40 * S, 3, 'left');
-              ctx.restore();
-            }
-
-            // Vector Editorial Barcode + Watermark
-            const barY = H - 122 * S;
-            ctx.save();
-            ctx.strokeStyle = tc.rule;
-            ctx.lineWidth = 2 * S;
-            ctx.beginPath();
-            ctx.moveTo(padX, barY - 22 * S);
-            ctx.lineTo(W - padX, barY - 22 * S);
-            ctx.stroke();
-            ctx.fillStyle = tc.primary;
-            let bx = padX;
-            const pattern = [4, 2, 6, 2, 3, 5, 2, 7, 3, 2, 5, 3, 6, 2, 4, 3, 2, 6, 4, 2];
-            for (let i = 0; i < pattern.length; i++) {
-              const bw = pattern[i] * 2.2 * S;
-              if (i % 2 === 0) ctx.fillRect(bx, barY, bw, 52 * S);
-              bx += bw + 3 * S;
-            }
-            if (state.showWatermark) {
-              ctx.fillStyle = tc.subtle;
-              ctx.font = `700 ${Math.round(22 * S)}px "JetBrains Mono", monospace`;
-              ctx.textAlign = 'right';
-              ctx.fillText('SPOTYFLOW HI-FI', W - padX, barY + 34 * S);
-            }
-            ctx.restore();
-
-          } else if (tpl === 'lyric_card') {
-            drawSolidOrPhotoBg(false);
-            const tc = getResolvedTextColors(isLightBg);
-            const padX = 86 * S;
-            const innerW = W - padX * 2;
-            const topY = (state.ratio === '1:1' ? 88 : 136) * S;
-
-            // Header Mini Cover + Title + Artist
-            const miniS = 112 * S;
-            drawImageCover(ctx, fgImg, padX, topY, miniS, miniS, {
-              ...imgCropOpts(fgImg === state.uploadedImg),
-              radius: Math.min(radius, 22 * S),
-            });
-            ctx.save();
-            ctx.fillStyle = tc.primary;
-            ctx.font = `800 ${Math.round(36 * S)}px ${fontFam}`;
-            drawWrappedLines(ctx, title, padX + miniS + 28 * S, topY + 46 * S, innerW - miniS - 28 * S, 42 * S, 1, 'left');
-            ctx.fillStyle = tc.secondary;
-            ctx.font = `600 ${Math.round(26 * S)}px ${fontFam}`;
-            drawWrappedLines(ctx, artist, padX + miniS + 28 * S, topY + 88 * S, innerW - miniS - 28 * S, 32 * S, 1, 'left');
-            ctx.restore();
-
-            // Big Bold Left-Aligned Lyrics Hero
-            const lyrText = quoteText || `${title}\n— ${artist}`;
-            const lyrFontSize = Math.round((state.ratio === '1:1' ? 56 : 68) * S);
-            const lyrLineH = Math.round(lyrFontSize * 1.28);
-            const midY = state.ratio === '1:1' ? H * 0.42 : H * 0.36;
-            ctx.save();
-            ctx.fillStyle = tc.primary;
-            ctx.font = `800 ${lyrFontSize}px ${fontFam}`;
-            drawWrappedLines(ctx, lyrText, padX, midY, innerW, lyrLineH, 4, 'left');
-            ctx.restore();
-
-            if (state.showProgress) {
-              drawProgressBar(padX, H - 156 * S, innerW, tc.primary, tc.rule);
-            }
-            if (state.showPalette) {
-              drawPaletteBar(padX, H - 118 * S, 240 * S, 12 * S);
-            }
-            drawFooterStamp(tc.subtle);
-
-          } else if (tpl === 'polaroid') {
-            drawSolidOrPhotoBg(false);
-            const tcFrame = { primary: '#111114', secondary: 'rgba(17,17,20,0.62)', subtle: 'rgba(17,17,20,0.42)' };
-            const frameW = Math.round((state.ratio === '1:1' ? 760 : 840) * S);
-            const frameH = Math.round(frameW * 1.22);
-            const fx = (W - frameW) / 2;
-            const fy = (H - frameH) / 2 - (state.ratio === '9:16' ? 40 * S : 10 * S);
-
-            ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.52)';
-            ctx.shadowBlur = 52 * S;
-            ctx.shadowOffsetY = 24 * S;
-            ctx.fillStyle = '#F7F5EF';
-            roundedRectPath(ctx, fx, fy, frameW, frameH, 16 * S);
-            ctx.fill();
-            ctx.restore();
-
-            const inset = 42 * S;
-            const photoSize = frameW - inset * 2;
-            drawImageCover(ctx, fgImg, fx + inset, fy + inset, photoSize, photoSize, {
-              ...imgCropOpts(fgImg === state.uploadedImg),
-              radius: Math.min(radius, 14 * S),
-            });
-
-            const textY = fy + inset + photoSize + 64 * S;
-            ctx.save();
-            ctx.fillStyle = tcFrame.primary;
-            ctx.font = `700 ${Math.round(38 * S)}px ${state.fontStyle === 'mono' ? getFontFamily('mono') : 'Georgia, serif'}`;
-            drawWrappedLines(ctx, title, fx + inset, textY, photoSize, 46 * S, 1, 'left');
-            ctx.fillStyle = tcFrame.secondary;
-            ctx.font = `600 ${Math.round(24 * S)}px ${fontFam}`;
-            drawWrappedLines(ctx, artist, fx + inset, textY + 42 * S, photoSize - 170 * S, 30 * S, 1, 'left');
-            if (state.showDate) {
-              ctx.fillStyle = tcFrame.subtle;
-              ctx.font = `600 ${Math.round(20 * S)}px "JetBrains Mono", monospace`;
-              ctx.textAlign = 'right';
-              ctx.fillText(getTodayFormatted(), fx + frameW - inset, textY + 42 * S);
-            }
-            ctx.restore();
-
-            if (quoteText && state.ratio === '9:16') {
-              const tcOut = getResolvedTextColors(isLightBg);
-              ctx.save();
-              ctx.fillStyle = tcOut.primary;
-              ctx.font = `600 ${Math.round(30 * S)}px ${fontFam}`;
-              drawWrappedLines(ctx, `“${quoteText}”`, 96 * S, fy + frameH + 86 * S, W - 192 * S, 42 * S, 2, 'center');
-              ctx.restore();
-            }
-            drawFooterStamp(getResolvedTextColors(isLightBg).subtle);
-
-          } else {
-            // DEFAULT: 'glass' — LIQUID GLASS CARD (Auralys Signature)
-            drawSolidOrPhotoBg(false);
-            const tc = getResolvedTextColors(isLightBg);
-            const cardW = Math.round((state.ratio === '1:1' ? 860 : 880) * S);
-            const cardPad = 48 * S;
-            const artSize = Math.min(cardW - cardPad * 2, state.ratio === '1:1' ? 460 * S : (state.ratio === '4:5' ? 620 * S : 740 * S));
-            const extraQuoteH = quoteText ? (state.ratio === '1:1' ? 92 * S : 148 * S) : 0;
-            const cardH = Math.min(H - 180 * S, artSize + cardPad * 2 + 250 * S + extraQuoteH);
-            const cx = (W - cardW) / 2;
-            const cy = (H - cardH) / 2 - 12 * S;
-
-            // Optical Specular Glass Card
-            ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.48)';
-            ctx.shadowBlur = 54 * S;
-            ctx.shadowOffsetY = 26 * S;
-            const cardGrad = ctx.createLinearGradient(cx, cy, cx + cardW, cy + cardH);
-            if (isLightBg) {
-              cardGrad.addColorStop(0, 'rgba(255,255,255,0.72)');
-              cardGrad.addColorStop(1, 'rgba(255,255,255,0.44)');
-            } else {
-              cardGrad.addColorStop(0, 'rgba(255,255,255,0.18)');
-              cardGrad.addColorStop(1, 'rgba(255,255,255,0.06)');
-            }
-            ctx.fillStyle = cardGrad;
-            roundedRectPath(ctx, cx, cy, cardW, cardH, Math.max(24 * S, radius));
-            ctx.fill();
-            ctx.strokeStyle = isLightBg ? 'rgba(0,0,0,0.14)' : 'rgba(255,255,255,0.32)';
-            ctx.lineWidth = 2.5 * S;
-            ctx.stroke();
-            ctx.restore();
-
-            // Cover Art inside Glass Card
-            const ax = (W - artSize) / 2;
-            const ay = cy + cardPad;
-            ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.42)';
-            ctx.shadowBlur = 32 * S;
-            ctx.shadowOffsetY = 14 * S;
-            drawImageCover(ctx, fgImg, ax, ay, artSize, artSize, {
-              ...imgCropOpts(fgImg === state.uploadedImg),
-              radius: radius,
-            });
-            ctx.restore();
-
-            // Title & Artist
-            let ty = ay + artSize + 58 * S;
-            ctx.save();
-            ctx.fillStyle = tc.primary;
-            ctx.font = `800 ${Math.round(44 * S)}px ${fontFam}`;
-            ty = drawWrappedLines(ctx, title, cx + cardPad, ty, cardW - cardPad * 2, 52 * S, 1, 'left');
-            ctx.fillStyle = tc.secondary;
-            ctx.font = `600 ${Math.round(28 * S)}px ${fontFam}`;
-            ty = drawWrappedLines(ctx, artist, cx + cardPad, ty + 8 * S, cardW - cardPad * 2, 34 * S, 1, 'left');
-            ctx.restore();
-
-            // Mini Seekbar
-            if (state.showProgress) {
-              drawProgressBar(cx + cardPad, ty + 20 * S, cardW - cardPad * 2, tc.primary, tc.rule);
-              ty += 48 * S;
-            }
-            // Optional Palette Bar
-            if (state.showPalette) {
-              drawPaletteBar(cx + cardPad, ty + 14 * S, 240 * S, 12 * S);
-              ty += 34 * S;
-            }
-            // Optional Lyric Quote
-            if (quoteText) {
-              ctx.save();
-              ctx.fillStyle = tc.secondary;
-              ctx.font = `600 ${Math.round(27 * S)}px ${fontFam}`;
-              drawWrappedLines(ctx, `“${quoteText}”`, cx + cardPad, ty + 32 * S, cardW - cardPad * 2, 38 * S, state.ratio === '1:1' ? 2 : 3, 'left');
-              ctx.restore();
-            }
-
-            drawFooterStamp(tc.subtle);
           }
 
-          // 3. OPTIONAL SUBTLE FILM GRAIN OVERLAY
+          const darkAlpha = Math.max(0, Math.min(0.92, Number(state.bgDarkness || 0) / 100));
+          if (darkAlpha > 0.005) {
+            ctx.fillStyle = `rgba(4, 5, 10, ${darkAlpha.toFixed(3)})`;
+            ctx.fillRect(0, 0, W, H);
+          }
+
+          const vigPct = Math.max(0, Math.min(1, Number(state.vignette || 0) / 100));
+          if (vigPct > 0.01) {
+            const vig = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.72);
+            vig.addColorStop(0, 'rgba(0,0,0,0)');
+            vig.addColorStop(1, `rgba(0,0,0,${(vigPct * 0.78).toFixed(3)})`);
+            ctx.fillStyle = vig;
+            ctx.fillRect(0, 0, W, H);
+          }
+
+          const hdr = String(state.headerText || '').trim();
+          const isCreamBg = !state.bgPhotoImg && state.bgMode === 'cream';
+          if (hdr) {
+            ctx.save();
+            ctx.fillStyle = isCreamBg ? '#111114' : '#FFFFFF';
+            ctx.font = `800 ${Math.round(54 * S)}px "Plus Jakarta Sans", system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.shadowColor = 'rgba(0,0,0,0.45)';
+            ctx.shadowBlur = 18 * S;
+            drawEllipsisText(ctx, hdr, W / 2, (state.ratio === '16:9' ? 38 : 66) * S, W - 120 * S);
+            ctx.restore();
+          }
+
+          const activeTracks = state.tracks.length ? state.tracks.slice(0, 5) : [{
+            id: 'placeholder_1',
+            title: 'Pilih 1–5 Lagu',
+            artist: { name: 'Ketuk "Pilih lagu" di atas' },
+          }];
+
+          const placements = computeCardPlacements(activeTracks.length, state.ratio, state.layoutMode, Boolean(hdr));
+          const sizeMult = Math.max(0.7, Math.min(1.3, Number(state.cardSize || 100) / 100));
+          const spaceMult = Math.max(0.7, Math.min(1.3, Number(state.cardSpacing || 100) / 100));
+          const tiltMult = Math.max(0, Math.min(2.4, Number(state.cardTilt ?? 45) / 45));
+
+          const baseCardW = (state.ratio === '16:9' ? 385 : (state.ratio === '1:1' ? 375 : 418)) * S;
+          const cardAspect = state.showControls ? 1.44 : (state.showSeekHeart ? 1.32 : 1.24);
+
+          activeTracks.forEach((tr, idx) => {
+            const p = placements[idx] || placements[0];
+            const spreadCx = 0.5 + (p.cx - 0.5) * spaceMult;
+            const spreadCy = 0.5 + (p.cy - 0.5) * spaceMult;
+            const sc = (p.sc || 1) * sizeMult;
+            const cardW = baseCardW * sc;
+            const cardH = cardW * cardAspect;
+            const tiltRad = ((p.tilt || 0) * tiltMult * Math.PI) / 180;
+            drawMusicMiniCard(ctx, tr, idx, {
+              x: spreadCx * W,
+              y: spreadCy * H,
+              cardW,
+              cardH,
+              tiltRad,
+              S,
+            }, sc);
+          });
+
+          if (state.showWatermark) {
+            ctx.save();
+            ctx.font = `700 ${Math.round(22 * S)}px "JetBrains Mono", monospace`;
+            ctx.fillStyle = isCreamBg ? 'rgba(17,17,20,0.46)' : 'rgba(255,255,255,0.48)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('SPOTYFLOW', W / 2, H - 34 * S);
+            ctx.restore();
+          }
+
           if (state.filmGrain) {
             ctx.save();
-            ctx.globalAlpha = 0.22;
+            ctx.globalAlpha = 0.24;
             const pat = ctx.createPattern(getGrainCanvas(), 'repeat');
             if (pat) {
               ctx.fillStyle = pat;
@@ -34513,391 +34608,495 @@
         }
 
         function schedulePreviewRender() {
-          if (previewRaf) cancelAnimationFrame(previewRaf);
+          if (previewRaf) return;
           previewRaf = requestAnimationFrame(() => {
             previewRaf = 0;
             const canvas = document.getElementById('sf-poster-preview-canvas');
-            if (canvas && state) renderPosterToCanvas(canvas, false);
+            if (canvas && state && state.step === 'edit') {
+              renderAuralysPoster(canvas, false);
+            }
           });
         }
 
-        async function selectTrack(track) {
-          if (!state || !track) return;
-          state.track = track;
-          state.customTitle = cleanTrackTitleForPoster(track.title);
-          state.customArtist = String(track.artist?.name || 'SpotyFlow');
-          state.customQuote = '';
-          renderActiveTabBody();
-          schedulePreviewRender();
-
-          const img = await loadCoverImageSafe(track);
-          if (!state || String(state.track?.id) !== String(track.id)) return;
-          state.coverImg = img;
-          state.palette = img ? extractPalette5FromImage(img) : DEFAULT_PALETTE.slice();
-          schedulePreviewRender();
-          fetchLyricsForPosterTrack(track);
-        }
-
-        function handlePhotoUploadFile(inputEl) {
-          const file = inputEl?.files?.[0];
-          if (!file || !state) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            const rawImg = new Image();
-            rawImg.onload = () => {
-              // ANTI-OOM: auto-downscale high-res phone photos (12MP+) to max 1600px!
-              const MAX_DIM = 1600;
-              const scale = Math.min(1, MAX_DIM / Math.max(rawImg.naturalWidth || 1, rawImg.naturalHeight || 1));
-              const rw = Math.max(1, Math.round((rawImg.naturalWidth || 1) * scale));
-              const rh = Math.max(1, Math.round((rawImg.naturalHeight || 1) * scale));
-              const off = document.createElement('canvas');
-              off.width = rw;
-              off.height = rh;
-              off.getContext('2d').drawImage(rawImg, 0, 0, rw, rh);
-              const safeDataUrl = off.toDataURL('image/jpeg', 0.92);
-              const safeImg = new Image();
-              safeImg.onload = () => {
-                if (!state) return;
-                state.uploadedImg = safeImg;
-                state.uploadedThumbUrl = safeDataUrl;
-                state.photoSource = 'upload';
-                state.zoom = 100;
-                state.panX = 0;
-                state.panY = 0;
-                renderActiveTabBody();
-                schedulePreviewRender();
-                if (typeof showToast === 'function') showToast('Foto berhasil dimuat (anti-gepeng HD)!', 'sparkles');
-              };
-              safeImg.src = safeDataUrl;
-            };
-            rawImg.src = String(reader.result || '');
-          };
-          reader.readAsDataURL(file);
-        }
-
-        function triggerLiveTrackSearch(query) {
+        async function hydrateSelectedTrackCovers() {
           if (!state) return;
-          state.searchQuery = String(query || '');
+          const missing = state.tracks.filter((tr) => {
+            const k = getTrackKey(tr);
+            return !state.customTrackCovers.has(k) && !state.trackCovers.has(k);
+          });
+          if (!missing.length) {
+            schedulePreviewRender();
+            return;
+          }
+          state.loadingCovers = true;
+          updateLoadingSpinner();
+          await Promise.all(missing.map(async (tr) => {
+            const k = getTrackKey(tr);
+            const url = typeof getCover === 'function' ? getCover(tr, 'big') : '';
+            const loaded = await loadCoverCached(url);
+            if (state && loaded) {
+              state.trackCovers.set(k, loaded);
+            }
+          }));
+          if (state) {
+            state.loadingCovers = false;
+            updateLoadingSpinner();
+            schedulePreviewRender();
+          }
+        }
+
+        function updateLoadingSpinner() {
+          const sp = document.getElementById('sf-poster-loading-pill');
+          if (sp && state) sp.classList.toggle('hidden', !state.loadingCovers);
+        }
+
+        function toggleTrackSelection(tr) {
+          if (!state || !tr) return;
+          const key = getTrackKey(tr);
+          const idx = state.tracks.findIndex((t) => getTrackKey(t) === key);
+          if (idx >= 0) {
+            state.tracks.splice(idx, 1);
+          } else {
+            if (state.tracks.length >= 5) {
+              if (typeof showToast === 'function') {
+                showToast('Maksimal 5 lagu — hapus 1 lagu dulu untuk mengganti', 'info');
+              }
+              return;
+            }
+            state.tracks.push(tr);
+          }
+          updateHeaderStepPills();
+          renderModalBody();
+          hydrateSelectedTrackCovers();
+        }
+
+        function fillFiveFavoriteTracks() {
+          if (!state) return;
+          const pool = [];
+          const seen = new Set();
+          const pushList = (arr) => {
+            if (!Array.isArray(arr)) return;
+            for (const tr of arr) {
+              if (!tr || !tr.title) continue;
+              const k = getTrackKey(tr);
+              if (seen.has(k)) continue;
+              seen.add(k);
+              pool.push(tr);
+              if (pool.length >= 5) return;
+            }
+          };
+          pushList(AppState?.likedTracks);
+          if (AppState?.currentTrack) pushList([AppState.currentTrack]);
+          pushList(AppState?.recentTracks);
+          pushList(AppState?.queue);
+          if (!pool.length) {
+            if (typeof showToast === 'function') showToast('Belum ada lagu di Disukai/Riwayat. Gunakan tab Cari Lagu!', 'info');
+            return;
+          }
+          state.tracks = pool.slice(0, 5);
+          updateHeaderStepPills();
+          renderModalBody();
+          hydrateSelectedTrackCovers();
+          if (typeof showToast === 'function') showToast(`${state.tracks.length} lagu favorit siap dibuat poster!`, 'sparkles');
+        }
+
+        function triggerLiveSearch(q) {
+          if (!state) return;
+          state.searchQuery = String(q || '');
           if (searchDebounce) clearTimeout(searchDebounce);
-          const q = state.searchQuery.trim();
-          if (q.length < 2) {
+          const trimmed = state.searchQuery.trim();
+          if (trimmed.length < 2) {
             state.searchResults = [];
             state.searchLoading = false;
-            renderTrackListSlot();
+            renderPickListSlot();
             return;
           }
           state.searchLoading = true;
-          renderTrackListSlot();
+          renderPickListSlot();
           searchDebounce = setTimeout(async () => {
             if (searchAbort) { try { searchAbort.abort(); } catch {} }
             searchAbort = new AbortController();
             try {
               const base = typeof API_BASE === 'string' ? API_BASE : '';
-              const resp = await fetch(`${base}/api/search/all?q=${encodeURIComponent(q)}&limit=15`, { signal: searchAbort.signal });
+              const resp = await fetch(`${base}/api/search/all?q=${encodeURIComponent(trimmed)}&limit=18`, { signal: searchAbort.signal });
               const data = await resp.json();
               const list = Array.isArray(data?.tracks) ? data.tracks : (Array.isArray(data?.data) ? data.data : []);
               if (state) {
-                state.searchResults = list.slice(0, 15);
+                state.searchResults = list.slice(0, 18);
                 state.searchLoading = false;
-                renderTrackListSlot();
+                renderPickListSlot();
               }
             } catch {
               if (state) {
                 state.searchLoading = false;
-                renderTrackListSlot();
+                renderPickListSlot();
               }
             }
           }, 350);
         }
 
-        function getTrackListForSource() {
+        function getPickSourceTracks() {
           if (!state) return [];
-          if (state.trackSource === 'current') return AppState?.currentTrack ? [AppState.currentTrack] : [];
-          if (state.trackSource === 'liked') return Array.isArray(AppState?.likedTracks) ? AppState.likedTracks.slice(0, 40) : [];
-          if (state.trackSource === 'recent') return Array.isArray(AppState?.recentTracks) ? AppState.recentTracks.slice(0, 40) : [];
+          if (state.pickTab === 'liked') return Array.isArray(AppState?.likedTracks) ? AppState.likedTracks.slice(0, 60) : [];
+          if (state.pickTab === 'recent') return Array.isArray(AppState?.recentTracks) ? AppState.recentTracks.slice(0, 60) : [];
+          if (state.pickTab === 'current') {
+            const out = [];
+            const seen = new Set();
+            const add = (t) => { if (t && !seen.has(getTrackKey(t))) { seen.add(getTrackKey(t)); out.push(t); } };
+            add(AppState?.currentTrack);
+            (Array.isArray(AppState?.queue) ? AppState.queue : []).forEach(add);
+            return out.slice(0, 40);
+          }
           return Array.isArray(state.searchResults) ? state.searchResults : [];
         }
 
-        function renderTrackListSlot() {
-          const slot = document.getElementById('sf-poster-track-list');
+        function renderPickListSlot() {
+          const slot = document.getElementById('sf-au-pick-list');
           if (!slot || !state) return;
-          if (state.trackSource === 'search' && state.searchLoading) {
-            slot.innerHTML = `<p class="text-xs text-white/55 text-center py-6">Mencari lagu...</p>`;
+          if (state.pickTab === 'search' && state.searchLoading) {
+            slot.innerHTML = `<p class="text-xs text-white/55 text-center py-8">Mencari lagu...</p>`;
             return;
           }
-          const list = getTrackListForSource();
+          const list = getPickSourceTracks();
           if (!list.length) {
-            const msg = state.trackSource === 'search'
-              ? (state.searchQuery.trim().length < 2 ? 'Ketik judul lagu atau nama artis di atas (tidak memutus musik yang sedang diputar).' : 'Tidak ada lagu ditemukan.')
-              : 'Belum ada lagu di daftar ini.';
-            slot.innerHTML = `<p class="text-xs text-white/45 text-center py-6">${esc(msg)}</p>`;
+            const msg = state.pickTab === 'search'
+              ? (state.searchQuery.trim().length < 2 ? 'Ketik judul lagu atau nama artis di atas (tidak mengganggu musik yang sedang diputar).' : 'Lagu tidak ditemukan.')
+              : 'Belum ada lagu di daftar ini. Coba tab lain atau Cari Lagu.';
+            slot.innerHTML = `<p class="text-xs text-white/45 text-center py-8">${esc(msg)}</p>`;
             return;
           }
-          window.__sf201PosterTrackList = list;
-          slot.innerHTML = list.map((tr, idx) => {
-            const isSel = state.track && String(state.track.id) === String(tr.id);
+          window.__sf201AuPickList = list;
+          slot.innerHTML = list.map((tr, i) => {
+            const k = getTrackKey(tr);
+            const selPos = state.tracks.findIndex((t) => getTrackKey(t) === k);
+            const isSel = selPos >= 0;
             const cov = typeof getCover === 'function' ? getCover(tr, 'small') : '/icon-192.png';
             return `
-              <button type="button" onclick="window.SF201.posterStudio._pickIndex(${idx})" class="w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-white/15 border-white/40' : 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.09]'}">
+              <button type="button" onclick="window.SF201.posterStudio._togglePickIdx(${i})" class="w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-white/14 border-white/45' : 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08]'}">
                 <img src="${esc(cov)}" onerror="this.src='/icon-192.png'" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-black/40" referrerpolicy="no-referrer" />
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-bold text-white truncate">${esc(tr.title || 'Tanpa Judul')}</p>
-                  <p class="text-[11px] text-white/60 truncate">${esc(tr.artist?.name || 'SpotyFlow')}</p>
+                  <p class="text-[11px] text-white/55 truncate">${esc(tr.artist?.name || 'SpotyFlow')}</p>
                 </div>
-                ${isSel ? `<span class="px-2 py-0.5 rounded-full bg-white text-black font-mono text-[9.5px] font-bold shrink-0">DIPILIH</span>` : ''}
+                <span class="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-extrabold shrink-0 border transition-all ${isSel ? 'bg-white text-black border-white shadow' : 'bg-white/[0.06] text-white/40 border-white/20'}">${isSel ? (selPos + 1) : '+'}</span>
               </button>
             `;
           }).join('');
         }
 
-        function renderActiveTabBody() {
-          const body = document.getElementById('sf-poster-tab-body');
-          if (!body || !state) return;
+        function updateHeaderStepPills() {
+          if (!state) return;
+          const pickBtn = document.getElementById('sf-au-step-pick');
+          const editBtn = document.getElementById('sf-au-step-edit');
+          if (pickBtn) {
+            pickBtn.textContent = `🎵 Pilih lagu (${state.tracks.length}/5)`;
+            pickBtn.className = state.step === 'pick'
+              ? 'px-3 py-1.5 rounded-full text-[11px] font-bold bg-white text-black transition-all'
+              : 'px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/70 hover:text-white transition-all';
+          }
+          if (editBtn) {
+            editBtn.className = state.step === 'edit'
+              ? 'px-3 py-1.5 rounded-full text-[11px] font-bold bg-white text-black transition-all'
+              : 'px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/70 hover:text-white transition-all';
+          }
+        }
 
-          // Highlight active tab buttons
-          document.querySelectorAll('[data-poster-tab]').forEach((btn) => {
-            const isAct = btn.getAttribute('data-poster-tab') === state.activeTab;
-            btn.className = isAct
-              ? 'flex-1 py-2 rounded-full text-[11.5px] font-bold bg-white text-black transition-all shadow'
-              : 'flex-1 py-2 rounded-full text-[11.5px] font-semibold text-white/65 hover:text-white transition-all';
+        function sliderHtml(key, label, min, max, val, suffix = '%') {
+          const pct = Math.max(0, Math.min(100, ((Number(val) - min) / (max - min)) * 100));
+          const lblId = `sf-au-val-${key}`;
+          return `
+            <div class="sf-au-slider-row">
+              <div class="sf-au-slider-head">
+                <span>${label}</span>
+                <span id="${lblId}" class="sf-au-slider-val">${val}${suffix}</span>
+              </div>
+              <input type="range" min="${min}" max="${max}" value="${val}" style="--val-pct:${pct.toFixed(1)}%;" class="sf-auralys-slider"
+                oninput="window.SF201.posterStudio._onSlider('${key}', this, ${min}, ${max}, '${lblId}', '${suffix}')" />
+            </div>
+          `;
+        }
+
+        function renderEditTabPanel() {
+          const panel = document.getElementById('sf-au-tab-panel');
+          if (!panel || !state) return;
+
+          document.querySelectorAll('[data-au-tab]').forEach((b) => {
+            b.classList.toggle('sf-au-pill-active', b.getAttribute('data-au-tab') === state.activeTab);
           });
 
-          if (state.activeTab === 'track') {
-            const subPill = (id, label) => {
-              const act = state.trackSource === id;
-              return `<button type="button" onclick="window.SF201.posterStudio._setTrackSource('${id}')" class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap border transition-all ${act ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-white/75 border-white/12'}">${label}</button>`;
-            };
-            body.innerHTML = `
-              <div class="space-y-3">
-                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-                  ${subPill('current', 'Sedang Diputar')}
-                  ${subPill('liked', 'Lagu Disukai')}
-                  ${subPill('recent', 'Riwayat')}
-                  ${subPill('search', '🔍 Cari Lagu')}
-                </div>
-                ${state.trackSource === 'search' ? `
-                  <input id="sf-poster-search-input" type="search" value="${esc(state.searchQuery)}" oninput="window.SF201.posterStudio._onSearch(this.value)" placeholder="Cari judul lagu atau artis..." class="w-full h-10 px-3.5 rounded-xl bg-white/[0.08] border border-white/15 focus:border-white/40 text-xs text-white placeholder-white/40 outline-none" />
-                ` : ''}
-                <div id="sf-poster-track-list" class="space-y-1.5"></div>
-              </div>
-            `;
-            renderTrackListSlot();
-            return;
-          }
-
-          if (state.activeTab === 'photo') {
-            const hasUp = Boolean(state.uploadedImg);
-            const placeBtn = (id, label, desc) => {
-              const act = state.photoPlacement === id;
-              return `
-                <button type="button" onclick="window.SF201.posterStudio._set('photoPlacement','${id}')" class="p-2.5 rounded-2xl border text-left transition-all ${act ? 'bg-white text-black border-white' : 'bg-white/[0.06] text-white border-white/12'}">
-                  <p class="text-xs font-bold">${label}</p>
-                  <p class="text-[10px] ${act ? 'text-black/70' : 'text-white/55'} mt-0.5">${desc}</p>
-                </button>
-              `;
-            };
-            body.innerHTML = `
+          if (state.activeTab === 'foto') {
+            const hasBg = Boolean(state.bgPhotoImg);
+            panel.innerHTML = `
               <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-2.5">
-                  <button type="button" onclick="window.SF201.posterStudio._set('photoSource','cover')" class="p-3 rounded-2xl border text-left transition-all ${state.photoSource === 'cover' ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.06] text-white border-white/12'}">
-                    <p class="text-sm font-bold">🎵 Sampul Lagu Asli</p>
-                    <p class="text-[10.5px] ${state.photoSource === 'cover' ? 'text-black/65' : 'text-white/55'} mt-0.5">Artwork resmi lagu pilihan</p>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <button type="button" onclick="document.getElementById('sf-au-bg-photo-input')?.click()" class="sf-au-pill sf-au-pill-active">
+                    <span>🖼️</span><span>${hasBg ? 'Ganti foto latar' : 'Pilih foto'}</span>
                   </button>
-                  <button type="button" onclick="document.getElementById('sf-poster-photo-input')?.click()" class="p-3 rounded-2xl border text-left transition-all ${state.photoSource === 'upload' && hasUp ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.06] text-white border-white/12'}">
-                    <p class="text-sm font-bold">📷 Upload Foto Sendiri</p>
-                    <p class="text-[10.5px] ${state.photoSource === 'upload' && hasUp ? 'text-black/65' : 'text-white/55'} mt-0.5">Dari galeri HP (auto-HD aman)</p>
-                  </button>
+                  ${hasBg ? `
+                    <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.08] border border-white/15">
+                      <img src="${esc(state.bgPhotoThumb)}" alt="" class="w-6 h-6 rounded-full object-cover" />
+                      <span class="text-[11px] font-semibold text-white/85">Foto Galeri</span>
+                      <button type="button" onclick="window.SF201.posterStudio._clearBgPhoto()" class="text-[11px] font-bold text-rose-300 hover:text-rose-200 pl-1">Hapus</button>
+                    </div>
+                  ` : `<span class="text-[11px] text-white/50">Unggah foto galeri HP sebagai latar poster</span>`}
                 </div>
-                <input id="sf-poster-photo-input" type="file" accept="image/*" class="hidden" onchange="window.SF201.posterStudio._onPhotoFile(this)" />
-                ${hasUp ? `
-                  <div class="flex items-center justify-between gap-3 p-2.5 rounded-2xl bg-white/[0.06] border border-white/12">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                      <img src="${esc(state.uploadedThumbUrl)}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0" />
-                      <div class="min-w-0">
-                        <p class="text-xs font-bold text-white truncate">Foto Galeri Kamu</p>
-                        <p class="text-[10.5px] text-white/55">Siap diatur anti-gepeng</p>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                      <button type="button" onclick="document.getElementById('sf-poster-photo-input')?.click()" class="px-2.5 py-1.5 rounded-xl bg-white/12 text-[11px] font-bold text-white">Ganti</button>
-                      <button type="button" onclick="window.SF201.posterStudio._clearPhoto()" class="px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-[11px] font-bold text-rose-300">Hapus</button>
-                    </div>
+                <input id="sf-au-bg-photo-input" type="file" accept="image/*" class="hidden" onchange="window.SF201.posterStudio._onBgPhotoFile(this)" />
+                ${hasBg ? `
+                  <div class="space-y-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10">
+                    ${sliderHtml('bgPhotoZoom', 'Zoom Foto', 100, 200, state.bgPhotoZoom, '%')}
+                    ${sliderHtml('bgPhotoPanY', 'Posisi Vertikal (Y)', -50, 50, state.bgPhotoPanY, '%')}
                   </div>
-                  <div class="space-y-2">
-                    <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Mode Penempatan Foto</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      ${placeBtn('replace_cover', 'Ganti Sampul', 'Foto masuk bingkai album')}
-                      ${placeBtn('background', 'Jadi Latar Belakang', 'Foto di belakang + sampul asli')}
-                      ${placeBtn('full_poster', 'Foto Penuh', '100% kanvas + lirik & badge')}
-                    </div>
-                  </div>
-                  <div class="space-y-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/10">
-                    <div class="flex items-center justify-between">
-                      <p class="font-mono text-[10px] uppercase tracking-wider text-white/55">Kontrol Posisi Foto</p>
-                      <button type="button" onclick="window.SF201.posterStudio._resetCrop()" class="text-[11px] font-bold text-white underline">Pusatkan Ulang</button>
-                    </div>
-                    <label class="block text-[11px] text-white/75">Zoom: <span id="sf-lbl-zoom" class="font-mono font-bold text-white">${state.zoom}%</span>
-                      <input type="range" min="100" max="220" value="${state.zoom}" oninput="window.SF201.posterStudio._setRange('zoom', this.value, 'sf-lbl-zoom', '%')" class="w-full accent-white mt-1" />
-                    </label>
-                    <label class="block text-[11px] text-white/75">Geser Horizontal (X): <span id="sf-lbl-panx" class="font-mono font-bold text-white">${state.panX}%</span>
-                      <input type="range" min="-100" max="100" value="${state.panX}" oninput="window.SF201.posterStudio._setRange('panX', this.value, 'sf-lbl-panx', '%')" class="w-full accent-white mt-1" />
-                    </label>
-                    <label class="block text-[11px] text-white/75">Geser Vertikal (Y): <span id="sf-lbl-pany" class="font-mono font-bold text-white">${state.panY}%</span>
-                      <input type="range" min="-100" max="100" value="${state.panY}" oninput="window.SF201.posterStudio._setRange('panY', this.value, 'sf-lbl-pany', '%')" class="w-full accent-white mt-1" />
-                    </label>
-                  </div>
-                ` : `<p class="text-[11.5px] text-white/50 text-center py-3">Upload foto sendiri dari galeri HP untuk mengaktifkan kontrol penempatan, Zoom, dan Geser X/Y.</p>`}
+                ` : ''}
+                <div class="space-y-3.5 pt-1">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">Latar</p>
+                  ${sliderHtml('bgDarkness', 'Gelap', 0, 90, state.bgDarkness, '%')}
+                  ${sliderHtml('bgBlur', 'Kabur', 0, 100, state.bgBlur, '%')}
+                  ${sliderHtml('cardGlow', 'Cahaya kartu', 0, 100, state.cardGlow, '%')}
+                </div>
               </div>
             `;
             return;
           }
 
-          if (state.activeTab === 'style') {
-            body.innerHTML = `
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                ${TEMPLATES.map((tpl) => {
-                  const act = state.template === tpl.id;
-                  return `
-                    <button type="button" onclick="window.SF201.posterStudio._set('template','${tpl.id}')" class="p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${act ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.06] text-white border-white/12 hover:bg-white/[0.1]'}">
-                      <span class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${act ? 'bg-black/10' : 'bg-white/10'}">${tpl.icon}</span>
-                      <div class="min-w-0">
-                        <p class="text-xs font-extrabold">${esc(tpl.name)}</p>
-                        <p class="text-[10.5px] ${act ? 'text-black/70' : 'text-white/55'} mt-0.5">${esc(tpl.desc)}</p>
-                      </div>
-                    </button>
-                  `;
-                }).join('')}
+          if (state.activeTab === 'kartu') {
+            const layoutOpt = (id, icon, name) => `
+              <button type="button" onclick="window.SF201.posterStudio._set('layoutMode','${id}')" class="sf-au-card-opt ${state.layoutMode === id ? 'sf-au-card-opt-active' : ''}">
+                <p class="text-xs font-extrabold">${icon} ${name}</p>
+              </button>
+            `;
+            const togglePill = (key, label) => `
+              <button type="button" onclick="window.SF201.posterStudio._toggle('${key}')" class="sf-au-pill ${state[key] ? 'sf-au-pill-active' : ''}">${state[key] ? '✓ ' : ''}${label}</button>
+            `;
+            panel.innerHTML = `
+              <div class="space-y-4">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <button type="button" onclick="window.SF201.posterStudio._setStep('pick')" class="sf-au-pill sf-au-pill-active">
+                    <span>🎵</span><span>Atur Lagu (${state.tracks.length}/5 dipilih)</span>
+                  </button>
+                  <button type="button" onclick="window.SF201.posterStudio._fillFiveFav()" class="sf-au-pill">🎲 Isi 5 Favorit</button>
+                </div>
+                <div class="space-y-2">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">Susunan Kartu</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    ${layoutOpt('auralys', '✨', 'Kolase Auralys')}
+                    ${layoutOpt('grid', '▦', 'Grid Rapi')}
+                    ${layoutOpt('fan', '🂡', 'Kipas (Fan)')}
+                    ${layoutOpt('diagonal', '⟋', 'Diagonal')}
+                  </div>
+                </div>
+                <div class="space-y-3.5">
+                  ${sliderHtml('cardSize', 'Ukuran kartu', 70, 130, state.cardSize, '%')}
+                  ${sliderHtml('cardTilt', 'Kemiringan', 0, 100, state.cardTilt, '%')}
+                  ${sliderHtml('cardSpacing', 'Jarak kartu', 70, 130, state.cardSpacing, '%')}
+                </div>
+                <div class="space-y-2">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">Elemen Kartu</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${togglePill('showControls', 'Tombol ⏮ ⏸ ⏭')}
+                    ${togglePill('showSeekHeart', 'Seekbar & Hati ♥')}
+                    ${togglePill('showArtist', 'Nama Artis')}
+                    ${togglePill('showWatermark', 'Watermark SpotyFlow')}
+                  </div>
+                </div>
               </div>
             `;
             return;
           }
 
-          // TAB 4: 'settings' (Atur Lengkap)
-          const pillBtn = (key, val, label) => {
-            const act = state[key] === val;
-            return `<button type="button" onclick="window.SF201.posterStudio._set('${key}','${val}')" class="px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${act ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-white/75 border-white/12'}">${label}</button>`;
-          };
-          const toggleChip = (key, label) => {
-            const on = Boolean(state[key]);
-            return `<button type="button" onclick="window.SF201.posterStudio._toggle('${key}')" class="px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${on ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-white/65 border-white/12'}">${on ? '✓ ' : ''}${label}</button>`;
-          };
-
-          body.innerHTML = `
-            <div class="space-y-4">
-              <!-- Rasio -->
-              <div class="space-y-1.5">
-                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Rasio &amp; Ukuran HD</p>
-                <div class="flex flex-wrap gap-1.5">
-                  ${Object.entries(RATIOS).map(([k, r]) => pillBtn('ratio', k, `${r.label} (${r.sub})`)).join('')}
+          if (state.activeTab === 'gaya_kartu') {
+            panel.innerHTML = `
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                  ${CARD_STYLES.map((cs) => {
+                    const act = state.cardStyle === cs.id;
+                    return `
+                      <button type="button" onclick="window.SF201.posterStudio._set('cardStyle','${cs.id}')" class="sf-au-card-opt flex items-center gap-2.5 ${act ? 'sf-au-card-opt-active' : ''}">
+                        <span class="w-8 h-8 rounded-xl border border-white/25 shrink-0" style="background:${cs.swatch};"></span>
+                        <div class="min-w-0">
+                          <p class="text-xs font-extrabold truncate">${esc(cs.name)}</p>
+                          <p class="text-[10px] ${act ? 'text-black/65' : 'text-white/55'} truncate">${esc(cs.desc)}</p>
+                        </div>
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+                <div class="space-y-3.5 pt-1">
+                  ${sliderHtml('cardOpacity', 'Transparansi kartu', 30, 100, state.cardOpacity, '%')}
+                  ${sliderHtml('cardRadius', 'Sudut kartu', 8, 36, state.cardRadius, 'px')}
                 </div>
               </div>
+            `;
+            return;
+          }
 
-              <!-- Latar & Efek -->
-              <div class="space-y-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/10">
-                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Latar &amp; Efek Visual</p>
-                <div class="flex flex-wrap gap-1.5">
-                  ${pillBtn('bgMode', 'auto', 'Auto Sampul')}
-                  ${pillBtn('bgMode', 'dark', 'Hitam Pekat')}
-                  ${pillBtn('bgMode', 'cream', 'Krem Majalah')}
-                  ${pillBtn('bgMode', 'custom', 'Warna Kustom')}
+          if (state.activeTab === 'gaya_latar') {
+            panel.innerHTML = `
+              <div class="space-y-4">
+                ${state.bgPhotoImg ? `<p class="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-400/25 rounded-xl px-3 py-2">Memilih warna latar di sini otomatis melepas foto latar sementara (bisa pilih ulang di tab Foto).</p>` : ''}
+                <div class="grid grid-cols-2 gap-2">
+                  ${BG_MODES.map((bm) => {
+                    const act = !state.bgPhotoImg && state.bgMode === bm.id;
+                    return `
+                      <button type="button" onclick="window.SF201.posterStudio._setBgMode('${bm.id}')" class="sf-au-card-opt flex items-center gap-2.5 ${act ? 'sf-au-card-opt-active' : ''}">
+                        <span class="w-7 h-7 rounded-full border border-white/25 shrink-0" style="background:linear-gradient(135deg,${bm.c1},${bm.c3});"></span>
+                        <span class="text-xs font-bold truncate">${esc(bm.name)}</span>
+                      </button>
+                    `;
+                  }).join('')}
                 </div>
-                ${state.bgMode === 'custom' ? `
-                  <div class="flex items-center gap-2 pt-1 flex-wrap">
-                    <input type="color" value="${esc(state.bgCustomColor)}" oninput="window.SF201.posterStudio._setLive('bgCustomColor', this.value)" class="w-8 h-8 rounded-lg bg-transparent border border-white/25 cursor-pointer" />
-                    ${QUICK_SWATCHES.map((hex) => `
-                      <button type="button" onclick="window.SF201.posterStudio._set('bgCustomColor','${hex}')" class="w-7 h-7 rounded-full border-2 ${state.bgCustomColor === hex ? 'border-white scale-110' : 'border-white/25'}" style="background:${hex};"></button>
+                <div class="space-y-2">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">Swatch Warna Cepat</p>
+                  <div class="flex items-center gap-2.5 flex-wrap">
+                    <input type="color" value="${esc(state.bgCustomColor)}" oninput="window.SF201.posterStudio._setCustomBgColor(this.value)" aria-label="Pilih warna kustom" class="w-9 h-9 rounded-full bg-transparent border border-white/30 cursor-pointer shrink-0" />
+                    ${BG_SWATCHES.map((hex) => `
+                      <button type="button" onclick="window.SF201.posterStudio._setCustomBgColor('${hex}')" aria-label="Warna ${hex}" class="w-8 h-8 rounded-full border-2 transition-transform ${(!state.bgPhotoImg && state.bgMode === 'custom' && state.bgCustomColor === hex) ? 'border-white scale-110' : 'border-white/25'}" style="background:${hex};"></button>
                     `).join('')}
                   </div>
-                ` : ''}
-                <label class="block text-[11px] text-white/75">Blur Latar: <span id="sf-lbl-blur" class="font-mono font-bold text-white">${state.bgBlur}</span>
-                  <input type="range" min="0" max="40" value="${state.bgBlur}" oninput="window.SF201.posterStudio._setRange('bgBlur', this.value, 'sf-lbl-blur', '')" class="w-full accent-white mt-1" />
-                </label>
-                <label class="block text-[11px] text-white/75">Gelap Latar (Dimmer): <span id="sf-lbl-dim" class="font-mono font-bold text-white">${state.bgDimmer}%</span>
-                  <input type="range" min="0" max="85" value="${state.bgDimmer}" oninput="window.SF201.posterStudio._setRange('bgDimmer', this.value, 'sf-lbl-dim', '%')" class="w-full accent-white mt-1" />
-                </label>
-                <label class="block text-[11px] text-white/75">Sudut Foto (Radius): <span id="sf-lbl-rad" class="font-mono font-bold text-white">${state.cornerRadius}px</span>
-                  <input type="range" min="0" max="48" value="${state.cornerRadius}" oninput="window.SF201.posterStudio._setRange('cornerRadius', this.value, 'sf-lbl-rad', 'px')" class="w-full accent-white mt-1" />
-                </label>
-                <div class="pt-1">${toggleChip('filmGrain', 'Film Grain Halus')}</div>
-              </div>
-
-              <!-- Teks & Lirik -->
-              <div class="space-y-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/10">
-                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Teks &amp; Lirik</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input type="text" value="${esc(state.customTitle)}" oninput="window.SF201.posterStudio._setLive('customTitle', this.value)" placeholder="Judul Lagu" class="h-9 px-3 rounded-xl bg-black/35 border border-white/15 text-xs text-white outline-none focus:border-white/40" />
-                  <input type="text" value="${esc(state.customArtist)}" oninput="window.SF201.posterStudio._setLive('customArtist', this.value)" placeholder="Nama Artis" class="h-9 px-3 rounded-xl bg-black/35 border border-white/15 text-xs text-white outline-none focus:border-white/40" />
-                </div>
-                ${state.lyricsLines.length ? `
-                  <div class="space-y-1">
-                    <p class="text-[10.5px] text-white/60">Pilih hingga 4 baris lirik (${state.selectedLyricIndices.length}/4 dipilih):</p>
-                    <div class="max-h-32 overflow-y-auto studio-scroll space-y-1 pr-1">
-                      ${state.lyricsLines.map((line, idx) => {
-                        const sel = state.selectedLyricIndices.includes(idx);
-                        return `<button type="button" onclick="window.SF201.posterStudio._toggleLyric(${idx})" class="w-full text-left px-2.5 py-1.5 rounded-xl text-[11px] border transition-all ${sel ? 'bg-white text-black font-bold border-white' : 'bg-black/25 text-white/75 border-white/10 hover:bg-white/10'}">${esc(line)}</button>`;
-                      }).join('')}
-                    </div>
-                  </div>
-                ` : `<p class="text-[10.5px] text-white/45">${state.lyricsLoading ? 'Memuat lirik lagu...' : 'Ketik kutipan lirik bebas di bawah ini:'}</p>`}
-                <textarea rows="2" oninput="window.SF201.posterStudio._setLive('customQuote', this.value)" placeholder="Atau tulis kutipan / lirik sendiri..." class="w-full p-2.5 rounded-xl bg-black/35 border border-white/15 text-xs text-white outline-none focus:border-white/40 resize-none">${esc(state.customQuote)}</textarea>
-                <div class="flex flex-wrap gap-1.5 items-center">
-                  <span class="text-[10.5px] text-white/55 mr-1">Font:</span>
-                  ${pillBtn('fontStyle', 'sans', 'Modern Sans')}
-                  ${pillBtn('fontStyle', 'serif', 'Editorial Serif')}
-                  ${pillBtn('fontStyle', 'mono', 'Mono')}
-                </div>
-                <div class="flex flex-wrap gap-1.5 items-center">
-                  <span class="text-[10.5px] text-white/55 mr-1">Teks:</span>
-                  ${pillBtn('textColorMode', 'auto', 'Auto')}
-                  ${pillBtn('textColorMode', 'white', 'Putih')}
-                  ${pillBtn('textColorMode', 'black', 'Hitam')}
                 </div>
               </div>
+            `;
+            return;
+          }
 
-              <!-- Sakelar Elemen -->
-              <div class="space-y-2">
-                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Sakelar Elemen Poster</p>
-                <div class="flex flex-wrap gap-1.5">
-                  ${toggleChip('showProgress', 'Progress Bar')}
-                  ${toggleChip('showLyrics', 'Lirik / Kutipan')}
-                  ${toggleChip('showPalette', 'Palet 5 Warna')}
-                  ${toggleChip('showDate', 'Tanggal')}
-                  ${toggleChip('showWatermark', 'Watermark SpotyFlow')}
-                </div>
+          panel.innerHTML = `
+            <div class="space-y-4">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <button type="button" onclick="window.SF201.posterStudio._toggle('sparkleEnabled')" class="sf-au-pill ${state.sparkleEnabled ? 'sf-au-pill-active' : ''}">
+                  <span>✦</span><span>Kilau Bintang ${state.sparkleEnabled ? 'ON' : 'OFF'}</span>
+                </button>
+                <button type="button" onclick="window.SF201.posterStudio._toggle('filmGrain')" class="sf-au-pill ${state.filmGrain ? 'sf-au-pill-active' : ''}">
+                  <span>🎞️</span><span>Film Grain ${state.filmGrain ? 'ON' : 'OFF'}</span>
+                </button>
+              </div>
+              <div class="space-y-3.5">
+                ${state.sparkleEnabled ? sliderHtml('sparkleIntensity', 'Kilau Bintang (✦)', 10, 100, state.sparkleIntensity, '%') : ''}
+                ${sliderHtml('shadow3d', 'Bayangan 3D', 0, 100, state.shadow3d, '%')}
+                ${sliderHtml('vignette', 'Vignette', 0, 100, state.vignette, '%')}
+              </div>
+              <div class="space-y-1.5 pt-1">
+                <label class="block font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">Judul Poster / Teks Tambahan (Opsional)</label>
+                <input type="text" maxlength="44" value="${esc(state.headerText)}" oninput="window.SF201.posterStudio._setHeaderText(this.value)" placeholder="Contoh: My Top 5 Songs • Late Night Vibes" class="w-full h-10 px-3.5 rounded-xl bg-white/[0.07] border border-white/15 focus:border-white/45 text-xs text-white placeholder-white/35 outline-none" />
               </div>
             </div>
           `;
         }
 
-        function exportHdCanvas() {
-          const out = document.createElement('canvas');
-          renderPosterToCanvas(out, true);
-          return out;
+        function renderModalBody() {
+          const body = document.getElementById('sf-au-modal-body');
+          if (!body || !state) return;
+          updateHeaderStepPills();
+
+          if (state.step === 'pick') {
+            const subTab = (id, label) => `
+              <button type="button" onclick="window.SF201.posterStudio._setPickTab('${id}')" class="sf-au-pill ${state.pickTab === id ? 'sf-au-pill-active' : ''}">${label}</button>
+            `;
+            body.innerHTML = `
+              <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+                <div class="shrink-0 p-3.5 border-b border-white/10 bg-[#10121A] space-y-2.5">
+                  <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <span class="font-mono text-[11px] font-bold text-white/80">${state.tracks.length} / 5 lagu dipilih</span>
+                    <div class="flex items-center gap-1.5">
+                      <button type="button" onclick="window.SF201.posterStudio._fillFiveFav()" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-bold text-white">🎲 Isi 5 Lagu Favorit</button>
+                      <button type="button" onclick="window.SF201.posterStudio._setStep('edit')" class="px-3.5 py-1.5 rounded-full bg-white text-black text-[11px] font-extrabold shadow">Lanjut Edit Poster →</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+                    ${state.tracks.length ? state.tracks.map((tr, i) => {
+                      const k = getTrackKey(tr);
+                      const custom = state.customTrackCovers.get(k);
+                      const thumb = custom ? custom.dataUrl : (typeof getCover === 'function' ? getCover(tr, 'small') : '/icon-192.png');
+                      return `
+                        <div class="shrink-0 flex items-center gap-2 pl-1.5 pr-2 py-1.5 rounded-2xl bg-white/[0.09] border border-white/18 max-w-[180px]">
+                          <img src="${esc(thumb)}" onerror="this.src='/icon-192.png'" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0" referrerpolicy="no-referrer" />
+                          <div class="min-w-0">
+                            <p class="text-[10.5px] font-bold text-white truncate max-w-[78px]">${esc(cleanTitle(tr.title))}</p>
+                            <p class="font-mono text-[9px] text-white/50">Kartu #${i + 1}</p>
+                          </div>
+                          <button type="button" title="Ganti sampul lagu ini dengan foto galeri" onclick="window.SF201.posterStudio._pickTrackPhoto(${i})" class="w-6 h-6 rounded-full bg-white/12 hover:bg-white/25 text-[11px] flex items-center justify-center shrink-0">📷</button>
+                          <button type="button" aria-label="Hapus lagu" onclick="window.SF201.posterStudio._removeSelectedIdx(${i})" class="w-6 h-6 rounded-full bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 text-xs font-bold flex items-center justify-center shrink-0">×</button>
+                        </div>
+                      `;
+                    }).join('') : `<p class="text-[11px] text-white/45 py-1">Ketuk 1 sampai 5 lagu di bawah, atau tekan "🎲 Isi 5 Lagu Favorit".</p>`}
+                  </div>
+                  <input id="sf-au-track-photo-input" type="file" accept="image/*" class="hidden" onchange="window.SF201.posterStudio._onTrackPhotoFile(this)" />
+                </div>
+
+                <div class="shrink-0 px-3.5 pt-3 pb-2 space-y-2.5">
+                  <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                    ${subTab('liked', 'Lagu Disukai')}
+                    ${subTab('current', 'Sedang Diputar')}
+                    ${subTab('recent', 'Riwayat')}
+                    ${subTab('search', '🔍 Cari Lagu')}
+                  </div>
+                  ${state.pickTab === 'search' ? `
+                    <input id="sf-au-search-input" type="search" value="${esc(state.searchQuery)}" oninput="window.SF201.posterStudio._onSearch(this.value)" placeholder="Cari lagu apa saja (tidak memutus musik aktif)..." class="w-full h-10 px-3.5 rounded-xl bg-white/[0.08] border border-white/15 focus:border-white/45 text-xs text-white placeholder-white/40 outline-none" />
+                  ` : ''}
+                </div>
+
+                <div id="sf-au-pick-list" class="flex-1 min-h-0 overflow-y-auto studio-scroll px-3.5 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] space-y-1.5"></div>
+              </div>
+            `;
+            renderPickListSlot();
+            return;
+          }
+
+          body.innerHTML = `
+            <div class="relative flex-[0_0_45%] min-h-[210px] flex items-center justify-center p-3 bg-[#08090D] overflow-hidden">
+              <canvas id="sf-poster-preview-canvas" class="max-h-full max-w-full w-auto h-auto rounded-2xl shadow-[0_20px_54px_rgba(0,0,0,0.82)] ring-1 ring-white/14"></canvas>
+              <div id="sf-poster-loading-pill" class="${state.loadingCovers ? '' : 'hidden'} absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 border border-white/15 text-[10px] font-mono text-white/80">Memuat sampul...</div>
+            </div>
+
+            <div class="flex-1 min-h-0 flex flex-col bg-[#111218] border-t border-white/10 rounded-t-3xl overflow-hidden">
+              <div class="shrink-0 flex items-center gap-2 px-3.5 pt-3 pb-2 overflow-x-auto no-scrollbar">
+                ${Object.entries(RATIOS).map(([k, r]) => `
+                  <button type="button" onclick="window.SF201.posterStudio._setRatio('${k}')" class="sf-au-pill ${state.ratio === k ? 'sf-au-pill-active' : ''}">${r.icon} ${r.label}</button>
+                `).join('')}
+                <button type="button" onclick="window.SF201.posterStudio._randomize()" class="sf-au-pill">🔀 Acak desain</button>
+              </div>
+
+              <div class="shrink-0 flex items-center gap-1.5 px-3.5 pb-2.5 border-b border-white/[0.07] overflow-x-auto no-scrollbar">
+                <button type="button" data-au-tab="foto" onclick="window.SF201.posterStudio._setTab('foto')" class="sf-au-pill">Foto</button>
+                <button type="button" data-au-tab="kartu" onclick="window.SF201.posterStudio._setTab('kartu')" class="sf-au-pill">Kartu</button>
+                <button type="button" data-au-tab="gaya_kartu" onclick="window.SF201.posterStudio._setTab('gaya_kartu')" class="sf-au-pill">Gaya kartu</button>
+                <button type="button" data-au-tab="gaya_latar" onclick="window.SF201.posterStudio._setTab('gaya_latar')" class="sf-au-pill">Gaya latar</button>
+                <button type="button" data-au-tab="efek" onclick="window.SF201.posterStudio._setTab('efek')" class="sf-au-pill">Efek</button>
+              </div>
+
+              <div id="sf-au-tab-panel" class="flex-1 min-h-0 overflow-y-auto studio-scroll px-4 pt-3 pb-[calc(1.6rem+env(safe-area-inset-bottom,0px))]"></div>
+            </div>
+          `;
+          renderEditTabPanel();
+          schedulePreviewRender();
         }
 
-        function makePosterFileName() {
-          const base = String(state?.customTitle || 'SpotyFlow').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 32) || 'SpotyFlow';
-          return `SpotyFlow_${base}_${Date.now().toString().slice(-6)}.png`;
+        function exportHdCanvas() {
+          const out = document.createElement('canvas');
+          renderAuralysPoster(out, true);
+          return out;
         }
 
         function savePoster() {
           if (!state) return;
-          const fileName = makePosterFileName();
+          if (!state.tracks.length) {
+            if (typeof showToast === 'function') showToast('Pilih minimal 1 lagu dulu sebelum menyimpan!', 'info');
+            state.step = 'pick';
+            renderModalBody();
+            return;
+          }
+          const fileName = `SpotyFlow-Poster-${Date.now()}.png`;
           try {
-            const hdCanvas = exportHdCanvas();
+            const hd = exportHdCanvas();
             const br = getBridge();
             if (br && typeof br.savePosterToGallery === 'function') {
-              const dataUrl = hdCanvas.toDataURL('image/png');
-              const rawRes = br.savePosterToGallery(dataUrl, fileName);
+              const rawRes = br.savePosterToGallery(hd.toDataURL('image/png'), fileName);
               let parsed = { ok: false };
               try { parsed = JSON.parse(rawRes); } catch {}
               if (parsed.ok) {
-                if (typeof showToast === 'function') showToast('Poster tersimpan di Galeri (Pictures/SpotyFlow)!', 'sparkles');
+                if (typeof showToast === 'function') showToast('✅ Poster HD tersimpan di Galeri (Pictures/SpotyFlow)!', 'sparkles');
                 return;
               }
             }
-            // Web Browser Fallback: toBlob + URL.revokeObjectURL
-            hdCanvas.toBlob((blob) => {
+            hd.toBlob((blob) => {
               if (!blob) return;
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
@@ -34907,28 +35106,27 @@
               a.click();
               a.remove();
               setTimeout(() => URL.revokeObjectURL(url), 2500);
-              if (typeof showToast === 'function') showToast('Poster HD berhasil diunduh!', 'sparkles');
+              if (typeof showToast === 'function') showToast('✅ Poster HD berhasil diunduh!', 'sparkles');
             }, 'image/png');
           } catch {
-            if (typeof showToast === 'function') showToast('Gagal mengekspor poster. Coba lagi.', 'error');
+            if (typeof showToast === 'function') showToast('Gagal menyimpan poster. Coba lagi.', 'error');
           }
         }
 
         async function sharePoster() {
           if (!state) return;
-          const fileName = makePosterFileName();
+          const fileName = `SpotyFlow-Poster-${Date.now()}.png`;
           try {
-            const hdCanvas = exportHdCanvas();
+            const hd = exportHdCanvas();
             const br = getBridge();
             if (br && typeof br.sharePosterImage === 'function') {
-              const ok = br.sharePosterImage(hdCanvas.toDataURL('image/png'), fileName);
-              if (ok) return;
+              if (br.sharePosterImage(hd.toDataURL('image/png'), fileName)) return;
             }
-            const blob = await new Promise((res) => hdCanvas.toBlob(res, 'image/png'));
+            const blob = await new Promise((res) => hd.toBlob(res, 'image/png'));
             if (blob && navigator.share && navigator.canShare) {
               const file = new File([blob], fileName, { type: 'image/png' });
               if (navigator.canShare({ files: [file] })) {
-                await navigator.share({ title: state.customTitle, text: `${state.customTitle} — ${state.customArtist}`, files: [file] });
+                await navigator.share({ title: 'Poster SpotyFlow', files: [file] });
                 return;
               }
             }
@@ -34940,59 +35138,40 @@
 
         function close() {
           if (searchAbort) { try { searchAbort.abort(); } catch {} }
-          if (lyricsAbort) { try { lyricsAbort.abort(); } catch {} }
-          const el = document.getElementById('sf-poster-studio-v2');
+          const el = document.getElementById('sf-poster-auralys-modal');
           if (el) el.remove();
           state = null;
         }
 
         function open(optionalTrack) {
           close();
-          state = makeDefaultState(optionalTrack);
+          const initial = optionalTrack || null;
+          state = makeDefaultState(initial);
+
           const root = document.createElement('div');
-          root.id = 'sf-poster-studio-v2';
+          root.id = 'sf-poster-auralys-modal';
           root.setAttribute('role', 'dialog');
           root.setAttribute('aria-modal', 'true');
-          root.className = 'fixed inset-0 z-[9999] flex flex-col bg-[#080A10] text-white overflow-hidden';
+          root.className = 'fixed inset-0 z-[9999] flex flex-col bg-[#0A0B0F] text-white overflow-hidden';
           root.innerHTML = `
-            <!-- Compact Header -->
-            <div class="shrink-0 flex items-center justify-between gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2.5 border-b border-white/10 bg-[#0B0D16]">
-              <button type="button" onclick="window.SF201.posterStudio.close()" aria-label="Tutup Poster Studio" class="sf-tap w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg leading-none">×</button>
-              <div class="text-center min-w-0">
-                <h2 class="font-display font-bold text-sm text-white truncate">Poster Studio</h2>
-                <p class="font-mono text-[9.5px] uppercase tracking-widest text-white/45">HD 1080P • AURALYS</p>
+            <div class="shrink-0 flex items-center justify-between gap-2 px-3.5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2.5 border-b border-white/10 bg-[#0D0E14]">
+              <button type="button" onclick="window.SF201.posterStudio.close()" aria-label="Tutup Poster Studio" class="sf-tap w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg leading-none shrink-0">×</button>
+              <div class="inline-flex items-center p-0.5 rounded-full bg-white/[0.08] border border-white/12 shrink-0">
+                <button type="button" id="sf-au-step-pick" onclick="window.SF201.posterStudio._setStep('pick')">🎵 Pilih lagu (${state.tracks.length}/5)</button>
+                <button type="button" id="sf-au-step-edit" onclick="window.SF201.posterStudio._setStep('edit')">🎨 Edit poster</button>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="window.SF201.posterStudio.sharePoster()" class="sf-tap h-9 px-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white">📤 Bagikan</button>
-                <button type="button" onclick="window.SF201.posterStudio.savePoster()" class="sf-tap h-9 px-3.5 rounded-full bg-white hover:bg-white/90 text-black text-xs font-extrabold shadow">💾 Simpan</button>
+                <button type="button" onclick="window.SF201.posterStudio.sharePoster()" aria-label="Bagikan poster" class="sf-tap w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-sm">📤</button>
+                <button type="button" onclick="window.SF201.posterStudio.savePoster()" class="sf-tap h-9 px-3.5 rounded-full bg-white hover:bg-white/90 text-black text-xs font-extrabold shadow">Simpan</button>
               </div>
             </div>
-
-            <!-- Top Zone (~44% height): Live Interactive HD Preview -->
-            <div class="relative flex-[0_0_43%] min-h-[210px] flex items-center justify-center p-3 bg-[radial-gradient(circle_at_50%_40%,rgba(124,58,237,0.16),rgba(8,10,16,0.96)_72%)] overflow-hidden">
-              <canvas id="sf-poster-preview-canvas" class="max-h-full max-w-full w-auto h-auto rounded-2xl shadow-[0_20px_54px_rgba(0,0,0,0.75)] ring-1 ring-white/15"></canvas>
-              <button type="button" onclick="window.SF201.posterStudio._resetAll()" title="Reset setingan poster" class="sf-tap absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 border border-white/20 text-[10.5px] font-bold text-white/85 hover:text-white">↻ Reset</button>
-            </div>
-
-            <!-- Bottom Zone (~57% height): 4-Tab Smooth Scroll Panel -->
-            <div class="flex-1 min-h-0 flex flex-col bg-[#0D1019] border-t border-white/12 rounded-t-3xl overflow-hidden">
-              <div class="shrink-0 px-3 pt-3 pb-2">
-                <div class="flex items-center gap-1 p-1 rounded-full bg-black/45 border border-white/10">
-                  <button type="button" data-poster-tab="track" onclick="window.SF201.posterStudio._setTab('track')">1. Lagu</button>
-                  <button type="button" data-poster-tab="photo" onclick="window.SF201.posterStudio._setTab('photo')">2. Foto</button>
-                  <button type="button" data-poster-tab="style" onclick="window.SF201.posterStudio._setTab('style')">3. Gaya</button>
-                  <button type="button" data-poster-tab="settings" onclick="window.SF201.posterStudio._setTab('settings')">4. Atur</button>
-                </div>
-              </div>
-              <div id="sf-poster-tab-body" class="flex-1 min-h-0 overflow-y-auto studio-scroll px-4 pt-1 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"></div>
-            </div>
+            <div id="sf-au-modal-body" class="flex-1 min-h-0 flex flex-col overflow-hidden"></div>
           `;
           document.body.appendChild(root);
-          renderActiveTabBody();
-          selectTrack(state.track);
+          renderModalBody();
+          if (state.tracks.length) hydrateSelectedTrackCovers();
         }
 
-        // Redirect legacy SF200.poster.openModal cleanly to SF201.posterStudio.open!
         setTimeout(() => {
           if (window.SF200?.poster) {
             window.SF200.poster.openModal = (tr) => open(tr);
@@ -35004,86 +35183,141 @@
           close,
           savePoster,
           sharePoster,
+          _setStep(step) {
+            if (!state) return;
+            state.step = step === 'pick' ? 'pick' : 'edit';
+            renderModalBody();
+            if (state.step === 'edit') hydrateSelectedTrackCovers();
+          },
+          _setPickTab(tab) {
+            if (!state) return;
+            state.pickTab = tab;
+            renderModalBody();
+          },
+          _onSearch(q) { triggerLiveSearch(q); },
+          _togglePickIdx(idx) {
+            const tr = window.__sf201AuPickList?.[idx];
+            if (tr) toggleTrackSelection(tr);
+          },
+          _removeSelectedIdx(idx) {
+            if (!state) return;
+            state.tracks.splice(idx, 1);
+            renderModalBody();
+          },
+          _fillFiveFav() { fillFiveFavoriteTracks(); },
+          _pickTrackPhoto(idx) {
+            pendingTrackPhotoIdx = idx;
+            document.getElementById('sf-au-track-photo-input')?.click();
+          },
+          async _onTrackPhotoFile(inputEl) {
+            const file = inputEl?.files?.[0];
+            if (!file || !state || pendingTrackPhotoIdx < 0) return;
+            const tr = state.tracks[pendingTrackPhotoIdx];
+            if (!tr) return;
+            const res = await downscaleLocalImageFile(file);
+            if (res && state) {
+              state.customTrackCovers.set(getTrackKey(tr), res);
+              renderModalBody();
+              schedulePreviewRender();
+              if (typeof showToast === 'function') showToast('Foto sampul kartu berhasil diganti!', 'sparkles');
+            }
+            inputEl.value = '';
+          },
+          async _onBgPhotoFile(inputEl) {
+            const file = inputEl?.files?.[0];
+            if (!file || !state) return;
+            const res = await downscaleLocalImageFile(file);
+            if (res && state) {
+              state.bgPhotoImg = res.img;
+              state.bgPhotoThumb = res.dataUrl;
+              state.bgPhotoZoom = 100;
+              state.bgPhotoPanY = 0;
+              renderEditTabPanel();
+              schedulePreviewRender();
+              if (typeof showToast === 'function') showToast('Foto latar berhasil dimuat (HD anti-gepeng)!', 'sparkles');
+            }
+            inputEl.value = '';
+          },
+          _clearBgPhoto() {
+            if (!state) return;
+            state.bgPhotoImg = null;
+            state.bgPhotoThumb = '';
+            renderEditTabPanel();
+            schedulePreviewRender();
+          },
+          _setRatio(r) {
+            if (!state || !RATIOS[r]) return;
+            state.ratio = r;
+            renderModalBody();
+          },
           _setTab(tab) {
             if (!state) return;
             state.activeTab = tab;
-            renderActiveTabBody();
+            renderEditTabPanel();
           },
-          _setTrackSource(src) {
+          _onSlider(key, el, min, max, lblId, suffix) {
             if (!state) return;
-            state.trackSource = src;
-            renderActiveTabBody();
-          },
-          _onSearch(val) { triggerLiveTrackSearch(val); },
-          _pickIndex(idx) {
-            const tr = window.__sf201PosterTrackList?.[idx];
-            if (tr) selectTrack(tr);
-          },
-          _onPhotoFile(inputEl) { handlePhotoUploadFile(inputEl); },
-          _clearPhoto() {
-            if (!state) return;
-            state.uploadedImg = null;
-            state.uploadedThumbUrl = '';
-            state.photoSource = 'cover';
-            renderActiveTabBody();
+            const val = Number(el.value);
+            state[key] = val;
+            const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+            el.style.setProperty('--val-pct', `${pct.toFixed(1)}%`);
+            const lbl = document.getElementById(lblId);
+            if (lbl) lbl.textContent = `${val}${suffix || ''}`;
             schedulePreviewRender();
-          },
-          _resetCrop() {
-            if (!state) return;
-            state.zoom = 100; state.panX = 0; state.panY = 0;
-            renderActiveTabBody();
-            schedulePreviewRender();
-          },
-          _resetAll() {
-            if (!state) return;
-            const curTrack = state.track;
-            const curTab = state.activeTab;
-            state = makeDefaultState(curTrack);
-            state.activeTab = curTab;
-            renderActiveTabBody();
-            selectTrack(curTrack);
           },
           _set(key, val) {
             if (!state) return;
             state[key] = val;
-            renderActiveTabBody();
-            schedulePreviewRender();
-          },
-          _setLive(key, val) {
-            if (!state) return;
-            state[key] = val;
-            schedulePreviewRender();
-          },
-          _setRange(key, val, lblId, suffix) {
-            if (!state) return;
-            const n = Number(val);
-            state[key] = n;
-            const lbl = document.getElementById(lblId);
-            if (lbl) lbl.textContent = `${n}${suffix || ''}`;
+            renderEditTabPanel();
             schedulePreviewRender();
           },
           _toggle(key) {
             if (!state) return;
             state[key] = !state[key];
-            renderActiveTabBody();
+            renderEditTabPanel();
             schedulePreviewRender();
           },
-          _toggleLyric(idx) {
+          _setBgMode(mode) {
             if (!state) return;
-            const pos = state.selectedLyricIndices.indexOf(idx);
-            if (pos >= 0) {
-              state.selectedLyricIndices.splice(pos, 1);
-            } else {
-              if (state.selectedLyricIndices.length >= 4) state.selectedLyricIndices.shift();
-              state.selectedLyricIndices.push(idx);
-            }
-            state.customQuote = '';
-            renderActiveTabBody();
+            state.bgPhotoImg = null;
+            state.bgPhotoThumb = '';
+            state.bgMode = mode;
+            renderEditTabPanel();
             schedulePreviewRender();
+          },
+          _setCustomBgColor(hex) {
+            if (!state) return;
+            state.bgPhotoImg = null;
+            state.bgPhotoThumb = '';
+            state.bgMode = 'custom';
+            state.bgCustomColor = hex;
+            renderEditTabPanel();
+            schedulePreviewRender();
+          },
+          _setHeaderText(val) {
+            if (!state) return;
+            state.headerText = String(val || '');
+            schedulePreviewRender();
+          },
+          _randomize() {
+            if (!state) return;
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            state.cardStyle = pick(CARD_STYLES).id;
+            state.layoutMode = pick(['auralys', 'grid', 'fan', 'diagonal']);
+            state.cardTilt = 15 + Math.floor(Math.random() * 65);
+            state.cardGlow = 20 + Math.floor(Math.random() * 65);
+            state.sparkleEnabled = true;
+            state.sparkleIntensity = 40 + Math.floor(Math.random() * 55);
+            state.sparkleSeed = (state.sparkleSeed || 1) + 1;
+            if (!state.bgPhotoImg) {
+              state.bgMode = pick(['burgundy', 'auto_cover', 'obsidian', 'midnight', 'velvet']);
+            }
+            renderEditTabPanel();
+            schedulePreviewRender();
+            if (typeof showToast === 'function') showToast('Desain poster diacak! 🔀', 'sparkles');
           },
         };
       })();
-
       return {
         isPerfHudEnabled,
         togglePerfHud,
