@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '1.5.3';
-const NATIVE_APK_VERSION_CODE = 153;
+const VERSION = '2.0.0';
+const NATIVE_APK_VERSION_CODE = 200;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -2017,12 +2017,12 @@ app.get(['/api/app-version', '/api/app/version'], (_req, res) => {
     apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
     otaEnabled: true,
     releaseNotes: [
-      'Sakelar 1-Klik Lagu | Video (MV) Tanpa Jeda (Fixed Bounding-Rect Overlay)',
-      'Native Android Home Screen Widget 4×1 Mini & 4×2 Player (Anti-Crash Android 12–15)',
-      'AI Curhat → Playlist (Gemini AI + Smart Mood Fallback)',
-      'SpotyFlow Wrapped 5-Slide ala IG Story + Ekspor Poster HD 1080×1920',
-      'Pin Momen / Reff Favorit Langsung di Seekbar Fullscreen',
-      'Beranda Hidup (Mood Chips, Grid Cepat 2×3, Top Charts ID & Global), Radio Lagu & Theme Studio 4 Tema',
+      'SpotyFlow v2.0.0 — Auralys-Class Edition',
+      'Mesin Audio Instan (< 1 Detik) NewPipeExtractor v0.27.1 + Native Media3 ExoPlayer + SimpleCache + Pre-Fetch',
+      'Lirik Real-Time di Dynamic Island / Origin Island & Layar Kunci',
+      '3 Varian Widget Layar Utama Android (4×1 Mini Glass, 4×2 Adaptive Card, & 4×2 Live Lyrics)',
+      'Sakelar 1-Klik Gaya Liquid Glass ↔ Editorial + Floating Glass Dock + Apple Music Synced Lyrics + Optimistic UI 0ms',
+      'Poster Maker Studio (5 Template HD 1080×1920 & 1080×1350) + Offline Download Penuh 1-Klik',
     ],
     updatedAt: new Date().toISOString(),
   });

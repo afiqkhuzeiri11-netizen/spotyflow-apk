@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (v1.5.3 Release · Capacitor 6 · SDK 34 · Static Tailwind)
+name: Build SpotyFlow Android APK (v2.0.0 Auralys-Class Release · NewPipe + ExoPlayer · SDK 34)
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   build-android-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout Repository
@@ -46,19 +46,21 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Patch SpotyFlow v1.5.3 (Media3 1.4.1, Origin Island, 4x1 & 4x2 Widgets & Release Config)
+      - name: Patch SpotyFlow v2.0.0 (NewPipeExtractor + Media3 ExoPlayer + Live Island Lyrics + 3 Auralys Widgets)
         run: node scripts/patch-android-apk.js
 
-      - name: Verify Patched SpotyFlow v1.5.3 Native Files
+      - name: Verify Patched SpotyFlow v2.0.0 Native Files
         run: |
           APP_ID=$(node -p "require('./capacitor.config.json').appId")
           PKG_PATH=$(echo "$APP_ID" | tr '.' '/')
           echo "Verifying dynamic appId=$APP_ID (path=$PKG_PATH)"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWebView.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowNewPipeEngine.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowPlaybackService.java"
           test -f "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWidgetProvider.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWidgetLargeProvider.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWidgetLyricsProvider.java"
           test ! -f "android/app/src/main/java/${PKG_PATH}/NativeYouTubeResolver.java"
           test ! -d "android/app/src/main/java/com/spotyflow/music"
           test -f android/app/src/main/res/layout/bridge_layout_main.xml
@@ -67,28 +69,39 @@ jobs:
           grep -q "${APP_ID}.SpotyFlowWebView" android/app/src/main/res/layout/capacitor_bridge_layout_main.xml
           test -f android/app/src/main/res/layout/widget_spotyflow_small.xml
           test -f android/app/src/main/res/layout/widget_spotyflow_large.xml
+          test -f android/app/src/main/res/layout/widget_spotyflow_lyrics.xml
           test -f android/app/src/main/res/xml/widget_spotyflow_small_info.xml
           test -f android/app/src/main/res/xml/widget_spotyflow_large_info.xml
+          test -f android/app/src/main/res/xml/widget_spotyflow_lyrics_info.xml
           test -f android/app/src/main/res/drawable/ic_stat_music.xml
           test -f android/app/src/main/res/drawable/widget_bg_dark.xml
+          test -f android/app/src/main/res/drawable/widget_bg_adaptive.xml
+          grep -q "jitpack.io" android/build.gradle
           grep -q "compileSdkVersion = 34" android/variables.gradle
           grep -q "targetSdkVersion = 34" android/variables.gradle
-          grep -q "versionCode 153" android/app/build.gradle
-          grep -q 'versionName "1.5.3"' android/app/build.gradle
+          grep -q "versionCode 200" android/app/build.gradle
+          grep -q 'versionName "2.0.0"' android/app/build.gradle
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
+          grep -q "coreLibraryDesugaringEnabled true" android/app/build.gradle
+          grep -q "desugar_jdk_libs_nio:2.0.4" android/app/build.gradle
+          grep -q "NewPipeExtractor:v0.27.1" android/app/build.gradle
           grep -q "androidx.media3:media3-common:1.4.1" android/app/build.gradle
           grep -q "androidx.media3:media3-session:1.4.1" android/app/build.gradle
+          grep -q "androidx.media3:media3-exoplayer:1.4.1" android/app/build.gradle
+          grep -q "androidx.media3:media3-datasource:1.4.1" android/app/build.gradle
+          grep -q "androidx.media3:media3-database:1.4.1" android/app/build.gradle
           grep -q "JavaVersion.VERSION_17" android/app/build.gradle
           grep -q "signingConfig signingConfigs.debug" android/app/build.gradle
-          ! grep -q "media3-exoplayer" android/app/build.gradle
           ! grep -q "LAYER_TYPE_HARDWARE" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
-          grep -q "getSystemStatus" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
-          grep -q "hasActiveWebView" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "playNativeTrack" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "updateLyricLine" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "downloadOfflineTrack" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "SpotyFlowWidgetProvider" android/app/src/main/AndroidManifest.xml
           grep -q "SpotyFlowWidgetLargeProvider" android/app/src/main/AndroidManifest.xml
+          grep -q "SpotyFlowWidgetLyricsProvider" android/app/src/main/AndroidManifest.xml
           grep -q "SpotyFlowPlaybackService" android/app/src/main/AndroidManifest.xml
-          grep -q 'android:appCategory="audio"' android/app/AndroidManifest.xml 2>/dev/null || grep -q 'android:appCategory="audio"' android/app/src/main/AndroidManifest.xml
+          grep -q 'android:appCategory="audio"' android/app/src/main/AndroidManifest.xml
           grep -q 'android:launchMode="singleTask"' android/app/src/main/AndroidManifest.xml
           grep -q "androidx.media3.session.MediaSessionService" android/app/src/main/AndroidManifest.xml
           grep -q "androidx.media3.session.MediaButtonReceiver" android/app/src/main/AndroidManifest.xml
@@ -100,7 +113,7 @@ jobs:
           chmod +x gradlew
           GRADLE_OPTS="-Xmx4096m" ./gradlew assembleRelease --no-daemon
 
-      - name: Export SpotyFlow.apk (Release v1.5.3) & Show Size
+      - name: Export SpotyFlow.apk (Release v2.0.0) & Show Size
         run: |
           test -f android/app/build/outputs/apk/release/app-release.apk
           cp android/app/build/outputs/apk/release/app-release.apk SpotyFlow.apk
@@ -109,7 +122,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-v1.5.3-Release
+          name: SpotyFlow-APK-v2.0.0-Release
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -117,16 +130,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow v1.5.3
+          name: SpotyFlow v2.0.0
           body: |
-            ### SpotyFlow v1.5.3 (Major Update — 6 Fitur Unggulan + Native Widgets 4×1 & 4×2)
-            - **Sakelar 1-Klik `Lagu | Video (MV)` Tanpa Jeda**: beralih mulus ke Video YouTube langsung di atas sampul Fullscreen tanpa reload & tanpa memutus audio.
-            - **Native Android Home Screen Widget 4×1 (Mini) & 4×2 (Player)**: kontrol Prev / Play-Pause / Next, judul, artis & sampul album langsung dari layar beranda HP (`FLAG_IMMUTABLE`, bitmap `<=160px`, anti-crash Android 12–15).
-            - **AI Curhat → Playlist**: tulis suasana hati atau cerita apa saja → diracik jadi 12–16 lagu nyata siap putar & simpan ke koleksi (Gemini AI + fallback pintar anti-500).
-            - **SpotyFlow Wrapped 5-Slide ala IG Story**: 5 slide interaktif dengan auto-maju, hold-to-pause, backsound lagu #1, dan ekspor Poster HD `1080×1920` (anti tainted canvas).
-            - **Pin Momen / Reff Favorit di Seekbar**: tandai detik favorit (`Reff`, `Beat Drop`, `Intro`, `Solo`, kustom) dan lompat instan langsung dari seekbar Fullscreen.
-            - **Beranda Hidup + Radio Lagu + Theme Studio 4 Tema**: Mood Chips cepat, Grid Cepat 2×3, Top Charts Indonesia & Global, Mulai Radio Lagu 20 track, dan 4 tema murni CSS Variables (*Classic Dark*, *AMOLED Pure Black*, *Apple Music Minimal*, *Midnight Glass*).
-            - **Pondasi Terbukti Utuh 100%**: Capacitor 6 + SDK 34 + Java 17 + Media3 `1.4.1` + Static Tailwind CSS + Build Release + Vivo Origin Island (`com.netease.cloudmusic`) + Zero-Pause Background & Screen-Off YouTube.
+            ### SpotyFlow v2.0.0 — Auralys-Class Edition
+            - **Mesin Audio Instan (< 1 Detik)**: `NewPipeExtractor v0.27.1` + Native `Media3 ExoPlayer` + `SimpleCache` (180 MB) + Smart Pre-Fetch lagu berikutnya + `C.WAKE_MODE_NETWORK` (layar mati 100% stabil, `SFYtFull` sebagai fallback & Mode Video MV).
+            - **Lirik Real-Time di Dynamic Island / Origin Island & Layar Kunci**: Baris lirik aktif mengalir otomatis di kapsul media HP, smartwatch & Bluetooth mobil.
+            - **3 Varian Widget Layar Utama Ala Auralys**: Mini Glass `4×1`, Adaptive Album Card `4×2` (warna dominan otomatis), dan Live Lyrics Widget `4×2` (lirik real-time).
+            - **Dual UI 1-Klik (`Liquid Glass` ↔ `Editorial`)**: Floating Glass Bottom Dock & Mini-Player, Material You Ambient Glow, Apple Music Synced Lyrics, dan Optimistic UI `0ms` dengan Haptic Feedback.
+            - **Poster Maker Studio (5 Template HD `1080×1920` & `1080×1350`)**: Editorial, Liquid Glass Card, Vinyl Sleeve Retro, Lyric Quote, & Polaroid (anti tainted canvas).
+            - **Offline Download Penuh 1-Klik**: Unduh audio `.m4a` langsung ke perangkat & putar `0ms` tanpa kuota internet.
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true

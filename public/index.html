@@ -37,12 +37,15 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <script>
-    /* Early Theme Studio Boot (Zero Flicker) */
+    /* Early Theme Studio & Dual Visual Style Boot (Zero Flicker) */
     (function(){
       try {
         var t = localStorage.getItem('sf_ui_theme_v1') || 'classic';
         if (['classic','amoled','minimal','midnight'].indexOf(t) === -1) t = 'classic';
         document.documentElement.setAttribute('data-sf-theme', t);
+        var s = localStorage.getItem('sf_visual_style_v2') || 'liquid';
+        if (s !== 'liquid' && s !== 'editorial') s = 'liquid';
+        document.documentElement.setAttribute('data-sf-style', s);
       } catch(e) {}
     })();
     window.__SPOTYFLOW_SERVERLESS = true;
@@ -1109,6 +1112,183 @@
       border-radius: 1.15rem !important;
     }
   </style>
+
+  <!-- =====================================================================
+       SPOTYFLOW v2.0.0 — AURALYS-CLASS DUAL STYLE (LIQUID GLASS <-> EDITORIAL)
+       ATURAN EMAS 60-120 FPS: backdrop-filter HANYA pada elemen melayang statis!
+       DILARANG keras memasang backdrop-filter pada kartu/baris di dalam scroll!
+       ===================================================================== -->
+  <style id="sf-v2-auralys-style">
+    /* Sliding 1-Click Style Switcher Pill */
+    #sf-style-pill-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 3px;
+      border-radius: 9999px;
+      background: rgba(20, 22, 28, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      user-select: none;
+    }
+    #sf-style-pill-switch .sf-style-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      bottom: 3px;
+      width: calc(50% - 3px);
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      will-change: transform;
+    }
+    html[data-sf-style="editorial"] #sf-style-pill-switch .sf-style-thumb {
+      transform: translate3d(100%, 0, 0);
+      background: #FFFFFF;
+      border-color: #FFFFFF;
+    }
+    html[data-sf-style="editorial"] #sf-style-pill-switch [data-style-opt="editorial"] {
+      color: #050505 !important;
+    }
+
+    /* ========= GAYA #1: LIQUID GLASS (iOS 26 / AURALYS — 60-120 FPS) ========= */
+    html[data-sf-style="liquid"] #sf-style-pill-switch {
+      backdrop-filter: blur(18px) saturate(165%);
+      -webkit-backdrop-filter: blur(18px) saturate(165%);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+    html[data-sf-style="liquid"] #main-scroll {
+      background-image: radial-gradient(ellipse 85% 320px at 50% -40px, rgba(var(--sf-cover-rgb, var(--sf-dominant-rgb, 30, 215, 96)), 0.18), transparent 72%);
+      transition: background-image 500ms ease;
+    }
+    html[data-sf-style="liquid"] .mobile-bottom-nav {
+      left: 12px !important;
+      right: 12px !important;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+      border-radius: 28px !important;
+      background: rgba(20, 22, 28, 0.62) !important;
+      backdrop-filter: blur(20px) saturate(170%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.16) !important;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+    }
+    html[data-sf-style="liquid"] .mobile-bottom-nav .nav-btn.nav-active {
+      background: rgba(255, 255, 255, 0.14) !important;
+      border-radius: 20px !important;
+      color: #FFFFFF !important;
+    }
+    html[data-sf-style="liquid"] #mobile-mini-player {
+      left: 12px !important;
+      right: 12px !important;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 74px) !important;
+      border-radius: 22px !important;
+      background: linear-gradient(135deg, rgba(var(--sf-cover-rgb, var(--sf-dominant-rgb, 30, 34, 44)), 0.52), rgba(16, 18, 24, 0.72)) !important;
+      backdrop-filter: blur(20px) saturate(165%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(165%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+    }
+    html[data-sf-style="liquid"] #sf-av-mode-switch,
+    html[data-sf-style="liquid"] #stage-mobile-tab-bar > div {
+      backdrop-filter: blur(18px) saturate(165%) !important;
+      -webkit-backdrop-filter: blur(18px) saturate(165%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    }
+    /* Kartu & baris di dalam scroll: kilau specular halus TANPA backdrop-filter (0% lag!) */
+    html[data-sf-style="liquid"] #page-content .sp-card,
+    html[data-sf-style="liquid"] #page-content .sf-bento-card {
+      border-radius: 18px;
+      background-color: rgba(255, 255, 255, 0.055);
+      border-top: 1px solid rgba(255, 255, 255, 0.11);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    @media (max-width: 767px) {
+      #page-content {
+        padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+
+    /* ========= GAYA #2: EDITORIAL (TAJAM, MATTE, 0% BLUR, HEMAT BATERAI) ========= */
+    html[data-sf-style="editorial"] *,
+    html[data-sf-style="editorial"] .sf-glass,
+    html[data-sf-style="editorial"] .sf-smoked-glass,
+    html[data-sf-style="editorial"] .mobile-bottom-nav,
+    html[data-sf-style="editorial"] #mobile-mini-player,
+    html[data-sf-style="editorial"] #sf-style-pill-switch {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    html[data-sf-style="editorial"] .mobile-bottom-nav {
+      background: #111111 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65) !important;
+    }
+    html[data-sf-style="editorial"] .mobile-bottom-nav .nav-btn.nav-active {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-radius: 10px !important;
+      color: #FFFFFF !important;
+    }
+    html[data-sf-style="editorial"] #mobile-mini-player {
+      background: #111111 !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65) !important;
+    }
+    html[data-sf-style="editorial"] h1,
+    html[data-sf-style="editorial"] h2,
+    html[data-sf-style="editorial"] #stage-title {
+      letter-spacing: -0.03em !important;
+      font-weight: 800 !important;
+    }
+    html[data-sf-style="editorial"] .sp-card,
+    html[data-sf-style="editorial"] .sf-bento-card {
+      border-radius: 12px !important;
+      background: #111113 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+
+    /* ========= APPLE MUSIC SYNCED LYRICS (100% GPU TRANSFORM & OPACITY, 0% BLUR) ========= */
+    #stage-lyrics-body .synced-lyric-line {
+      transform-origin: left center;
+      transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, opacity;
+      filter: none !important;
+    }
+    #stage-lyrics-body .synced-lyric-line.lyric-active {
+      opacity: 1 !important;
+      transform: scale(1.04) translateZ(0) !important;
+      font-weight: 800 !important;
+      color: #FFFFFF !important;
+      text-shadow: 0 2px 18px rgba(255, 255, 255, 0.25) !important;
+    }
+    #stage-lyrics-body .synced-lyric-line.lyric-passed,
+    #stage-lyrics-body .synced-lyric-line.lyric-upcoming-near,
+    #stage-lyrics-body .synced-lyric-line.lyric-upcoming-far {
+      opacity: 0.34 !important;
+      transform: scale(0.97) translateZ(0) !important;
+    }
+    #stage-lyrics-body .synced-lyric-line:active {
+      transform: scale(0.99) translateZ(0) !important;
+    }
+
+    /* ========= 0ms OPTIMISTIC UI MICRO BUFFERING SHIMMER ========= */
+    @keyframes sfBufferingSlide {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    #mobile-progress-bar.sf-buffering-shimmer {
+      transform: scaleX(1) !important;
+      background: linear-gradient(90deg, rgba(30, 215, 96, 0.2), #1ED760, rgba(255, 255, 255, 0.85), #1ED760, rgba(30, 215, 96, 0.2)) !important;
+      background-size: 200% 100% !important;
+      animation: sfBufferingSlide 1.1s linear infinite !important;
+    }
+    button.sf-btn-buffering {
+      box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.65), 0 0 18px rgba(30, 215, 96, 0.35) !important;
+    }
+  </style>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
 
@@ -1343,6 +1523,20 @@
         <span class="hidden lg:inline" data-i18n="copilotBtn">AI Copilot</span>
       </button>
 
+      <!-- SpotyFlow v2.0.0 1-Click Dual Style Pill Switch: Liquid Glass <-> Editorial -->
+      <div id="sf-style-pill-switch" role="tablist" aria-label="Gaya visual SpotyFlow" title="Ganti gaya Liquid Glass ↔ Editorial" class="shrink-0">
+        <span class="sf-style-thumb" aria-hidden="true"></span>
+        <button type="button" data-style-opt="liquid" role="tab" aria-selected="true" onclick="window.SF200?.ui?.setVisualStyle('liquid')" class="relative z-10 px-2.5 py-1 rounded-full text-[10.5px] font-bold text-white inline-flex items-center gap-1 transition-colors">
+          <i data-lucide="droplets" aria-hidden="true" class="w-3 h-3 text-[#1ED760]"></i>
+          <span class="hidden sm:inline">Liquid Glass</span>
+          <span class="sm:hidden">Glass</span>
+        </button>
+        <button type="button" data-style-opt="editorial" role="tab" aria-selected="false" onclick="window.SF200?.ui?.setVisualStyle('editorial')" class="relative z-10 px-2.5 py-1 rounded-full text-[10.5px] font-bold text-white/70 hover:text-white inline-flex items-center gap-1 transition-colors">
+          <i data-lucide="type" aria-hidden="true" class="w-3 h-3"></i>
+          <span>Editorial</span>
+        </button>
+      </div>
+
       <!-- Single Consolidated Quick Menu Button -->
       <div class="relative" id="header-quick-menu-wrap">
         <button type="button" id="header-quick-menu-btn" onclick="toggleHeaderQuickMenu()" aria-haspopup="menu" aria-expanded="false" data-i18n-title="quickMenuTitle" aria-label="Menu Pintas" title="Menu Pintas & Pengaturan" class="sf-tap w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/10 flex items-center justify-center text-white transition-colors">
@@ -1355,7 +1549,7 @@
               <i data-lucide="settings" aria-hidden="true" class="w-4 h-4 text-[#1ED760] shrink-0"></i>
               <span class="truncate">Pengaturan</span>
             </span>
-            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v1.5.3</span>
+            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v2.0.0</span>
           </button>
           <button type="button" role="menuitem" onclick="closeHeaderQuickMenu(); openAiMoodDjModal()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/[0.08] text-xs font-bold text-[#E5C99B] text-left transition-colors">
             <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
@@ -1805,7 +1999,7 @@
             <div class="flex items-center justify-between pt-1.5 gap-2">
               <span class="text-[11px] text-[#B3B3B3] shrink-0">Auto-Update OTA</span>
               <button type="button" id="console-app-version" onclick="SFAutoUpdate.checkNow(true)" class="font-mono text-[11px] font-bold text-white hover:text-[#1ED760] text-right truncate transition-colors">
-                v1.5.3 • Cek Update
+                v2.0.0 • Cek Update
               </button>
             </div>
           </div>
@@ -2438,6 +2632,14 @@
             <i data-lucide="radio" aria-hidden="true" class="w-4 h-4 stroke-[1.6] text-[#1ED760] shrink-0"></i>
             <span class="truncate">Mulai Radio Lagu Ini</span>
           </button>
+          <button type="button" onclick="closeStageStudioSheet(); window.SF200?.poster?.openModal(AppState.currentTrack)" class="sf-tap min-h-[48px] px-3.5 py-2.5 rounded-2xl sf-smoked-glass text-xs font-medium text-[#F5F5F7] flex items-center gap-2.5 text-left">
+            <i data-lucide="palette" aria-hidden="true" class="w-4 h-4 stroke-[1.6] text-[#E5C99B] shrink-0"></i>
+            <span class="truncate">🎨 Buat Poster HD</span>
+          </button>
+          <button type="button" onclick="closeStageStudioSheet(); window.SF200?.offline?.downloadOrToggle(AppState.currentTrack)" class="sf-tap min-h-[48px] px-3.5 py-2.5 rounded-2xl sf-smoked-glass text-xs font-medium text-[#F5F5F7] flex items-center gap-2.5 text-left">
+            <i data-lucide="download" aria-hidden="true" class="w-4 h-4 stroke-[1.6] text-[#1ED760] shrink-0"></i>
+            <span class="truncate">Unduh Offline</span>
+          </button>
           <button type="button" onclick="closeStageStudioSheet(); closeFullscreenStage(); enterCarMode()" class="sf-tap min-h-[48px] px-3.5 py-2.5 rounded-2xl sf-smoked-glass text-xs font-medium text-[#F5F5F7] flex items-center gap-2.5 text-left">
             <i data-lucide="car" aria-hidden="true" class="w-4 h-4 stroke-[1.6] text-[#E5C99B] shrink-0"></i>
             <span data-i18n="carModeBtn" class="truncate">Mode Berkendara</span>
@@ -2499,6 +2701,12 @@
             <p id="stage-artist" class="text-base text-white/70 truncate mt-0.5">Nama Artis</p>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" id="stage-offline-dl-btn" onclick="window.SF200?.offline?.downloadOrToggle(AppState.currentTrack)" aria-label="Unduh offline" title="Unduh Offline 1-Klik" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#1ED760] shrink-0 transition-colors font-mono text-[10px] font-bold">
+              <i data-lucide="download" aria-hidden="true" class="w-4 h-4 stroke-[1.8]"></i>
+            </button>
+            <button type="button" id="stage-poster-studio-btn" onclick="window.SF200?.poster?.openModal(AppState.currentTrack)" aria-label="Buat poster lagu HD" title="🎨 Buat Poster Lagu HD" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#E5C99B] shrink-0 transition-colors">
+              <i data-lucide="palette" aria-hidden="true" class="w-4 h-4 stroke-[1.8]"></i>
+            </button>
             <button type="button" id="stage-pin-moment-btn" onclick="window.SF153?.openPinMomentModal()" aria-label="Pin momen favorit" title="Pin Momen / Reff Favorit" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#1ED760] shrink-0 transition-colors">
               <i data-lucide="pin" aria-hidden="true" class="w-4 h-4 stroke-[1.8]"></i>
             </button>
@@ -2851,7 +3059,7 @@
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
-    const APP_VERSION = '1.5.3';
+    const APP_VERSION = '2.0.0';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -5310,6 +5518,7 @@
     const ExoState = { active: false };
 
     function pauseAllWebDecks() {
+      try { if (window.SF200 && typeof window.SF200.stopNativePlayback === 'function') window.SF200.stopNativePlayback(); } catch {}
       try { if (typeof SFYtFull !== 'undefined') SFYtFull.stop(); } catch {}
       try { if (typeof cancelActiveCrossfade === 'function') cancelActiveCrossfade(true); } catch {}
       try {
@@ -5590,6 +5799,26 @@
 
     window.__sfOnNativeMediaAction = function (action, positionMs) {
       try {
+        if (window.SF200 && window.SF200.isNativePlayingActive()) {
+          if (action === 'play') {
+            window.__sfUserPauseTs = 0;
+            window.SF200.nativeControl('play', 0);
+            AppState.isPlaying = true;
+            updatePlayPauseIcons();
+            return;
+          } else if (action === 'pause' || action === 'noisy') {
+            window.__sfUserPauseTs = Date.now();
+            window.SF200.nativeControl('pause', 0);
+            AppState.isPlaying = false;
+            updatePlayPauseIcons();
+            return;
+          } else if (action === 'seek' && Number.isFinite(Number(positionMs))) {
+            const targetSec = Math.max(0, Number(positionMs) / 1000);
+            window.SF200.nativeControl('seek', Math.round(targetSec * 1000));
+            syncLyricsWithTime(targetSec);
+            return;
+          }
+        }
         if (action === 'play') {
           window.__sfUserPauseTs = 0;
           if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
@@ -8214,6 +8443,11 @@
       saveTrackSnapshot(track);
 
       updatePlayerUI();
+      if (window.SF200?.ui) {
+        window.SF200.ui.hapticTap(10);
+        window.SF200.ui.setBufferingState(true);
+        window.SF200.ui.syncCoverAdaptiveRgb();
+      }
       renderQueueDrawer();
       renderRightPanelNextUp();
       renderAudioSourcesPanel();
@@ -8336,8 +8570,20 @@
         }
       }
 
-      // Priority 3 (FAST PATH YOUTUBE PENUH): Jika track sudah punya videoId valid, langsung putar FULL lewat SFYtFull (~1-2 detik!)
+      // Priority 0.5 (NATIVE APK OFFLINE 0ms): Jika sudah tersimpan di filesDir/offline_audio HP -> putar 0ms tanpa internet!
+      if (window.SF200 && window.SF200.hasNativeOfflineTrack(track.id) && window.SF200.canUseNativeAudio(track)) {
+        const offlineOk = await window.SF200.playNativeTrack(track, extractDirectTrackVideoId(track) || '', sessionId, pendingResumeSec);
+        if (sessionId !== AppState.playSessionId) return;
+        if (offlineOk) return;
+      }
+
+      // Priority 3 (FAST PATH YOUTUBE PENUH): Jika track sudah punya videoId valid, putar via Native NewPipe+ExoPlayer (<1s di APK) atau SFYtFull
       const directYtVid = extractDirectTrackVideoId(track);
+      if (directYtVid && window.SF200 && window.SF200.canUseNativeAudio(track)) {
+        const nativeOk = await window.SF200.playNativeTrack(track, directYtVid, sessionId, pendingResumeSec);
+        if (sessionId !== AppState.playSessionId) return;
+        if (nativeOk) return;
+      }
       if (directYtVid && typeof SFYtFull !== 'undefined') {
         setLoadingBanner(true, `Memutar YouTube penuh "${track.title}"...`);
         setSignalBadge('MENGHUBUNGKAN...', false);
@@ -8413,7 +8659,18 @@
         AppState.audioSourceIndex = 0;
         renderAudioSourcesPanel();
 
-        // 1. PRIORITAS UTAMA (WEB & APK): YouTube Full-Duration Engine (SFYtFull — cepat ~1-2 detik, 100% full 3-5+ menit, anti preview 30 detik!)
+        // 1. PRIORITAS UTAMA APK: Native NewPipeExtractor + Media3 ExoPlayer (<1 detik, layar mati 100% stabil, anti preview 30s!)
+        if (ytCandidates.length > 0 && window.SF200 && window.SF200.canUseNativeAudio(track)) {
+          for (let j = 0; j < Math.min(ytCandidates.length, 3); j++) {
+            const cand = ytCandidates[j];
+            if (!cand?.videoId) continue;
+            const nativeOk = await window.SF200.playNativeTrack(track, cand.videoId, sessionId, pendingResumeSec);
+            if (sessionId !== AppState.playSessionId) return;
+            if (nativeOk) return;
+          }
+        }
+
+        // 1B. PRIORITAS UTAMA WEB & FALLBACK APK: YouTube Full-Duration Engine (SFYtFull — cepat ~1-2 detik, 100% full 3-5+ menit, anti preview 30 detik!)
         if (ytCandidates.length > 0 && typeof SFYtFull !== 'undefined') {
           for (let j = 0; j < Math.min(ytCandidates.length, 6); j++) {
             const cand = ytCandidates[j];
@@ -8624,6 +8881,21 @@
         clearInterval(sleepFadeTimerId);
         sleepFadeTimerId = null;
         applyMasterVolumeGain(false);
+      }
+      if (window.SF200 && window.SF200.isNativePlayingActive()) {
+        if (AppState.isPlaying) {
+          window.__sfUserPauseTs = Date.now();
+          window.SF200.nativeControl('pause', 0);
+          AppState.isPlaying = false;
+        } else {
+          window.__sfUserPauseTs = 0;
+          window.SF200.nativeControl('play', 0);
+          AppState.isPlaying = true;
+        }
+        updatePlayPauseIcons();
+        highlightPlayingTrackRows();
+        if (typeof reportLivePlaybackState === 'function') reportLivePlaybackState();
+        return;
       }
       if (hasNativeExo() && ExoState.active) {
         if (ExoState.isPlaying || AppState.isPlaying) {
@@ -9303,9 +9575,10 @@
         AppState.isSeeking = true;
         const pct = parseFloat(e.target.value);
         el.style.setProperty('--slider-pct', `${pct}%`);
-        const useExo = hasNativeExo() && ExoState.active;
-        const useYt = !useExo && typeof SFYtFull !== 'undefined' && SFYtFull.active;
-        const rawDur = useExo ? ExoState.durationSec : (useYt ? SFYtFull.getDuration() : audio.duration);
+        const useSf200 = Boolean(window.SF200 && window.SF200.isNativePlayingActive());
+        const useExo = !useSf200 && hasNativeExo() && ExoState.active;
+        const useYt = !useSf200 && !useExo && typeof SFYtFull !== 'undefined' && SFYtFull.active;
+        const rawDur = useSf200 ? window.SF200.getDurationSec() : (useExo ? ExoState.durationSec : (useYt ? SFYtFull.getDuration() : audio.duration));
         const dur = rawDur && isFinite(rawDur) ? rawDur : (AppState.currentTrack?.duration || 0);
         if (dur) {
           const preview = formatTime((pct / 100) * dur);
@@ -9315,13 +9588,16 @@
       });
       el.addEventListener('change', (e) => {
         const pct = parseFloat(e.target.value) / 100;
-        const useExo = hasNativeExo() && ExoState.active;
-        const useYt = !useExo && typeof SFYtFull !== 'undefined' && SFYtFull.active;
-        const rawDur = useExo ? ExoState.durationSec : (useYt ? SFYtFull.getDuration() : audio.duration);
+        const useSf200 = Boolean(window.SF200 && window.SF200.isNativePlayingActive());
+        const useExo = !useSf200 && hasNativeExo() && ExoState.active;
+        const useYt = !useSf200 && !useExo && typeof SFYtFull !== 'undefined' && SFYtFull.active;
+        const rawDur = useSf200 ? window.SF200.getDurationSec() : (useExo ? ExoState.durationSec : (useYt ? SFYtFull.getDuration() : audio.duration));
         const dur = rawDur && isFinite(rawDur) ? rawDur : (AppState.currentTrack?.duration || 0);
         if (dur > 0) {
           const targetSec = pct * dur;
-          if (useExo) {
+          if (useSf200) {
+            window.SF200.nativeControl('seek', Math.round(targetSec * 1000));
+          } else if (useExo) {
             ExoState.positionSec = targetSec;
             try { window.SpotyFlowExo.seekTo(Math.round(targetSec * 1000)); } catch {}
           } else if (useYt) {
@@ -9373,6 +9649,7 @@
       const txt = document.getElementById('audio-loading-text');
       if (txt) txt.textContent = msg;
       if (banner) banner.classList.toggle('hidden', !show);
+      if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(Boolean(show));
       updatePlayPauseIcons();
     }
 
@@ -10113,6 +10390,9 @@
         return;
       }
       lyr.activeIndex = newIdx;
+      if (window.SF200 && typeof window.SF200.syncDynamicIslandLyric === 'function') {
+        window.SF200.syncDynamicIslandLyric(newIdx >= 0 ? (lyr.syncedLines[newIdx]?.text || '') : '', newIdx);
+      }
       if (window.innerWidth >= 1024) renderRightPanelMiniLyrics();
       if (typeof updateMiniPlayerPipLyric === 'function') updateMiniPlayerPipLyric();
 
@@ -10137,7 +10417,10 @@
     function seekToLyricTime(sec) {
       if (isNaN(sec)) return;
       const targetAudioSec = Math.max(0, sec + (Number(AppState.lyricsOffsetSec) || 0));
-      if (hasNativeExo() && ExoState.active) {
+      if (window.SF200 && window.SF200.isNativePlayingActive()) {
+        window.SF200.nativeControl('seek', Math.round(targetAudioSec * 1000));
+        window.SF200.ui?.hapticTap?.(10);
+      } else if (hasNativeExo() && ExoState.active) {
         ExoState.positionSec = targetAudioSec;
         try { window.SpotyFlowExo.seekTo(Math.round(targetAudioSec * 1000)); } catch {}
       } else if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
@@ -10946,8 +11229,11 @@
         <button type="button" onclick="closeTrackContextMenu(); openAddToPlaylistModal(window.__trackContexts['${safeKey}'][${idx}])" class="${itemCls}">
           <i data-lucide="plus-circle" aria-hidden="true" class="w-4 h-4 text-[#B3B3B3]"></i><span>Tambahkan ke Playlist</span>
         </button>
-        <button type="button" onclick="closeTrackContextMenu(); toggleTrackOffline(window.__trackContexts['${safeKey}'][${idx}])" class="${itemCls}">
-          <i data-lucide="${isTrackOfflineCached(track.id) ? 'hard-drive' : 'download'}" aria-hidden="true" class="w-4 h-4 text-[#1ED760]"></i><span>${isTrackOfflineCached(track.id) ? 'Hapus dari Cache Offline' : 'Simpan Offline'}</span>
+        <button type="button" onclick="closeTrackContextMenu(); (window.SF200?.offline ? window.SF200.offline.downloadOrToggle(window.__trackContexts['${safeKey}'][${idx}]) : toggleTrackOffline(window.__trackContexts['${safeKey}'][${idx}]))" class="${itemCls}">
+          <i data-lucide="${(window.SF200?.offline?.isTrackOffline?.(track.id) || isTrackOfflineCached(track.id)) ? 'hard-drive' : 'download'}" aria-hidden="true" class="w-4 h-4 text-[#1ED760]"></i><span>${(window.SF200?.offline?.isTrackOffline?.(track.id) || isTrackOfflineCached(track.id)) ? 'Hapus dari Unduhan Offline' : 'Unduh Offline (Full Audio)'}</span>
+        </button>
+        <button type="button" onclick="closeTrackContextMenu(); window.SF200?.poster?.openModal(window.__trackContexts['${safeKey}'][${idx}])" class="${itemCls}">
+          <i data-lucide="palette" aria-hidden="true" class="w-4 h-4 text-[#E5C99B]"></i><span>🎨 Buat Poster HD</span>
         </button>
         <button type="button" onclick="closeTrackContextMenu(); toggleHideTrack(window.__trackContexts['${safeKey}'][${idx}])" class="${itemCls}">
           <i data-lucide="${isTrackHidden(track.id) ? 'eye' : 'eye-off'}" aria-hidden="true" class="w-4 h-4 ${isTrackHidden(track.id) ? 'text-[#1ED760]' : 'text-[#B3B3B3]'}"></i><span>${isTrackHidden(track.id) ? 'Tampilkan Lagu Kembali' : 'Sembunyikan Lagu'}</span>
@@ -11459,7 +11745,7 @@
             <div class="space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
                 <div>
-                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v1.5.3</p>
+                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v2.0.0</p>
                   <h1 class="font-display font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-tight text-white mt-0.5">${greetingText}</h1>
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
@@ -14296,6 +14582,9 @@
               </button>
             `).join('')}
           </div>
+
+          <!-- Unduhan Offline Perangkat (SpotyFlow v2.0.0 Native APK + IndexedDB) -->
+          <div id="sf200-offline-section">${window.SF200?.offline ? window.SF200.offline.renderLibrarySectionHtml() : ''}</div>
 
           <!-- Bagian File Lokal Perangkat (.mp3 / .m4a / .wav / .ogg / .flac + IndexedDB) -->
           <section class="bg-[#181818]/85 border border-white/10 rounded-2xl p-5 space-y-4">
@@ -28512,7 +28801,7 @@
     function exportFullStudioBackup() {
       const bundle = {
         app: 'SpotyFlow',
-        version: '1.5.3',
+        version: '2.0.0',
         exportedAt: new Date().toISOString(),
         data: {
           likedTracks: AppState.likedTracks || [],
@@ -29221,6 +29510,10 @@
     const SF_PERMANENT_DATA_WHITELIST = new Set([
       'sf_track_pins_v1',
       'sf_ui_theme_v1',
+      'sf_island_lyrics_v1',
+      'sf_visual_style_v2',
+      'sf_offline_meta_v2',
+      'sf_seen_whats_new_2_0_0',
       'sf_liked_tracks',
       'sf_user_playlists',
       'sf_playlist_folders',
@@ -29448,6 +29741,23 @@
               <button type="button" onclick="AppState.autoAiLyrics = (AppState.autoAiLyrics === false); savePrefs(); openSettingsModal();" class="px-3 py-1 rounded-full text-[11px] font-bold ${isAutoAi ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-zinc-300'}">${isAutoAi ? 'Aktif' : 'Nonaktif'}</button>
             </div>
             <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.07]">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Gaya Visual Antarmuka</p>
+                <p class="text-[10.5px] text-zinc-400">Liquid Glass (kaca bening) atau Editorial (matte 0% blur)</p>
+              </div>
+              <div class="inline-flex items-center gap-1 p-0.5 rounded-full bg-black/40 border border-white/10 shrink-0">
+                <button type="button" onclick="window.SF200?.ui?.setVisualStyle('liquid'); openSettingsModal();" class="px-2.5 py-1 rounded-full text-[10.5px] font-bold ${(document.documentElement.getAttribute('data-sf-style') !== 'editorial') ? 'bg-[#1ED760] text-black' : 'text-zinc-300'}">Liquid Glass</button>
+                <button type="button" onclick="window.SF200?.ui?.setVisualStyle('editorial'); openSettingsModal();" class="px-2.5 py-1 rounded-full text-[10.5px] font-bold ${(document.documentElement.getAttribute('data-sf-style') === 'editorial') ? 'bg-white text-black' : 'text-zinc-300'}">Editorial</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.07]">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Lirik di Dynamic Island &amp; Widget</p>
+                <p class="text-[10.5px] text-zinc-400">Tampilkan baris lirik real-time di kapsul HP &amp; layar kunci</p>
+              </div>
+              <button type="button" onclick="window.SF200?.toggleIslandLyrics(); openSettingsModal();" class="px-3 py-1 rounded-full text-[11px] font-bold ${(localStorage.getItem('sf_island_lyrics_v1') !== '0') ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-zinc-300'}">${(localStorage.getItem('sf_island_lyrics_v1') !== '0') ? 'Aktif' : 'Nonaktif'}</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.07]">
               <span class="text-xs font-semibold text-white">Warna Aksen</span>
               <div class="flex items-center gap-1.5">
                 ${['#1ED760', '#38BDF8', '#F59E0B', '#EC4899', '#A78BFA'].map((hex) => `
@@ -29532,8 +29842,8 @@
       `);
     }
 
-    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v1.5.3" (AUTO 1X) ---
-    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_1_5_3';
+    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v2.0.0" (AUTO 1X) ---
+    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_2_0_0';
 
     function dismissWhatsNewV152Modal() {
       safeStorageSet(SF_SEEN_WHATS_NEW_KEY, '1');
@@ -29546,20 +29856,19 @@
         <div class="space-y-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] border border-[#1ED760]/35">MAJOR UPDATE v${APP_VERSION}</span>
+              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#E5C99B]/20 text-[#1ED760] border border-[#1ED760]/40">v2.0.0 • AURALYS-CLASS EDITION</span>
               <h3 class="font-display font-extrabold text-xl text-white mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
             </div>
             <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80 shrink-0">
               <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
             </button>
           </div>
-          <ul class="space-y-2 text-xs text-zinc-200 leading-relaxed">
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span><strong>Switch 1-Klik Lagu | Video (MV)</strong> di layar penuh tanpa jeda audio sama sekali</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span><strong>Pin Momen / Reff Favorit</strong> langsung di seekbar lagu untuk lompat instan ke bagian favorit</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span><strong>Widget Layar Utama Android 4×1 &amp; 4×2</strong> untuk kendali musik cepat dari Home Screen</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span><strong>AI Curhat → Playlist</strong>: tulis suasana hatimu, AI meracik playlist nyata siap putar &amp; simpan</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span><strong>SpotyFlow Wrapped 5-Slide ala IG Story</strong> lengkap dengan ekspor Poster HD 1080×1920</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">•</span><span><strong>Beranda Hidup (Top Charts ID &amp; Global)</strong>, <strong>Radio Lagu Ini (20 lagu serupa)</strong> &amp; <strong>Theme Studio 4 Tema</strong></span></li>
+          <ul class="space-y-2.5 text-xs text-zinc-200 leading-relaxed">
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">⚡</span><span><strong>Mesin Audio Instan (&lt; 1 Detik)</strong> — <code>NewPipeExtractor</code> + Native <code>ExoPlayer</code> + Pre-Fetch + Layar Mati 100% Stabil.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#38BDF8] font-bold">🫧</span><span><strong>Gaya Liquid Glass ↔ Editorial</strong> — Sakelar 1-klik di pojok atas + Floating Glass Dock + Apple Music Synced Lyrics.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#E5C99B] font-bold">🏝️</span><span><strong>Lirik Real-Time di Dynamic Island</strong> — Baris lirik mengalir langsung di kapsul HP, layar kunci &amp; Bluetooth mobil.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-pink-400 font-bold">🎨</span><span><strong>Poster Maker Studio</strong> — 5 Template Poster Lagu &amp; Album HD (<code>1080×1920</code> &amp; <code>1080×1350</code>) siap share IG Story.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-purple-400 font-bold">🧩</span><span><strong>3 Varian Widget Layar Utama</strong> — Mini Glass 4×1, Adaptive Album Card 4×2, &amp; Live Lyrics Widget 4×2.</span></li>
           </ul>
           <button type="button" onclick="dismissWhatsNewV152Modal()" class="w-full py-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-sm font-extrabold transition-colors shadow-lg">
             Mulai Mendengarkan
@@ -29821,8 +30130,35 @@
 
       function setStageVideoMode(enabled) {
         const wantVideo = Boolean(enabled);
+        AppState.stageVideoMode = wantVideo;
+        if (wantVideo && window.SF200 && window.SF200.isNativePlayingActive()) {
+          state.videoMode = true;
+          updateVideoSwitchButtons();
+          if (window.innerWidth < 1024 && typeof switchFullscreenStageMobileTab === 'function') {
+            switchFullscreenStageMobileTab('player');
+          }
+          window.SF200.handoffNativeToVideo().then((ok) => {
+            if (!ok) {
+              state.videoMode = false;
+              AppState.stageVideoMode = false;
+              syncStageVideoOverlay(true);
+              if (typeof showToast === 'function') showToast('Mode Video tersedia untuk lagu dari YouTube', 'info');
+            } else {
+              syncStageVideoOverlay(false);
+            }
+          });
+          return;
+        }
+        if (!wantVideo && state.videoMode && window.SF200 && window.SF200.canReturnVideoToNative()) {
+          state.videoMode = false;
+          AppState.stageVideoMode = false;
+          syncStageVideoOverlay(true);
+          window.SF200.handoffVideoToNative();
+          return;
+        }
         if (wantVideo && !isYouTubeFullTrackActive()) {
           state.videoMode = false;
+          AppState.stageVideoMode = false;
           syncStageVideoOverlay(true);
           if (typeof showToast === 'function') {
             showToast('Mode Video tersedia untuk lagu dari YouTube', 'info');
@@ -29830,7 +30166,6 @@
           return;
         }
         state.videoMode = wantVideo;
-        // Pastikan tab Player aktif di mobile saat beralih ke Video
         if (wantVideo && window.innerWidth < 1024 && typeof switchFullscreenStageMobileTab === 'function') {
           switchFullscreenStageMobileTab('player');
         }
@@ -29891,6 +30226,7 @@
       }
 
       function renderStagePins() {
+        if (window.SF200?.offline?.syncStageDownloadButton) window.SF200.offline.syncStageDownloadButton();
         const layer = document.getElementById('stage-seek-pins-layer');
         const row = document.getElementById('stage-pins-chips-row');
         const btn = document.getElementById('stage-pin-moment-btn');
@@ -29933,7 +30269,10 @@
       function jumpToTrackPin(sec) {
         const target = Math.max(0, Number(sec) || 0);
         try {
-          if (typeof SFYtFull !== 'undefined' && SFYtFull.active && SFYtFull.player) {
+          if (window.SF200 && window.SF200.isNativePlayingActive()) {
+            window.SF200.nativeControl('seek', Math.round(target * 1000));
+            if (typeof syncLyricsWithTime === 'function') syncLyricsWithTime(target);
+          } else if (typeof SFYtFull !== 'undefined' && SFYtFull.active && SFYtFull.player) {
             SFYtFull.seekTo(target);
           } else if (typeof audio !== 'undefined' && audio) {
             audio.currentTime = target;
@@ -31077,6 +31416,1309 @@
         playAllHomeChart,
         startSongRadio,
         applyUiTheme,
+      };
+    })();
+
+    /* =====================================================================
+       25. SPOTYFLOW v2.0.0 — AURALYS-CLASS EDITION (window.SF200)
+       - Stage 1: Native NewPipeExtractor + Media3 ExoPlayer (<1s), Pre-Fetch,
+                  Live Dynamic Island Lyrics, Hybrid MV Handoff
+       ===================================================================== */
+    window.SF200 = (function createSpotyFlow200Module() {
+      const ISLAND_LYRICS_KEY = 'sf_island_lyrics_v1';
+      const st = {
+        nativeActive: false,
+        nativeTrack: null,
+        nativeVideoId: '',
+        nativeDurationSec: 0,
+        nativePositionSec: 0,
+        nativeSessionId: 0,
+        pendingResolve: null,
+        pendingTimer: null,
+        lastSentLyricIdx: -999,
+        lastSentLyricText: '',
+        returnedFromNativeVideoId: '',
+      };
+
+      function getBridge() {
+        return window.SpotyFlowMediaBridge || null;
+      }
+
+      function isIslandLyricsEnabled() {
+        try {
+          return localStorage.getItem(ISLAND_LYRICS_KEY) !== '0';
+        } catch {
+          return true;
+        }
+      }
+
+      function toggleIslandLyrics() {
+        const next = !isIslandLyricsEnabled();
+        try { localStorage.setItem(ISLAND_LYRICS_KEY, next ? '1' : '0'); } catch {}
+        const br = getBridge();
+        if (br && typeof br.updateLyricLine === 'function') {
+          try { br.updateLyricLine(next ? st.lastSentLyricText : '', next); } catch {}
+        }
+        if (typeof showToast === 'function') {
+          showToast(next ? 'Lirik Dynamic Island & Widget: AKTIF' : 'Lirik Dynamic Island & Widget: NONAKTIF', 'sparkles');
+        }
+        return next;
+      }
+
+      function syncDynamicIslandLyric(lineText, idx = -1) {
+        const clean = String(lineText || '').replace(/\s+/g, ' ').trim();
+        if (idx === st.lastSentLyricIdx && clean === st.lastSentLyricText) return;
+        st.lastSentLyricIdx = idx;
+        st.lastSentLyricText = clean;
+        const br = getBridge();
+        if (!br || typeof br.updateLyricLine !== 'function') return;
+        const enabled = isIslandLyricsEnabled();
+        try {
+          br.updateLyricLine(enabled ? clean : '', enabled);
+        } catch {}
+      }
+
+      function canUseNativeAudio(track) {
+        const br = getBridge();
+        if (!br || typeof br.playNativeTrack !== 'function') return false;
+        if (!track || track.isLocal) return false;
+        if (AppState.stageVideoMode) return false;
+        return true;
+      }
+
+      function hasNativeOfflineTrack(trackId) {
+        const br = getBridge();
+        if (!br || typeof br.hasOfflineTrack !== 'function' || !trackId) return false;
+        try {
+          return Boolean(br.hasOfflineTrack(String(trackId)));
+        } catch {
+          return false;
+        }
+      }
+
+      function isNativePlayingActive() {
+        return Boolean(st.nativeActive);
+      }
+
+      function getDurationSec() {
+        return st.nativeDurationSec || Number(AppState.currentTrack?.duration || 0);
+      }
+
+      function getPositionSec() {
+        return st.nativePositionSec || 0;
+      }
+
+      function nativeControl(cmd, valueMs = 0) {
+        const br = getBridge();
+        if (!br || typeof br.nativeControl !== 'function') return;
+        try {
+          br.nativeControl(String(cmd), Math.round(Number(valueMs) || 0));
+          if (cmd === 'seek') {
+            st.nativePositionSec = Math.max(0, (Number(valueMs) || 0) / 1000);
+          }
+        } catch {}
+      }
+
+      function stopNativePlayback() {
+        if (st.pendingTimer) {
+          clearTimeout(st.pendingTimer);
+          st.pendingTimer = null;
+        }
+        if (st.pendingResolve) {
+          const r = st.pendingResolve;
+          st.pendingResolve = null;
+          r(false);
+        }
+        if (st.nativeActive) {
+          st.nativeActive = false;
+          nativeControl('stop', 0);
+        }
+      }
+
+      function prefetchNextNativeTrack() {
+        const br = getBridge();
+        if (!br || typeof br.prefetchTrack !== 'function') return;
+        try {
+          const nextIdx = (Number(AppState.queueIndex) || 0) + 1;
+          const nextTrack = Array.isArray(AppState.queue) ? AppState.queue[nextIdx] : null;
+          if (!nextTrack || nextTrack.isLocal) return;
+          const nextVid = typeof extractDirectTrackVideoId === 'function' ? extractDirectTrackVideoId(nextTrack) : '';
+          if (nextVid && /^[a-zA-Z0-9_-]{11}$/.test(nextVid)) {
+            br.prefetchTrack(nextVid, Boolean(AppState.dataSaver));
+          } else if (typeof resolveTrackAudioSources === 'function') {
+            resolveTrackAudioSources(nextTrack).then((srcs) => {
+              const candVid = srcs?.__ytCandidates?.[0]?.videoId || '';
+              if (candVid && /^[a-zA-Z0-9_-]{11}$/.test(candVid)) {
+                try { br.prefetchTrack(candVid, Boolean(AppState.dataSaver)); } catch {}
+              }
+            }).catch(() => {});
+          }
+        } catch {}
+      }
+
+      function updateNativeProgressUI(posSec, durSec) {
+        if (AppState.isSeeking || window.__sfIsAppBackgrounded) return;
+        const dur = durSec > 1 ? durSec : (Number(AppState.currentTrack?.duration) || 210);
+        const pos = Math.max(0, Math.min(dur, posSec));
+        const pct = dur > 0 ? Math.min(100, (pos / dur) * 100) : 0;
+        const curTxt = typeof formatTime === 'function' ? formatTime(pos) : '0:00';
+        const tCur = document.getElementById('time-current');
+        const stCur = document.getElementById('stage-time-current');
+        if (tCur) tCur.textContent = curTxt;
+        if (stCur) stCur.textContent = curTxt;
+        ['seek-slider', 'stage-seek-slider'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = pct;
+            el.style.setProperty('--slider-pct', `${pct}%`);
+          }
+        });
+        const mobBar = document.getElementById('mobile-progress-bar');
+        if (mobBar) {
+          mobBar.style.width = '100%';
+          mobBar.style.transform = `scaleX(${(pct / 100).toFixed(4)})`;
+        }
+        if (typeof syncLyricsWithTime === 'function') {
+          syncLyricsWithTime(pos);
+        }
+        // A-B Loop support on Native ExoPlayer
+        if (AppState.abLoop && AppState.abLoop.active && AppState.abLoop.b > AppState.abLoop.a + 1 && pos >= AppState.abLoop.b) {
+          nativeControl('seek', Math.round(AppState.abLoop.a * 1000));
+        }
+      }
+
+      function playNativeTrack(track, videoId, sessionId, startSec = 0) {
+        const br = getBridge();
+        if (!br || typeof br.playNativeTrack !== 'function') return Promise.resolve(false);
+        const isOffline = hasNativeOfflineTrack(track?.id);
+        const cleanVid = String(videoId || '').trim();
+        if (!isOffline && !/^[a-zA-Z0-9_-]{11}$/.test(cleanVid)) {
+          return Promise.resolve(false);
+        }
+
+        stopNativePlayback();
+        st.nativeActive = true;
+        st.nativeTrack = track;
+        st.nativeVideoId = cleanVid;
+        st.nativeSessionId = sessionId;
+        st.nativeDurationSec = Number(track?.duration || 210);
+        st.nativePositionSec = Math.max(0, Number(startSec) || 0);
+        st.lastSentLyricIdx = -999;
+        st.lastSentLyricText = '';
+        st.returnedFromNativeVideoId = cleanVid;
+
+        if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(true);
+        if (typeof setLoadingBanner === 'function') {
+          setLoadingBanner(true, isOffline ? `Memutar Offline "${track.title}"...` : `Memutar instan "${track.title}"...`);
+        }
+
+        return new Promise((resolve) => {
+          st.pendingResolve = resolve;
+          st.pendingTimer = setTimeout(() => {
+            if (st.pendingResolve) {
+              const r = st.pendingResolve;
+              st.pendingResolve = null;
+              st.nativeActive = false;
+              nativeControl('stop', 0);
+              r(false);
+            }
+          }, 9500);
+
+          try {
+            const payload = {
+              trackId: String(track.id || cleanVid || 'track'),
+              videoId: cleanVid,
+              title: String(track.title || 'SpotyFlow'),
+              artist: String(track.artist?.name || 'SpotyFlow'),
+              album: String(track.album?.title || 'SpotyFlow'),
+              coverUrl: typeof getCover === 'function' ? getCover(track, 'big') : '',
+              startSec: Math.max(0, Number(startSec) || 0),
+              dataSaver: Boolean(AppState.dataSaver),
+            };
+            br.playNativeTrack(JSON.stringify(payload));
+          } catch {
+            clearTimeout(st.pendingTimer);
+            st.pendingTimer = null;
+            st.pendingResolve = null;
+            st.nativeActive = false;
+            resolve(false);
+          }
+        });
+      }
+
+      async function handoffNativeToVideo() {
+        const vid = st.nativeVideoId || (typeof extractDirectTrackVideoId === 'function' ? extractDirectTrackVideoId(AppState.currentTrack) : '');
+        if (!vid || typeof SFYtFull === 'undefined') return false;
+        const pos = st.nativePositionSec || 0;
+        const sessId = AppState.playSessionId;
+        st.returnedFromNativeVideoId = vid;
+        stopNativePlayback();
+        try {
+          await SFYtFull.playVideoId(vid, sessId);
+          if (pos > 1) SFYtFull.seekTo(pos);
+          AppState.isPlaying = true;
+          updatePlayPauseIcons();
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function canReturnVideoToNative() {
+        return Boolean(
+          getBridge()?.playNativeTrack &&
+          AppState.currentTrack &&
+          !AppState.currentTrack.isLocal &&
+          (st.returnedFromNativeVideoId || (typeof SFYtFull !== 'undefined' && SFYtFull.videoId))
+        );
+      }
+
+      async function handoffVideoToNative() {
+        const vid = (typeof SFYtFull !== 'undefined' && SFYtFull.videoId) || st.returnedFromNativeVideoId;
+        const pos = (typeof SFYtFull !== 'undefined' && SFYtFull.active) ? Number(SFYtFull.getCurrentTime() || 0) : 0;
+        try { if (typeof SFYtFull !== 'undefined') SFYtFull.stop(); } catch {}
+        if (!vid || !AppState.currentTrack) return false;
+        return await playNativeTrack(AppState.currentTrack, vid, AppState.playSessionId, pos);
+      }
+
+      window.__sfOnNativeAudioEvent = function (type, payload) {
+        try {
+          const data = typeof payload === 'string' ? JSON.parse(payload) : (payload || {});
+          if (type === 'buffering') {
+            if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(true);
+            return;
+          }
+          if (type === 'ready' || type === 'playing') {
+            if (!st.nativeActive) return;
+            if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
+            const durSec = Number(data.durationMs || 0) / 1000;
+            const posSec = Number(data.positionMs || 0) / 1000;
+            if (durSec > 1) {
+              st.nativeDurationSec = durSec;
+              if (AppState.currentTrack) AppState.currentTrack.duration = durSec;
+              if (typeof updateDurationDisplays === 'function') updateDurationDisplays(durSec);
+            }
+            st.nativePositionSec = posSec;
+            AppState.isPlaying = true;
+            if (typeof setLoadingBanner === 'function') setLoadingBanner(false);
+            const isOff = hasNativeOfflineTrack(AppState.currentTrack?.id);
+            if (typeof setSignalBadge === 'function') {
+              setSignalBadge(`${isOff ? 'OFFLINE NATIVE' : 'EXO HI-FI'} • ${formatTime(st.nativeDurationSec)}`, true);
+            }
+            const srcLbl = document.getElementById('stage-source-label');
+            if (srcLbl) srcLbl.textContent = `${isOff ? 'Offline Perangkat' : 'Native ExoPlayer'} • Hi-Fi (${formatTime(st.nativeDurationSec)})`;
+            if (typeof updatePlayPauseIcons === 'function') updatePlayPauseIcons();
+            if (typeof highlightPlayingTrackRows === 'function') highlightPlayingTrackRows();
+            if (st.pendingResolve) {
+              if (st.pendingTimer) { clearTimeout(st.pendingTimer); st.pendingTimer = null; }
+              const r = st.pendingResolve;
+              st.pendingResolve = null;
+              r(true);
+              prefetchNextNativeTrack();
+            }
+            return;
+          }
+          if (type === 'paused') {
+            if (!st.nativeActive) return;
+            if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
+            AppState.isPlaying = false;
+            if (typeof updatePlayPauseIcons === 'function') updatePlayPauseIcons();
+            if (typeof highlightPlayingTrackRows === 'function') highlightPlayingTrackRows();
+            return;
+          }
+          if (type === 'time') {
+            if (!st.nativeActive) return;
+            const posSec = Number(data.positionMs || 0) / 1000;
+            const durSec = Number(data.durationMs || 0) / 1000;
+            st.nativePositionSec = posSec;
+            if (durSec > 1) st.nativeDurationSec = durSec;
+            updateNativeProgressUI(posSec, st.nativeDurationSec);
+            return;
+          }
+          if (type === 'ended') {
+            if (!st.nativeActive) return;
+            if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
+            if (AppState.sleepTimerEndOfTrack) {
+              AppState.sleepTimerEndOfTrack = false;
+              AppState.isPlaying = false;
+              updatePlayPauseIcons();
+              if (typeof showToast === 'function') showToast('Sleep Timer: Berhenti di akhir lagu.', 'info');
+              return;
+            }
+            if (AppState.repeatMode === 'one') {
+              nativeControl('seek', 0);
+              nativeControl('play', 0);
+              return;
+            }
+            if (typeof playNext === 'function') playNext(true);
+            return;
+          }
+          if (type === 'error') {
+            if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
+            st.nativeActive = false;
+            if (st.pendingResolve) {
+              if (st.pendingTimer) { clearTimeout(st.pendingTimer); st.pendingTimer = null; }
+              const r = st.pendingResolve;
+              st.pendingResolve = null;
+              r(false);
+            } else if (st.nativeVideoId && typeof SFYtFull !== 'undefined') {
+              // Silent mid-song fallback ke SFYtFull jika stream native putus
+              SFYtFull.playVideoId(st.nativeVideoId, AppState.playSessionId).catch(() => {});
+            }
+          }
+        } catch {}
+      };
+
+      const ui = (function createSF200Ui() {
+        const STYLE_KEY = 'sf_visual_style_v2';
+
+        function getVisualStyle() {
+          const cur = document.documentElement.getAttribute('data-sf-style');
+          if (cur === 'editorial' || cur === 'liquid') return cur;
+          try {
+            const saved = localStorage.getItem(STYLE_KEY);
+            return saved === 'editorial' ? 'editorial' : 'liquid';
+          } catch {
+            return 'liquid';
+          }
+        }
+
+        function syncStylePillUI(styleId) {
+          const active = styleId === 'editorial' ? 'editorial' : 'liquid';
+          const wrap = document.getElementById('sf-style-pill-switch');
+          if (!wrap) return;
+          wrap.querySelectorAll('[data-style-opt]').forEach((btn) => {
+            const isAct = btn.getAttribute('data-style-opt') === active;
+            btn.setAttribute('aria-selected', String(isAct));
+            btn.classList.toggle('text-white', isAct && active === 'liquid');
+            btn.classList.toggle('text-white/70', !isAct);
+          });
+        }
+
+        function hapticTap(ms = 10) {
+          try {
+            const capHaptics = window.Capacitor?.Plugins?.Haptics;
+            if (capHaptics && typeof capHaptics.impact === 'function') {
+              capHaptics.impact({ style: 'LIGHT' }).catch(() => {});
+              return;
+            }
+            if (navigator.vibrate) navigator.vibrate(ms);
+          } catch {}
+        }
+
+        function setVisualStyle(styleId, silent = false) {
+          const clean = styleId === 'editorial' ? 'editorial' : 'liquid';
+          document.documentElement.setAttribute('data-sf-style', clean);
+          try { localStorage.setItem(STYLE_KEY, clean); } catch {}
+          syncStylePillUI(clean);
+          if (!silent) {
+            hapticTap(10);
+            if (typeof showToast === 'function') {
+              showToast(clean === 'liquid' ? 'Gaya Liquid Glass aktif ✨' : 'Gaya Editorial aktif (0% blur, hemat baterai)', 'sparkles');
+            }
+          }
+        }
+
+        function setBufferingState(isBuffering) {
+          const active = Boolean(isBuffering);
+          const bar = document.getElementById('mobile-progress-bar');
+          if (bar) bar.classList.toggle('sf-buffering-shimmer', active);
+          ['mobile-play-btn', 'stage-play-pause', 'btn-play-pause'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('sf-btn-buffering', active);
+          });
+        }
+
+        function syncCoverAdaptiveRgb() {
+          try {
+            const rootStyle = getComputedStyle(document.documentElement);
+            const domRgb = (rootStyle.getPropertyValue('--sf-dominant-rgb') || '').trim();
+            if (domRgb) {
+              document.documentElement.style.setProperty('--sf-cover-rgb', domRgb);
+            }
+          } catch {}
+        }
+
+        // Inisialisasi pill saat DOM siap
+        setTimeout(() => {
+          syncStylePillUI(getVisualStyle());
+          syncCoverAdaptiveRgb();
+        }, 120);
+
+        return {
+          getVisualStyle,
+          setVisualStyle,
+          syncStylePillUI,
+          hapticTap,
+          setBufferingState,
+          syncCoverAdaptiveRgb,
+        };
+      })();
+
+      // =====================================================================
+      // STAGE 3A: POSTER MAKER STUDIO (5 TEMPLATE HD 1080x1920 & 1080x1350)
+      // ANTI TAINTED CANVAS (/api/proxy-image + fallback gradien) & AUTO REVOKE
+      // =====================================================================
+      const poster = (function createSF200PosterStudio() {
+        const ps = {
+          track: null,
+          template: 'editorial',
+          ratio: 'story', // 'story' (1080x1920) | 'feed' (1080x1350)
+          editorialLight: true,
+          coverImg: null,
+          palette: ['#1ED760', '#E5C99B', '#38BDF8', '#A78BFA', '#18181B'],
+          lyricLines: [],
+          selectedIndices: [],
+          customQuote: '',
+        };
+
+        function esc(v) {
+          return typeof escapeHtml === 'function' ? escapeHtml(String(v ?? '')) : String(v ?? '');
+        }
+
+        function loadProxyCoverSafe(url) {
+          return new Promise((resolve) => {
+            if (!url || !/^https?:\/\//i.test(url)) return resolve(null);
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const timer = setTimeout(() => resolve(null), 4000);
+            img.onload = () => { clearTimeout(timer); resolve(img); };
+            img.onerror = () => { clearTimeout(timer); resolve(null); };
+            img.src = `${API_BASE}/api/proxy-image?url=${encodeURIComponent(url)}`;
+          });
+        }
+
+        function extractFiveColorsFromImage(img) {
+          const fallback = ['#1ED760', '#E5C99B', '#38BDF8', '#A78BFA', '#18181B'];
+          if (!img) return fallback;
+          try {
+            const c = document.createElement('canvas');
+            c.width = 40;
+            c.height = 40;
+            const g = c.getContext('2d');
+            g.drawImage(img, 0, 0, 40, 40);
+            const pts = [[6, 6], [32, 8], [20, 20], [8, 32], [32, 32]];
+            const cols = pts.map(([x, y]) => {
+              const d = g.getImageData(x, y, 1, 1).data;
+              return `rgb(${d[0]}, ${d[1]}, ${d[2]})`;
+            });
+            return cols;
+          } catch {
+            return fallback;
+          }
+        }
+
+        function wrapCanvasLines(ctx, text, maxWidth, maxLines) {
+          const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+          if (!words.length) return [''];
+          const lines = [];
+          let cur = '';
+          for (let i = 0; i < words.length; i++) {
+            const test = cur ? `${cur} ${words[i]}` : words[i];
+            if (ctx.measureText(test).width <= maxWidth) {
+              cur = test;
+            } else {
+              if (cur) lines.push(cur);
+              cur = words[i];
+              if (lines.length >= maxLines - 1) {
+                const rest = words.slice(i).join(' ');
+                let trimmed = rest;
+                while (trimmed.length > 3 && ctx.measureText(`${trimmed}…`).width > maxWidth) {
+                  trimmed = trimmed.slice(0, -1);
+                }
+                lines.push(trimmed === rest ? rest : `${trimmed}…`);
+                return lines;
+              }
+            }
+          }
+          if (cur) lines.push(cur);
+          return lines.slice(0, maxLines);
+        }
+
+        function drawCoverOrFallback(ctx, img, x, y, w, h, radius, title) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, h, radius);
+          ctx.clip();
+          if (img) {
+            try {
+              ctx.drawImage(img, x, y, w, h);
+              ctx.restore();
+              return;
+            } catch {}
+          }
+          const g = ctx.createLinearGradient(x, y, x + w, y + h);
+          g.addColorStop(0, ps.palette[0] || '#1ED760');
+          g.addColorStop(1, ps.palette[2] || '#0E7490');
+          ctx.fillStyle = g;
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = 'rgba(0,0,0,0.32)';
+          ctx.beginPath();
+          ctx.arc(x + w / 2, y + h / 2, Math.min(w, h) * 0.34, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = `900 ${Math.round(Math.min(w, h) * 0.24)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(title || 'S').trim().charAt(0).toUpperCase() || '♪', x + w / 2, y + h / 2);
+          ctx.restore();
+        }
+
+        function drawVectorBarcode(ctx, x, y, w, h, color) {
+          ctx.fillStyle = color;
+          let cx = x;
+          const pattern = [3, 1, 2, 1, 4, 2, 1, 3, 1, 2, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 3, 2];
+          let idx = 0;
+          while (cx < x + w - 4) {
+            const bw = pattern[idx % pattern.length] * 3;
+            if (idx % 2 === 0) ctx.fillRect(cx, y, Math.min(bw, x + w - cx), h);
+            cx += bw + 3;
+            idx++;
+          }
+        }
+
+        function renderPosterToCanvas(canvas) {
+          const tr = ps.track || AppState.currentTrack || { title: 'SpotyFlow Track', artist: { name: 'SpotyFlow Studio' }, duration: 210 };
+          const W = 1080;
+          const H = ps.ratio === 'feed' ? 1350 : 1920;
+          canvas.width = W;
+          canvas.height = H;
+          const ctx = canvas.getContext('2d');
+          ctx.textBaseline = 'alphabetic';
+          ctx.textAlign = 'left';
+
+          const title = String(tr.title || 'SpotyFlow').trim();
+          const artist = String(tr.artist?.name || 'SpotyFlow Studio').trim();
+          const album = String(tr.album?.title || '').trim();
+          const durStr = typeof formatTime === 'function' ? formatTime(tr.duration || 210) : '3:30';
+          const yearStr = String(new Date().getFullYear());
+
+          if (ps.template === 'editorial') {
+            const light = ps.editorialLight;
+            ctx.fillStyle = light ? '#F4EFE6' : '#0D0E12';
+            ctx.fillRect(0, 0, W, H);
+            const pad = 84;
+            const covSize = W - pad * 2;
+            const covY = ps.ratio === 'feed' ? 76 : 130;
+
+            // Shadow + Cover
+            ctx.save();
+            ctx.shadowColor = light ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.65)';
+            ctx.shadowBlur = 46;
+            ctx.shadowOffsetY = 20;
+            drawCoverOrFallback(ctx, ps.coverImg, pad, covY, covSize, covSize, 18, title);
+            ctx.restore();
+
+            // 5-Color Auto Palette Bar
+            const palY = covY + covSize + 44;
+            const swW = (covSize - 40) / 5;
+            ps.palette.slice(0, 5).forEach((col, i) => {
+              ctx.fillStyle = col;
+              ctx.beginPath();
+              ctx.roundRect(pad + i * (swW + 10), palY, swW, 24, 6);
+              ctx.fill();
+            });
+
+            // Typography
+            ctx.fillStyle = light ? '#111111' : '#F8F8FA';
+            ctx.font = '800 66px sans-serif';
+            const tLines = wrapCanvasLines(ctx, title, covSize, 2);
+            let ty = palY + 108;
+            tLines.forEach((ln) => { ctx.fillText(ln, pad, ty); ty += 76; });
+
+            ctx.fillStyle = light ? '#4B4B52' : '#A1A1AA';
+            ctx.font = '600 38px sans-serif';
+            const aLines = wrapCanvasLines(ctx, artist + (album ? ` — ${album}` : ''), covSize, 1);
+            ctx.fillText(aLines[0], pad, ty + 14);
+
+            // Footer Meta + Barcode
+            const footY = H - 156;
+            ctx.strokeStyle = light ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.16)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pad, footY - 36);
+            ctx.lineTo(W - pad, footY - 36);
+            ctx.stroke();
+
+            ctx.fillStyle = light ? '#222226' : '#D4D4D8';
+            ctx.font = '700 24px monospace';
+            ctx.fillText(`DURATION ${durStr}  •  ${yearStr}`, pad, footY + 12);
+            ctx.fillStyle = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.45)';
+            ctx.font = '700 22px monospace';
+            ctx.fillText('SPOTYFLOW EDITORIAL EDITION', pad, footY + 54);
+            drawVectorBarcode(ctx, W - pad - 240, footY - 10, 240, 68, light ? '#111111' : '#FFFFFF');
+            return;
+          }
+
+          if (ps.template === 'glass') {
+            // Ambient Blurred Cover Backdrop
+            ctx.save();
+            if (ps.coverImg) {
+              try {
+                ctx.filter = 'blur(42px) brightness(0.55) saturate(1.5)';
+                ctx.drawImage(ps.coverImg, -120, -120, W + 240, H + 240);
+              } catch {
+                const bg = ctx.createLinearGradient(0, 0, W, H);
+                bg.addColorStop(0, ps.palette[0]);
+                bg.addColorStop(1, '#090910');
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+              }
+            } else {
+              const bg = ctx.createLinearGradient(0, 0, W, H);
+              bg.addColorStop(0, ps.palette[0]);
+              bg.addColorStop(0.5, ps.palette[2]);
+              bg.addColorStop(1, '#07080C');
+              ctx.fillStyle = bg;
+              ctx.fillRect(0, 0, W, H);
+            }
+            ctx.restore();
+
+            // Floating Frosted Glass Card
+            const cardW = 860;
+            const cardH = ps.ratio === 'feed' ? 1050 : 1260;
+            const cardX = (W - cardW) / 2;
+            const cardY = (H - cardH) / 2;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(18, 20, 28, 0.56)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(cardX, cardY, cardW, cardH, 52);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            const innerCov = 680;
+            const covX = (W - innerCov) / 2;
+            const covY = cardY + 78;
+            drawCoverOrFallback(ctx, ps.coverImg, covX, covY, innerCov, innerCov, 36, title);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '800 52px sans-serif';
+            const tLines = wrapCanvasLines(ctx, title, innerCov, 2);
+            let ty = covY + innerCov + 78;
+            tLines.forEach((ln) => { ctx.fillText(ln, covX, ty); ty += 62; });
+
+            ctx.fillStyle = 'rgba(255,255,255,0.75)';
+            ctx.font = '600 34px sans-serif';
+            ctx.fillText(wrapCanvasLines(ctx, artist, innerCov, 1)[0], covX, ty + 6);
+
+            // Aesthetic Static Seekbar
+            const barY = cardY + cardH - 135;
+            ctx.fillStyle = 'rgba(255,255,255,0.22)';
+            ctx.beginPath();
+            ctx.roundRect(covX, barY, innerCov, 12, 6);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.roundRect(covX, barY, innerCov * 0.44, 12, 6);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255,255,255,0.65)';
+            ctx.font = '700 24px monospace';
+            ctx.fillText('1:24', covX, barY + 46);
+            ctx.textAlign = 'right';
+            ctx.fillText(durStr, covX + innerCov, barY + 46);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(255,255,255,0.52)';
+            ctx.font = '700 22px monospace';
+            ctx.fillText('SPOTYFLOW • LIQUID GLASS', W / 2, H - 72);
+            return;
+          }
+
+          if (ps.template === 'vinyl') {
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, '#16141A');
+            bg.addColorStop(1, '#08080A');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            const sleeveSize = 620;
+            const sleeveX = 110;
+            const sleeveY = ps.ratio === 'feed' ? 210 : 380;
+            const discCx = sleeveX + sleeveSize + 55;
+            const discCy = sleeveY + sleeveSize / 2;
+            const discR = sleeveSize * 0.47;
+
+            // Vinyl Disc Peeking Right
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(discCx, discCy, discR, 0, Math.PI * 2);
+            ctx.fillStyle = '#0A0A0D';
+            ctx.fill();
+            for (let r = discR - 14; r > 105; r -= 14) {
+              ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(discCx, discCy, r, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+            ctx.beginPath();
+            ctx.arc(discCx, discCy, 92, 0, Math.PI * 2);
+            ctx.fillStyle = ps.palette[0] || '#1ED760';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(discCx, discCy, 18, 0, Math.PI * 2);
+            ctx.fillStyle = '#08080A';
+            ctx.fill();
+            ctx.restore();
+
+            // Album Sleeve
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 45;
+            ctx.shadowOffsetX = 16;
+            drawCoverOrFallback(ctx, ps.coverImg, sleeveX, sleeveY, sleeveSize, sleeveSize, 16, title);
+            ctx.restore();
+
+            ctx.fillStyle = '#E5C99B';
+            ctx.font = '700 26px monospace';
+            ctx.fillText('33⅓ RPM • HI-FI VINYL EDITION', sleeveX, sleeveY + sleeveSize + 105);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '800 64px sans-serif';
+            let ty = sleeveY + sleeveSize + 188;
+            wrapCanvasLines(ctx, title, W - 220, 2).forEach((ln) => { ctx.fillText(ln, sleeveX, ty); ty += 76; });
+
+            ctx.fillStyle = 'rgba(255,255,255,0.72)';
+            ctx.font = '600 38px sans-serif';
+            ctx.fillText(wrapCanvasLines(ctx, artist, W - 220, 1)[0], sleeveX, ty + 14);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.42)';
+            ctx.font = '700 24px monospace';
+            ctx.fillText(`SPOTYFLOW STUDIO  •  ${durStr}`, sleeveX, H - 96);
+            return;
+          }
+
+          if (ps.template === 'lyric') {
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, ps.palette[0] || '#15803D');
+            bg.addColorStop(0.55, ps.palette[2] || '#0F172A');
+            bg.addColorStop(1, '#07080D');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // Subtle dark overlay for razor-sharp lyric contrast
+            ctx.fillStyle = 'rgba(5, 6, 10, 0.42)';
+            ctx.fillRect(0, 0, W, H);
+
+            const pad = 96;
+            // Header Mini Cover + Meta
+            drawCoverOrFallback(ctx, ps.coverImg, pad, 120, 124, 124, 24, title);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '800 40px sans-serif';
+            ctx.fillText(wrapCanvasLines(ctx, title, W - pad * 2 - 154, 1)[0], pad + 154, 178);
+            ctx.fillStyle = 'rgba(255,255,255,0.75)';
+            ctx.font = '600 30px sans-serif';
+            ctx.fillText(wrapCanvasLines(ctx, artist, W - pad * 2 - 154, 1)[0], pad + 154, 224);
+
+            // Quote lines
+            const chosen = ps.selectedIndices.length
+              ? ps.selectedIndices.map((idx) => ps.lyricLines[idx]).filter(Boolean)
+              : (ps.customQuote.trim() ? ps.customQuote.trim().split('\n') : ['"Musik berbicara saat kata-kata tak lagi cukup."']);
+            const quoteText = chosen.join(' ');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '800 66px sans-serif';
+            const qLines = wrapCanvasLines(ctx, `“${quoteText}”`, W - pad * 2, ps.ratio === 'feed' ? 8 : 11);
+            const totalH = qLines.length * 88;
+            let qy = Math.max(380, (H - totalH) / 2 + 50);
+            qLines.forEach((ln) => {
+              ctx.fillText(ln, pad, qy);
+              qy += 88;
+            });
+
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '700 24px monospace';
+            ctx.fillText('SPOTYFLOW LYRIC STUDIO', pad, H - 104);
+            return;
+          }
+
+          // Template #5: Minimalist Polaroid
+          const bg = ctx.createLinearGradient(0, 0, W, H);
+          bg.addColorStop(0, '#17171D');
+          bg.addColorStop(1, '#09090C');
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, W, H);
+
+          const polW = 860;
+          const polH = ps.ratio === 'feed' ? 1080 : 1140;
+          const polX = (W - polW) / 2;
+          const polY = (H - polH) / 2;
+
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.65)';
+          ctx.shadowBlur = 55;
+          ctx.shadowOffsetY = 28;
+          ctx.fillStyle = '#FAF8F4';
+          ctx.beginPath();
+          ctx.roundRect(polX, polY, polW, polH, 14);
+          ctx.fill();
+          ctx.restore();
+
+          const imgSize = polW - 96;
+          drawCoverOrFallback(ctx, ps.coverImg, polX + 48, polY + 52, imgSize, imgSize, 6, title);
+
+          ctx.fillStyle = '#18181B';
+          ctx.font = 'italic 700 50px Georgia, serif';
+          ctx.fillText(wrapCanvasLines(ctx, title, imgSize, 1)[0], polX + 54, polY + 52 + imgSize + 92);
+
+          ctx.fillStyle = '#52525B';
+          ctx.font = '500 32px Georgia, serif';
+          ctx.fillText(wrapCanvasLines(ctx, artist, imgSize, 1)[0], polX + 54, polY + 52 + imgSize + 144);
+
+          const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+          ctx.fillStyle = '#A1A1AA';
+          ctx.font = '700 22px monospace';
+          ctx.fillText(`${today}  •  SPOTYFLOW`, polX + 54, polY + polH - 42);
+        }
+
+        function refreshPreview() {
+          const canvas = document.getElementById('sf200-poster-preview');
+          if (!canvas) return;
+          renderPosterToCanvas(canvas);
+        }
+
+        function setTemplate(tpl) {
+          ps.template = tpl;
+          renderModalBody();
+        }
+
+        function setRatio(r) {
+          ps.ratio = r === 'feed' ? 'feed' : 'story';
+          renderModalBody();
+        }
+
+        function toggleEditorialTone() {
+          ps.editorialLight = !ps.editorialLight;
+          renderModalBody();
+        }
+
+        function toggleLyricLine(idx) {
+          const pos = ps.selectedIndices.indexOf(idx);
+          if (pos >= 0) {
+            ps.selectedIndices.splice(pos, 1);
+          } else {
+            if (ps.selectedIndices.length >= 4) ps.selectedIndices.shift();
+            ps.selectedIndices.push(idx);
+            ps.selectedIndices.sort((a, b) => a - b);
+          }
+          renderModalBody();
+        }
+
+        function updateCustomQuote(val) {
+          ps.customQuote = String(val || '').slice(0, 180);
+          refreshPreview();
+        }
+
+        async function exportPng(shareMode = false) {
+          try {
+            const canvas = document.createElement('canvas');
+            renderPosterToCanvas(canvas);
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.96));
+            if (!blob) throw new Error('Gagal merender gambar poster.');
+            const safeName = String(ps.track?.title || 'SpotyFlow').replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 42);
+            const fileName = `SpotyFlow-Poster-${safeName}.png`;
+            if (shareMode) {
+              const file = new File([blob], fileName, { type: 'image/png' });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ title: `SpotyFlow Poster — ${ps.track?.title || ''}`, files: [file] });
+                return;
+              }
+            }
+            const url = URL.createObjectURL(blob);
+            try {
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              if (typeof showToast === 'function') showToast('Poster HD berhasil disimpan!', 'sparkles');
+            } finally {
+              setTimeout(() => URL.revokeObjectURL(url), 1800);
+            }
+          } catch (err) {
+            if (typeof showToast === 'function') showToast(err.message || 'Gagal menyimpan poster.', 'error');
+          }
+        }
+
+        function renderModalBody() {
+          const tpls = [
+            { id: 'editorial', label: 'Editorial' },
+            { id: 'glass', label: 'Liquid Glass' },
+            { id: 'vinyl', label: 'Vinyl Retro' },
+            { id: 'lyric', label: 'Lyric Quote' },
+            { id: 'polaroid', label: 'Polaroid' },
+          ];
+          openCustomModal(`
+            <div class="space-y-3.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="font-mono text-[9.5px] font-extrabold uppercase tracking-widest text-[#E5C99B]">POSTER MAKER STUDIO</span>
+                  <h3 class="font-display font-extrabold text-lg text-white truncate">🎨 Buat Poster Lagu HD</h3>
+                </div>
+                <button type="button" onclick="closeCustomModal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80 shrink-0">
+                  <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Live HD Preview -->
+              <div class="flex justify-center bg-black/50 rounded-2xl p-3 border border-white/10">
+                <canvas id="sf200-poster-preview" class="rounded-xl shadow-2xl max-h-[270px] w-auto object-contain"></canvas>
+              </div>
+
+              <!-- Ratio + Editorial Tone -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white/[0.06] border border-white/10">
+                  <button type="button" onclick="window.SF200?.poster?.setRatio('story')" class="px-3 py-1 rounded-full text-[11px] font-bold ${ps.ratio === 'story' ? 'bg-[#1ED760] text-black' : 'text-zinc-300'}">Story 9:16</button>
+                  <button type="button" onclick="window.SF200?.poster?.setRatio('feed')" class="px-3 py-1 rounded-full text-[11px] font-bold ${ps.ratio === 'feed' ? 'bg-[#1ED760] text-black' : 'text-zinc-300'}">Feed 4:5</button>
+                </div>
+                ${ps.template === 'editorial' ? `
+                  <button type="button" onclick="window.SF200?.poster?.toggleEditorialTone()" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-bold text-white">${ps.editorialLight ? '☀️ Krem Hangat' : '🌙 Hitam Majalah'}</button>
+                ` : ''}
+              </div>
+
+              <!-- 5 Template Picker -->
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                ${tpls.map((t) => `
+                  <button type="button" onclick="window.SF200?.poster?.setTemplate('${t.id}')" class="sf-tap shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${ps.template === t.id ? 'bg-white text-black border-white' : 'bg-white/[0.06] text-zinc-200 border-white/10 hover:border-white/30'}">${t.label}</button>
+                `).join('')}
+              </div>
+
+              <!-- Lyric Picker (khusus template lyric) -->
+              ${ps.template === 'lyric' ? `
+                <div class="space-y-1.5">
+                  ${ps.lyricLines.length ? `
+                    <p class="font-mono text-[10px] text-zinc-400 uppercase">Pilih 1–4 baris lirik favorit (${ps.selectedIndices.length}/4)</p>
+                    <div class="max-h-28 overflow-y-auto studio-scroll space-y-1 pr-1">
+                      ${ps.lyricLines.slice(0, 30).map((ln, idx) => {
+                        const sel = ps.selectedIndices.includes(idx);
+                        return `<button type="button" onclick="window.SF200?.poster?.toggleLyricLine(${idx})" class="w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] border transition-colors ${sel ? 'bg-[#1ED760]/20 border-[#1ED760] text-white font-bold' : 'bg-black/30 border-white/10 text-zinc-300'}">${esc(ln)}</button>`;
+                      }).join('')}
+                    </div>
+                  ` : `
+                    <input type="text" maxlength="180" value="${esc(ps.customQuote)}" oninput="window.SF200?.poster?.updateCustomQuote(this.value)" placeholder="Tulis kutipan lirik favoritmu..." class="w-full bg-black/40 border border-white/15 focus:border-[#1ED760] rounded-xl px-3 py-2 text-xs text-white outline-none" />
+                  `}
+                </div>
+              ` : ''}
+
+              <!-- Save & Share Buttons -->
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <button type="button" onclick="window.SF200?.poster?.exportPng(false)" class="py-2.5 px-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-xs font-extrabold transition-colors shadow-lg">💾 Simpan Poster (PNG HD)</button>
+                <button type="button" onclick="window.SF200?.poster?.exportPng(true)" class="py-2.5 px-3 rounded-full bg-white/12 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/15">📤 Bagikan</button>
+              </div>
+            </div>
+          `);
+          requestAnimationFrame(refreshPreview);
+        }
+
+        async function openModal(track) {
+          const tr = track || AppState.currentTrack;
+          if (!tr) {
+            if (typeof showToast === 'function') showToast('Pilih lagu terlebih dahulu untuk membuat poster.', 'info');
+            return;
+          }
+          ps.track = tr;
+          ps.coverImg = null;
+          // Ambil baris lirik jika track sama dengan lirik aktif
+          const lyr = AppState.currentLyrics;
+          const lines = [];
+          if (lyr && String(lyr.trackId || '') === String(tr.id || '')) {
+            if (Array.isArray(lyr.syncedLines) && lyr.syncedLines.length) {
+              lyr.syncedLines.forEach((l) => { if (l?.text && l.text.trim()) lines.push(l.text.trim()); });
+            } else if (lyr.plainLyrics) {
+              String(lyr.plainLyrics).split('\n').forEach((l) => { if (l.trim()) lines.push(l.trim()); });
+            }
+          }
+          ps.lyricLines = lines;
+          ps.selectedIndices = lines.length ? [0, Math.min(1, lines.length - 1)].filter((v, i, a) => a.indexOf(v) === i) : [];
+          renderModalBody();
+
+          const coverUrl = typeof getCover === 'function' ? getCover(tr, 'big') : '';
+          const img = await loadProxyCoverSafe(coverUrl);
+          if (ps.track === tr) {
+            ps.coverImg = img;
+            ps.palette = extractFiveColorsFromImage(img);
+            refreshPreview();
+          }
+        }
+
+        return {
+          openModal,
+          setTemplate,
+          setRatio,
+          toggleEditorialTone,
+          toggleLyricLine,
+          updateCustomQuote,
+          exportPng,
+        };
+      })();
+
+      // =====================================================================
+      // STAGE 3B: FULL OFFLINE DOWNLOAD MANAGER (NATIVE APK .m4a + WEB IDB)
+      // =====================================================================
+      const offline = (function createSF200OfflineManager() {
+        const META_KEY = 'sf_offline_meta_v2';
+        const progressMap = {};
+
+        function loadMetaMap() {
+          try {
+            const raw = localStorage.getItem(META_KEY);
+            const parsed = raw ? JSON.parse(raw) : {};
+            return parsed && typeof parsed === 'object' ? parsed : {};
+          } catch {
+            return {};
+          }
+        }
+
+        function saveMetaMap(map) {
+          try { localStorage.setItem(META_KEY, JSON.stringify(map)); } catch {}
+        }
+
+        function isNativeOfflineSupported() {
+          return Boolean(getBridge() && typeof getBridge().downloadOfflineTrack === 'function');
+        }
+
+        function isTrackOffline(trackId) {
+          if (!trackId) return false;
+          if (hasNativeOfflineTrack(trackId)) return true;
+          return typeof isTrackOfflineCached === 'function' ? isTrackOfflineCached(trackId) : false;
+        }
+
+        function getNativeOfflineTrackList() {
+          const meta = loadMetaMap();
+          if (!isNativeOfflineSupported()) return [];
+          try {
+            const raw = getBridge().getOfflineTracksJson();
+            const safeIds = new Set(JSON.parse(raw || '[]'));
+            const list = [];
+            Object.entries(meta).forEach(([origId, tr]) => {
+              const safeKey = String(origId).replace(/[^a-zA-Z0-9_-]/g, '_');
+              if (safeIds.has(safeKey) && tr && tr.title) list.push(tr);
+            });
+            return list;
+          } catch {
+            return Object.values(meta).filter((x) => x && x.title);
+          }
+        }
+
+        function syncStageDownloadButton() {
+          const btn = document.getElementById('stage-offline-dl-btn');
+          if (!btn) return;
+          const tr = AppState.currentTrack;
+          if (!tr) return;
+          const id = String(tr.id || '');
+          const pct = progressMap[id];
+          if (typeof pct === 'number' && pct > 0 && pct < 100) {
+            btn.innerHTML = `<span class="text-[#1ED760]">${pct}%</span>`;
+            btn.classList.add('border-[#1ED760]/50');
+            return;
+          }
+          const saved = isTrackOffline(id);
+          btn.classList.toggle('text-[#1ED760]', saved);
+          btn.classList.toggle('border-[#1ED760]/40', saved);
+          btn.innerHTML = saved
+            ? `<i data-lucide="check-circle-2" aria-hidden="true" class="w-4 h-4 stroke-[2]"></i>`
+            : `<i data-lucide="download" aria-hidden="true" class="w-4 h-4 stroke-[1.8]"></i>`;
+          if (typeof refreshIcons === 'function') refreshIcons(btn);
+        }
+
+        function refreshLibrarySection() {
+          const slot = document.getElementById('sf200-offline-section');
+          if (slot) {
+            slot.innerHTML = renderLibrarySectionHtml();
+            if (typeof refreshIcons === 'function') refreshIcons(slot);
+          }
+        }
+
+        async function downloadOrToggle(track) {
+          const tr = track || AppState.currentTrack;
+          if (!tr || !tr.id) {
+            if (typeof showToast === 'function') showToast('Pilih lagu terlebih dahulu.', 'info');
+            return;
+          }
+          ui.hapticTap(10);
+          const id = String(tr.id);
+
+          // Web browser -> pakai jalur IndexedDB lama yang sudah stabil
+          if (!isNativeOfflineSupported()) {
+            if (typeof toggleTrackOffline === 'function') toggleTrackOffline(tr);
+            return;
+          }
+
+          // Native APK -> hapus jika sudah offline
+          if (hasNativeOfflineTrack(id)) {
+            try { getBridge().deleteOfflineTrack(id); } catch {}
+            const meta = loadMetaMap();
+            delete meta[id];
+            saveMetaMap(meta);
+            delete progressMap[id];
+            syncStageDownloadButton();
+            refreshLibrarySection();
+            if (typeof showToast === 'function') showToast(`"${tr.title}" dihapus dari Unduhan Offline.`, 'info');
+            return;
+          }
+
+          // Resolve YouTube 11-char videoId (anti preview 30 detik!)
+          let vid = typeof extractDirectTrackVideoId === 'function' ? extractDirectTrackVideoId(tr) : '';
+          if (!/^[a-zA-Z0-9_-]{11}$/.test(vid) && typeof resolveTrackAudioSources === 'function') {
+            if (typeof showToast === 'function') showToast(`Menyiapkan unduhan "${tr.title}"...`, 'info');
+            try {
+              const srcs = await resolveTrackAudioSources(tr);
+              vid = srcs?.__ytCandidates?.[0]?.videoId || '';
+            } catch {}
+          }
+          if (!/^[a-zA-Z0-9_-]{11}$/.test(vid)) {
+            if (typeof showToast === 'function') showToast('Sumber audio penuh YouTube tidak ditemukan untuk diunduh.', 'error');
+            return;
+          }
+
+          const meta = loadMetaMap();
+          meta[id] = {
+            id: tr.id,
+            title: tr.title,
+            artist: tr.artist || { name: 'Artis' },
+            album: tr.album || {},
+            duration: tr.duration || 210,
+            videoId: vid,
+            downloadedAt: Date.now(),
+          };
+          saveMetaMap(meta);
+          progressMap[id] = 1;
+          syncStageDownloadButton();
+          if (typeof showToast === 'function') showToast(`Mengunduh "${tr.title}" ke perangkat...`, 'sparkles');
+          try {
+            getBridge().downloadOfflineTrack(id, vid);
+          } catch {
+            delete progressMap[id];
+            syncStageDownloadButton();
+          }
+        }
+
+        function deleteById(trackId) {
+          const id = String(trackId || '');
+          if (!id) return;
+          if (isNativeOfflineSupported()) {
+            try { getBridge().deleteOfflineTrack(id); } catch {}
+          }
+          const meta = loadMetaMap();
+          delete meta[id];
+          saveMetaMap(meta);
+          delete progressMap[id];
+          syncStageDownloadButton();
+          refreshLibrarySection();
+          if (typeof showToast === 'function') showToast('Lagu offline dihapus dari perangkat.', 'info');
+        }
+
+        function playAllOffline() {
+          const list = getNativeOfflineTrackList();
+          if (!list.length) {
+            if (typeof showToast === 'function') showToast('Belum ada lagu tersimpan di Unduhan Offline.', 'info');
+            return;
+          }
+          if (typeof playTrackList === 'function') {
+            playTrackList(list, 0, 'Unduhan Offline Perangkat');
+          }
+        }
+
+        function renderLibrarySectionHtml() {
+          const list = getNativeOfflineTrackList();
+          if (!isNativeOfflineSupported() && !list.length) return '';
+          const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(String(v ?? '')) : String(v ?? ''));
+          return `
+            <section class="bg-[#181818]/85 border border-white/10 rounded-2xl p-5 space-y-3.5">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-[#1ED760]/15 text-[#1ED760] flex items-center justify-center shrink-0">
+                    <i data-lucide="hard-drive-download" aria-hidden="true" class="w-5 h-5"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <h2 class="font-display font-extrabold text-lg text-white">Unduhan Offline Perangkat</h2>
+                    <p class="text-xs text-zinc-400">${list.length} lagu tersimpan • Putar 0ms tanpa kuota internet</p>
+                  </div>
+                </div>
+                ${list.length ? `
+                  <button type="button" onclick="window.SF200?.offline?.playAllOffline()" class="sf-tap px-4 py-2 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-xs font-extrabold inline-flex items-center gap-1.5">
+                    <i data-lucide="play" aria-hidden="true" class="w-3.5 h-3.5 fill-current"></i>
+                    <span>Putar Semua Offline</span>
+                  </button>
+                ` : ''}
+              </div>
+              ${list.length ? `
+                <div class="space-y-1.5 max-h-72 overflow-y-auto studio-scroll pr-1">
+                  ${list.map((tr, i) => `
+                    <div class="flex items-center justify-between gap-2.5 bg-black/30 border border-white/[0.06] rounded-xl p-2">
+                      <button type="button" onclick="playTrackList(window.SF200.offline.getNativeOfflineTrackList(), ${i}, 'Unduhan Offline')" class="flex-1 min-w-0 flex items-center gap-2.5 text-left">
+                        <img src="${typeof getCover === 'function' ? getCover(tr, 'small') : '/icon-192.png'}" onerror="this.src='/icon-192.png'" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0 bg-[#181818]" referrerpolicy="no-referrer" />
+                        <div class="min-w-0">
+                          <p class="text-xs font-bold text-white truncate">${esc(tr.title)}</p>
+                          <p class="text-[10.5px] text-zinc-400 truncate">${esc(tr.artist?.name || '')} • <span class="text-[#1ED760] font-semibold">✓ Offline</span></p>
+                        </div>
+                      </button>
+                      <button type="button" onclick="window.SF200?.offline?.deleteById('${esc(tr.id)}')" aria-label="Hapus unduhan" class="w-8 h-8 rounded-full bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 flex items-center justify-center shrink-0">
+                        <i data-lucide="trash-2" aria-hidden="true" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `
+                <p class="text-xs text-zinc-500 py-3 text-center bg-black/25 rounded-xl">Belum ada lagu diunduh ke perangkat. Ketuk ikon ↓ di layar penuh atau menu ⋮ lagu untuk mengunduh.</p>
+              `}
+            </section>
+          `;
+        }
+
+        window.__sfOnOfflineDownloadProgress = function (trackId, percent, status) {
+          const id = String(trackId || '');
+          const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+          if (status === 'done' || pct >= 100) {
+            delete progressMap[id];
+            syncStageDownloadButton();
+            refreshLibrarySection();
+            if (typeof showToast === 'function') showToast('✓ Lagu berhasil disimpan Offline di perangkat!', 'sparkles');
+          } else if (status === 'error') {
+            delete progressMap[id];
+            syncStageDownloadButton();
+            if (typeof showToast === 'function') showToast('Unduhan offline gagal. Coba lagi.', 'error');
+          } else {
+            progressMap[id] = pct;
+            syncStageDownloadButton();
+          }
+        };
+
+        return {
+          isTrackOffline,
+          getNativeOfflineTrackList,
+          downloadOrToggle,
+          deleteById,
+          playAllOffline,
+          syncStageDownloadButton,
+          renderLibrarySectionHtml,
+          refreshLibrarySection,
+        };
+      })();
+
+      return {
+        canUseNativeAudio,
+        hasNativeOfflineTrack,
+        isNativePlayingActive,
+        getDurationSec,
+        getPositionSec,
+        playNativeTrack,
+        stopNativePlayback,
+        nativeControl,
+        prefetchNextNativeTrack,
+        handoffNativeToVideo,
+        canReturnVideoToNative,
+        handoffVideoToNative,
+        isIslandLyricsEnabled,
+        toggleIslandLyrics,
+        syncDynamicIslandLyric,
+        ui,
+        poster,
+        offline,
       };
     })();
   </script>

@@ -19,6 +19,8 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const CAP_CONFIG_PATH = path.join(ROOT, 'capacitor.config.json');
 const ANDROID_DIR = path.join(ROOT, 'android');
+const ROOT_BUILD_GRADLE = path.join(ANDROID_DIR, 'build.gradle');
+const SETTINGS_GRADLE = path.join(ANDROID_DIR, 'settings.gradle');
 const VARIABLES_GRADLE = path.join(ANDROID_DIR, 'variables.gradle');
 const APP_DIR = path.join(ANDROID_DIR, 'app');
 const BUILD_GRADLE = path.join(APP_DIR, 'build.gradle');
@@ -58,11 +60,30 @@ const IC_STAT_MUSIC_XML = `<?xml version="1.0" encoding="utf-8"?>
 const WIDGET_BG_DARK_XML = `<?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#EB121212" />
-    <corners android:radius="20dp" />
+    <solid android:color="#CC12141C" />
+    <corners android:radius="22dp" />
     <stroke
         android:width="1dp"
-        android:color="#26FFFFFF" />
+        android:color="#38FFFFFF" />
+</shape>
+`;
+
+const WIDGET_BG_ADAPTIVE_XML = `<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <corners android:radius="22dp" />
+</shape>
+`;
+
+const WIDGET_BG_STROKE_OVERLAY_XML = `<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#26000000" />
+    <corners android:radius="22dp" />
+    <stroke
+        android:width="1dp"
+        android:color="#38FFFFFF" />
 </shape>
 `;
 
@@ -225,112 +246,232 @@ const WIDGET_SPOTYFLOW_SMALL_XML = `<?xml version="1.0" encoding="utf-8"?>
 `;
 
 const WIDGET_SPOTYFLOW_LARGE_XML = `<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/widget_bg_dark"
-    android:gravity="center_vertical"
-    android:orientation="vertical"
-    android:padding="14dp">
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_bg_tint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription=""
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg_adaptive" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_stroke_overlay"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/widget_cover"
-            android:layout_width="68dp"
-            android:layout_height="68dp"
-            android:background="@drawable/widget_cover_bg"
-            android:contentDescription="Sampul Lagu"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_stat_music" />
+        android:orientation="vertical"
+        android:padding="14dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="12dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:letterSpacing="0.14"
-                android:text="SPOTYFLOW"
-                android:textColor="#1ED760"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/widget_cover"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/widget_cover_bg"
+                android:contentDescription="Sampul Lagu"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_stat_music" />
 
-            <TextView
-                android:id="@+id/widget_title"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="SpotyFlow"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginLeft="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/widget_artist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Ketuk untuk memutar musik"
-                android:textColor="#B3FFFFFF"
-                android:textSize="13sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.14"
+                    android:text="SPOTYFLOW"
+                    android:textColor="#1ED760"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="SpotyFlow"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Ketuk untuk memutar musik"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="13sp" />
+            </LinearLayout>
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/widget_btn_prev"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Sebelumnya"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_widget_prev" />
+
+            <ImageButton
+                android:id="@+id/widget_btn_play_pause"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/widget_btn_play_bg"
+                android:contentDescription="Putar atau Jeda"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_widget_play" />
+
+            <ImageButton
+                android:id="@+id/widget_btn_next"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Berikutnya"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_widget_next" />
+        </LinearLayout>
+
     </LinearLayout>
+</FrameLayout>
+`;
+
+const WIDGET_SPOTYFLOW_LYRICS_XML = `<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_bg_tint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription=""
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg_adaptive" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_stroke_overlay"
+        android:orientation="vertical"
+        android:padding="14dp">
 
-        <ImageButton
-            android:id="@+id/widget_btn_prev"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="Sebelumnya"
-            android:padding="7dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_widget_prev" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/widget_btn_play_pause"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@drawable/widget_btn_play_bg"
-            android:contentDescription="Putar atau Jeda"
-            android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_widget_play" />
+            <ImageView
+                android:id="@+id/widget_cover"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/widget_cover_bg"
+                android:contentDescription="Sampul Lagu"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_stat_music" />
 
-        <ImageButton
-            android:id="@+id/widget_btn_next"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="Berikutnya"
-            android:padding="7dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_widget_next" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="SpotyFlow"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Live Lyrics"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/widget_btn_play_pause"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/widget_btn_play_bg"
+                android:contentDescription="Putar atau Jeda"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_widget_play" />
+
+            <ImageButton
+                android:id="@+id/widget_btn_next"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginLeft="6dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Berikutnya"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_widget_next" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_live_lyric"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
+            android:text="♪ Lirik aktif akan muncul di sini"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
     </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>
 `;
 
 const WIDGET_SPOTYFLOW_SMALL_INFO_XML = `<?xml version="1.0" encoding="utf-8"?>
@@ -361,6 +502,20 @@ const WIDGET_SPOTYFLOW_LARGE_INFO_XML = `<?xml version="1.0" encoding="utf-8"?>
     tools:targetApi="s" />
 `;
 
+const WIDGET_SPOTYFLOW_LYRICS_INFO_XML = `<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:initialLayout="@layout/widget_spotyflow_lyrics"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    tools:targetApi="s" />
+`;
+
 const SPOTYFLOW_WIDGET_PROVIDER_JAVA = `package ${APP_ID};
 
 import android.app.PendingIntent;
@@ -372,6 +527,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 
+import androidx.media3.common.util.UnstableApi;
+
+@UnstableApi
 public class SpotyFlowWidgetProvider extends AppWidgetProvider {
     public static final String ACTION_WIDGET_CMD = "${APP_ID}.WIDGET_CMD";
     public static final String EXTRA_CMD = "cmd";
@@ -398,6 +556,13 @@ public class SpotyFlowWidgetProvider extends AppWidgetProvider {
         if (context == null || intent == null) return;
         if (ACTION_WIDGET_CMD.equals(intent.getAction())) {
             String cmd = intent.getStringExtra(EXTRA_CMD);
+            if ("play_pause".equals(cmd) && SpotyFlowPlaybackService.isNativeExoActive()) {
+                String action = SpotyFlowPlaybackService.isPlaying ? "pause" : "play";
+                SpotyFlowPlaybackService.dispatchNativeControl(context, action, 0L);
+                MainActivity.sendMediaActionToJs(action, 0L);
+                updateAllWidgets(context);
+                return;
+            }
             if (!MainActivity.hasActiveWebView()) {
                 try {
                     Intent launch = new Intent(context, MainActivity.class);
@@ -436,6 +601,12 @@ public class SpotyFlowWidgetProvider extends AppWidgetProvider {
                 RemoteViews largeViews = buildRemoteViews(context, R.layout.widget_spotyflow_large);
                 mgr.updateAppWidget(largeIds, largeViews);
             }
+
+            int[] lyricIds = mgr.getAppWidgetIds(new ComponentName(context, SpotyFlowWidgetLyricsProvider.class));
+            if (lyricIds != null && lyricIds.length > 0) {
+                RemoteViews lyricViews = buildRemoteViews(context, R.layout.widget_spotyflow_lyrics);
+                mgr.updateAppWidget(lyricIds, lyricViews);
+            }
         } catch (Throwable ignored) {
         }
     }
@@ -462,7 +633,22 @@ public class SpotyFlowWidgetProvider extends AppWidgetProvider {
             views.setImageViewResource(R.id.widget_cover, R.drawable.ic_stat_music);
         }
 
-        // Klik kartu widget -> buka MainActivity
+        if (layoutResId == R.layout.widget_spotyflow_large || layoutResId == R.layout.widget_spotyflow_lyrics) {
+            try {
+                views.setInt(R.id.widget_bg_tint, "setColorFilter", SpotyFlowPlaybackService.dominantColorInt);
+            } catch (Throwable ignored) {
+            }
+        }
+
+        if (layoutResId == R.layout.widget_spotyflow_lyrics) {
+            String line = SpotyFlowPlaybackService.currentLyricLine;
+            if (line == null || line.trim().isEmpty()) {
+                views.setTextViewText(R.id.widget_live_lyric, "♪ Lirik aktif akan muncul di sini");
+            } else {
+                views.setTextViewText(R.id.widget_live_lyric, "♪ " + line.trim());
+            }
+        }
+
         Intent openIntent = new Intent(context, MainActivity.class);
         openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent openPi = PendingIntent.getActivity(
@@ -473,8 +659,9 @@ public class SpotyFlowWidgetProvider extends AppWidgetProvider {
         );
         views.setOnClickPendingIntent(R.id.widget_root, openPi);
 
-        // Tombol Prev / Play-Pause / Next -> explicit broadcast dengan requestCode unik & FLAG_IMMUTABLE
-        views.setOnClickPendingIntent(R.id.widget_btn_prev, buildCmdPendingIntent(context, "prev", 201));
+        if (layoutResId != R.layout.widget_spotyflow_lyrics) {
+            views.setOnClickPendingIntent(R.id.widget_btn_prev, buildCmdPendingIntent(context, "prev", 201));
+        }
         views.setOnClickPendingIntent(R.id.widget_btn_play_pause, buildCmdPendingIntent(context, "play_pause", 202));
         views.setOnClickPendingIntent(R.id.widget_btn_next, buildCmdPendingIntent(context, "next", 203));
 
@@ -497,10 +684,434 @@ public class SpotyFlowWidgetProvider extends AppWidgetProvider {
 
 const SPOTYFLOW_WIDGET_LARGE_PROVIDER_JAVA = `package ${APP_ID};
 
+import androidx.media3.common.util.UnstableApi;
+
+@UnstableApi
 public class SpotyFlowWidgetLargeProvider extends SpotyFlowWidgetProvider {
     @Override
     protected int getWidgetLayoutResId() {
         return R.layout.widget_spotyflow_large;
+    }
+}
+`;
+
+const SPOTYFLOW_WIDGET_LYRICS_PROVIDER_JAVA = `package ${APP_ID};
+
+import androidx.media3.common.util.UnstableApi;
+
+@UnstableApi
+public class SpotyFlowWidgetLyricsProvider extends SpotyFlowWidgetProvider {
+    @Override
+    protected int getWidgetLayoutResId() {
+        return R.layout.widget_spotyflow_lyrics;
+    }
+}
+`;
+
+const SPOTYFLOW_NEWPIPE_ENGINE_JAVA = `package ${APP_ID};
+
+import android.content.Context;
+import android.net.Uri;
+
+import org.json.JSONArray;
+import org.schabi.newpipe.extractor.MediaFormat;
+import org.schabi.newpipe.extractor.NewPipe;
+import org.schabi.newpipe.extractor.ServiceList;
+import org.schabi.newpipe.extractor.downloader.Downloader;
+import org.schabi.newpipe.extractor.downloader.Request;
+import org.schabi.newpipe.extractor.downloader.Response;
+import org.schabi.newpipe.extractor.exceptions.ReCaptchaException;
+import org.schabi.newpipe.extractor.stream.AudioStream;
+import org.schabi.newpipe.extractor.stream.StreamExtractor;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class SpotyFlowNewPipeEngine {
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0";
+    private static final long CACHE_TTL_MS = 150L * 60L * 1000L;
+    private static final int MAX_CACHE_ENTRIES = 60;
+
+    private static volatile boolean initialized = false;
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private static final ConcurrentHashMap<String, CachedStream> streamCache = new ConcurrentHashMap<>();
+
+    public static class StreamResult {
+        public final boolean ok;
+        public final String streamUrl;
+        public final String mimeType;
+        public final long durationSec;
+        public final String title;
+        public final String artist;
+        public final boolean isOffline;
+        public final String error;
+
+        public StreamResult(boolean ok, String streamUrl, String mimeType, long durationSec, String title, String artist, boolean isOffline, String error) {
+            this.ok = ok;
+            this.streamUrl = streamUrl;
+            this.mimeType = mimeType;
+            this.durationSec = durationSec;
+            this.title = title;
+            this.artist = artist;
+            this.isOffline = isOffline;
+            this.error = error;
+        }
+    }
+
+    public interface OfflineCallback {
+        void onProgress(String trackId, int percent, String status);
+    }
+
+    private static class CachedStream {
+        final String url;
+        final String mimeType;
+        final long durationSec;
+        final String title;
+        final String artist;
+        final long expiresAtMs;
+
+        CachedStream(String url, String mimeType, long durationSec, String title, String artist, long expiresAtMs) {
+            this.url = url;
+            this.mimeType = mimeType;
+            this.durationSec = durationSec;
+            this.title = title;
+            this.artist = artist;
+            this.expiresAtMs = expiresAtMs;
+        }
+    }
+
+    private static class SimpleHttpDownloader extends Downloader {
+        @Override
+        public Response execute(Request request) throws IOException, ReCaptchaException {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(request.url());
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(7000);
+                conn.setReadTimeout(9000);
+                conn.setInstanceFollowRedirects(true);
+                conn.setRequestMethod(request.httpMethod());
+                conn.setRequestProperty("User-Agent", USER_AGENT);
+                conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9,id;q=0.8");
+
+                Map<String, List<String>> reqHeaders = request.headers();
+                if (reqHeaders != null) {
+                    for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
+                        String key = entry.getKey();
+                        List<String> values = entry.getValue();
+                        if (key == null || values == null || values.isEmpty()) continue;
+                        if (values.size() == 1) {
+                            conn.setRequestProperty(key, values.get(0));
+                        } else {
+                            StringBuilder joined = new StringBuilder();
+                            for (int i = 0; i < values.size(); i++) {
+                                if (i > 0) joined.append(", ");
+                                joined.append(values.get(i));
+                            }
+                            conn.setRequestProperty(key, joined.toString());
+                        }
+                    }
+                }
+
+                byte[] bodyBytes = request.dataToSend();
+                if (bodyBytes != null && bodyBytes.length > 0) {
+                    conn.setDoOutput(true);
+                    try (OutputStream os = conn.getOutputStream()) {
+                        os.write(bodyBytes);
+                        os.flush();
+                    }
+                }
+
+                int code = conn.getResponseCode();
+                if (code == 429) {
+                    throw new ReCaptchaException("reCaptcha Challenge requested", request.url());
+                }
+
+                String msg = conn.getResponseMessage();
+                if (msg == null) msg = "";
+
+                InputStream stream = code >= 400 ? conn.getErrorStream() : conn.getInputStream();
+                String respBody = "";
+                if (stream != null) {
+                    try (InputStream is = stream;
+                         ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                        byte[] buf = new byte[8192];
+                        int n;
+                        while ((n = is.read(buf)) != -1) {
+                            bos.write(buf, 0, n);
+                        }
+                        respBody = new String(bos.toByteArray(), StandardCharsets.UTF_8);
+                    }
+                }
+
+                Map<String, List<String>> cleanHeaders = new HashMap<>();
+                Map<String, List<String>> rawHeaders = conn.getHeaderFields();
+                if (rawHeaders != null) {
+                    for (Map.Entry<String, List<String>> entry : rawHeaders.entrySet()) {
+                        if (entry.getKey() != null && entry.getValue() != null) {
+                            cleanHeaders.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                }
+
+                String latestUrl = conn.getURL() != null ? conn.getURL().toString() : request.url();
+                return new Response(code, msg, cleanHeaders, respBody, latestUrl);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        }
+    }
+
+    public static synchronized void ensureInit() {
+        if (initialized) return;
+        NewPipe.init(new SimpleHttpDownloader());
+        initialized = true;
+    }
+
+    public static ExecutorService getExecutor() {
+        return executor;
+    }
+
+    public static String sanitizeId(String raw) {
+        if (raw == null || raw.isEmpty()) return "track";
+        return raw.replaceAll("[^a-zA-Z0-9_-]", "_");
+    }
+
+    public static File getOfflineAudioFile(Context ctx, String trackId) {
+        File dir = new File(ctx.getFilesDir(), "offline_audio");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return new File(dir, sanitizeId(trackId) + ".m4a");
+    }
+
+    public static boolean hasOfflineTrack(Context ctx, String trackId) {
+        if (ctx == null || trackId == null || trackId.isEmpty()) return false;
+        try {
+            File f = getOfflineAudioFile(ctx, trackId);
+            return f.exists() && f.length() > 32768L;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    public static boolean deleteOfflineTrack(Context ctx, String trackId) {
+        if (ctx == null || trackId == null || trackId.isEmpty()) return false;
+        try {
+            File f = getOfflineAudioFile(ctx, trackId);
+            return !f.exists() || f.delete();
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    public static String getOfflineTracksJson(Context ctx) {
+        JSONArray arr = new JSONArray();
+        if (ctx == null) return arr.toString();
+        try {
+            File dir = new File(ctx.getFilesDir(), "offline_audio");
+            File[] files = dir.exists() ? dir.listFiles() : null;
+            if (files != null) {
+                for (File f : files) {
+                    if (f != null && f.isFile() && f.getName().endsWith(".m4a") && f.length() > 32768L) {
+                        String id = f.getName().substring(0, f.getName().length() - 4);
+                        arr.put(id);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return arr.toString();
+    }
+
+    public static StreamResult resolveAudioStream(Context ctx, String trackId, String videoId, boolean dataSaver) {
+        if (ctx != null && trackId != null && !trackId.isEmpty()) {
+            File offlineFile = getOfflineAudioFile(ctx, trackId);
+            if (offlineFile.exists() && offlineFile.length() > 32768L) {
+                return new StreamResult(true, Uri.fromFile(offlineFile).toString(), "audio/mp4", 0L, "", "", true, "");
+            }
+        }
+        if (videoId == null || !videoId.matches("^[a-zA-Z0-9_-]{11}$")) {
+            return new StreamResult(false, "", "", 0L, "", "", false, "Invalid YouTube videoId");
+        }
+
+        String cacheKey = videoId + ":" + (dataSaver ? "1" : "0");
+        CachedStream cached = streamCache.get(cacheKey);
+        long now = System.currentTimeMillis();
+        if (cached != null && cached.expiresAtMs > now && cached.url != null && !cached.url.isEmpty()) {
+            return new StreamResult(true, cached.url, cached.mimeType, cached.durationSec, cached.title, cached.artist, false, "");
+        }
+
+        try {
+            ensureInit();
+            StreamExtractor extractor = ServiceList.YouTube.getStreamExtractor("https://www.youtube.com/watch?v=" + videoId);
+            extractor.fetchPage();
+            List<AudioStream> streams = extractor.getAudioStreams();
+            AudioStream best = pickBestAudioStream(streams, dataSaver, false);
+            if (best == null || best.getContent() == null || best.getContent().isEmpty()) {
+                return new StreamResult(false, "", "", 0L, "", "", false, "No audio streams available");
+            }
+            String streamUrl = best.getContent();
+            MediaFormat fmt = best.getFormat();
+            String mime = (fmt != null && fmt.getMimeType() != null) ? fmt.getMimeType() : "audio/mp4";
+            long durSec = Math.max(0L, extractor.getLength());
+            String title = extractor.getName() != null ? extractor.getName() : "";
+            String artist = extractor.getUploaderName() != null ? extractor.getUploaderName() : "";
+
+            if (streamCache.size() >= MAX_CACHE_ENTRIES) {
+                streamCache.clear();
+            }
+            streamCache.put(cacheKey, new CachedStream(streamUrl, mime, durSec, title, artist, now + CACHE_TTL_MS));
+            return new StreamResult(true, streamUrl, mime, durSec, title, artist, false, "");
+        } catch (Throwable t) {
+            return new StreamResult(false, "", "", 0L, "", "", false, t.getMessage() != null ? t.getMessage() : "Extract failed");
+        }
+    }
+
+    private static AudioStream pickBestAudioStream(List<AudioStream> streams, boolean dataSaver, boolean preferM4aOnly) {
+        if (streams == null || streams.isEmpty()) return null;
+        AudioStream best = null;
+        int bestScore = Integer.MIN_VALUE;
+        for (AudioStream s : streams) {
+            if (s == null) continue;
+            String content = s.getContent();
+            if (content == null || content.isEmpty() || !content.startsWith("http")) continue;
+            int br = Math.max(0, s.getAverageBitrate());
+            MediaFormat fmt = s.getFormat();
+            String suffix = (fmt != null && fmt.getSuffix() != null) ? fmt.getSuffix().toLowerCase() : "";
+            boolean isM4a = "m4a".equals(suffix) || "mp4".equals(suffix);
+            boolean isOpus = "webm".equals(suffix) || "opus".equals(suffix);
+            if (preferM4aOnly && !isM4a) continue;
+
+            int score = 0;
+            if (dataSaver) {
+                if (br >= 64 && br <= 128) score += 200;
+                else if (br > 0 && br < 64) score += 120;
+                else score += Math.max(0, 150 - Math.abs(br - 96));
+                if (isM4a) score += 40;
+                else if (isOpus) score += 25;
+            } else {
+                score += Math.min(br, 256);
+                if (isM4a && br >= 120) score += 90;
+                else if (isOpus && br >= 120) score += 75;
+                else if (isM4a) score += 40;
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                best = s;
+            }
+        }
+        if (best == null && preferM4aOnly) {
+            return pickBestAudioStream(streams, dataSaver, false);
+        }
+        return best;
+    }
+
+    public static void prefetchAsync(final Context ctx, final String videoId, final boolean dataSaver) {
+        if (videoId == null || !videoId.matches("^[a-zA-Z0-9_-]{11}$")) return;
+        String cacheKey = videoId + ":" + (dataSaver ? "1" : "0");
+        CachedStream existing = streamCache.get(cacheKey);
+        if (existing != null && existing.expiresAtMs > System.currentTimeMillis()) return;
+        executor.execute(() -> {
+            try {
+                resolveAudioStream(ctx, "", videoId, dataSaver);
+            } catch (Throwable ignored) {
+            }
+        });
+    }
+
+    public static void downloadOfflineAsync(final Context ctx, final String trackId, final String videoId, final OfflineCallback cb) {
+        if (ctx == null || trackId == null || trackId.isEmpty() || videoId == null || !videoId.matches("^[a-zA-Z0-9_-]{11}$")) {
+            if (cb != null) cb.onProgress(trackId != null ? trackId : "", 0, "error");
+            return;
+        }
+        executor.execute(() -> {
+            HttpURLConnection conn = null;
+            File tmpFile = null;
+            try {
+                if (cb != null) cb.onProgress(trackId, 2, "resolving");
+                ensureInit();
+                StreamExtractor extractor = ServiceList.YouTube.getStreamExtractor("https://www.youtube.com/watch?v=" + videoId);
+                extractor.fetchPage();
+                AudioStream best = pickBestAudioStream(extractor.getAudioStreams(), false, true);
+                if (best == null || best.getContent() == null || best.getContent().isEmpty()) {
+                    if (cb != null) cb.onProgress(trackId, 0, "error");
+                    return;
+                }
+                File outFile = getOfflineAudioFile(ctx, trackId);
+                tmpFile = new File(outFile.getParentFile(), outFile.getName() + ".tmp");
+
+                URL url = new URL(best.getContent());
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(15000);
+                conn.setInstanceFollowRedirects(true);
+                conn.setRequestProperty("User-Agent", USER_AGENT);
+                int code = conn.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    if (cb != null) cb.onProgress(trackId, 0, "error");
+                    return;
+                }
+                long totalLen = conn.getContentLengthLong();
+                long written = 0L;
+                int lastPct = 5;
+                if (cb != null) cb.onProgress(trackId, 5, "downloading");
+
+                try (InputStream is = conn.getInputStream();
+                     FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                    byte[] buf = new byte[16384];
+                    int n;
+                    while ((n = is.read(buf)) != -1) {
+                        fos.write(buf, 0, n);
+                        written += n;
+                        if (totalLen > 0L && cb != null) {
+                            int pct = (int) Math.min(99L, Math.max(5L, (written * 100L) / totalLen));
+                            if (pct >= lastPct + 4) {
+                                lastPct = pct;
+                                cb.onProgress(trackId, pct, "downloading");
+                            }
+                        }
+                    }
+                    fos.flush();
+                }
+
+                if (written > 32768L) {
+                    if (outFile.exists()) outFile.delete();
+                    if (!tmpFile.renameTo(outFile)) {
+                        tmpFile.delete();
+                        if (cb != null) cb.onProgress(trackId, 0, "error");
+                        return;
+                    }
+                    if (cb != null) cb.onProgress(trackId, 100, "done");
+                } else {
+                    if (tmpFile.exists()) tmpFile.delete();
+                    if (cb != null) cb.onProgress(trackId, 0, "error");
+                }
+            } catch (Throwable ignored) {
+                try {
+                    if (tmpFile != null && tmpFile.exists()) tmpFile.delete();
+                } catch (Throwable ignored2) {
+                }
+                if (cb != null) cb.onProgress(trackId, 0, "error");
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
     }
 }
 `;
@@ -616,6 +1227,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -628,14 +1240,25 @@ import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
 import androidx.media3.common.ForwardingPlayer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
+import androidx.media3.common.PlaybackException;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
 import androidx.media3.common.SimpleBasePlayer;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.database.StandaloneDatabaseProvider;
+import androidx.media3.datasource.DefaultDataSource;
+import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.datasource.cache.CacheDataSource;
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor;
+import androidx.media3.datasource.cache.SimpleCache;
+import androidx.media3.exoplayer.DefaultLoadControl;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.session.DefaultMediaNotificationProvider;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
@@ -646,6 +1269,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -653,6 +1277,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @UnstableApi
 public class SpotyFlowPlaybackService extends MediaSessionService {
@@ -666,16 +1291,33 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     public static volatile String lastWidgetTitle = "SpotyFlow";
     public static volatile String lastWidgetArtist = "Ketuk untuk memutar musik";
     public static volatile Bitmap lastWidgetBitmap = null;
+
+    // Live Dynamic Island Lyrics & Adaptive Dominant Color (v2.0.0)
+    public static volatile boolean islandLyricsEnabled = true;
+    public static volatile String currentLyricLine = "";
+    public static volatile String origTitle = "SpotyFlow";
+    public static volatile String origArtist = "SpotyFlow";
+    public static volatile int dominantColorInt = 0xFF1A1D24;
+
     private static volatile String pendingJsonPayload = null;
+    private static volatile String pendingNativePlayPayload = null;
+    private static volatile SimpleCache sharedExoCache = null;
+    private static volatile boolean nativeExoActive = false;
+
     private volatile boolean serviceStarted = false;
+    private final AtomicInteger nativePlayToken = new AtomicInteger(0);
 
     private Handler mainHandler;
     private ExecutorService artworkExecutor;
     private SpotyFlowRemotePlayer remotePlayer;
+    private ExoPlayer exoPlayer;
     private MediaSession mediaSession;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
     private boolean noisyReceiverRegistered = false;
+    private String currentNativeTrackId = "";
+    private String currentNativeVideoId = "";
+    private long currentNativeStartMs = 0L;
 
     // Diff-check state (anti redundant invalidateState() & zero UI overhead)
     private boolean hasAppliedState = false;
@@ -693,6 +1335,30 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
     private byte[] cachedArtworkBytes = null;
     private String fetchingCoverUrl = "";
 
+    private final Runnable exoProgressTicker = new Runnable() {
+        @Override
+        public void run() {
+            if (mainHandler == null) return;
+            if (nativeExoActive && exoPlayer != null && exoPlayer.isPlaying()) {
+                if (!MainActivity.isAppBackgrounded) {
+                    try {
+                        long pos = Math.max(0L, exoPlayer.getCurrentPosition());
+                        long dur = exoPlayer.getDuration();
+                        if (dur == C.TIME_UNSET || dur < 0L) dur = lastDurationMs;
+                        JSONObject ev = new JSONObject();
+                        ev.put("trackId", currentNativeTrackId);
+                        ev.put("positionMs", pos);
+                        ev.put("durationMs", dur);
+                        ev.put("isPlaying", true);
+                        MainActivity.dispatchNativeAudioEvent("time", ev.toString());
+                    } catch (Throwable ignored) {
+                    }
+                }
+                mainHandler.postDelayed(this, 450L);
+            }
+        }
+    };
+
     private final BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -700,14 +1366,31 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 if (isPlaying) {
                     isPlaying = false;
                     updateWakeAndWifiLocks(false);
+                    if (nativeExoActive && exoPlayer != null) {
+                        try { exoPlayer.pause(); } catch (Throwable ignored) {}
+                    }
                     if (remotePlayer != null) {
                         remotePlayer.setLocalPlayingState(false);
                     }
                     MainActivity.sendMediaActionToJs("noisy", 0L);
+                    SpotyFlowWidgetProvider.updateAllWidgets(getApplicationContext());
                 }
             }
         }
     };
+
+    public static boolean isNativeExoActive() {
+        return nativeExoActive;
+    }
+
+    private static synchronized SimpleCache getOrCreateSimpleCache(Context ctx) {
+        if (sharedExoCache != null) return sharedExoCache;
+        File cacheDir = new File(ctx.getCacheDir(), "sf_exo_cache");
+        if (!cacheDir.exists()) cacheDir.mkdirs();
+        LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(180L * 1024L * 1024L);
+        sharedExoCache = new SimpleCache(cacheDir, evictor, new StandaloneDatabaseProvider(ctx.getApplicationContext()));
+        return sharedExoCache;
+    }
 
     public static void ensureNotificationChannels(Context ctx) {
         if (ctx == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
@@ -765,14 +1448,70 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         }
     }
 
-    /**
-     * Android 12-15 safe state update:
-     * - If service instance is already alive -> update directly on Main Thread (zero ForegroundServiceStartNotAllowedException!)
-     * - If service is not yet started -> queue pending payload and start foreground service safely.
-     */
+    private static void ensureServiceStartedSafe(Context ctx) {
+        if (ctx == null) return;
+        try {
+            Intent intent = new Intent(ctx, SpotyFlowPlaybackService.class);
+            ContextCompat.startForegroundService(ctx, intent);
+        } catch (Throwable ignored) {
+            try {
+                ctx.startService(new Intent(ctx, SpotyFlowPlaybackService.class));
+            } catch (Throwable ignored2) {
+            }
+        }
+    }
+
+    public static void dispatchPlayNativeTrack(Context ctx, String jsonPayload) {
+        if (jsonPayload == null || jsonPayload.isEmpty()) return;
+        SpotyFlowPlaybackService svc = instance;
+        if (svc != null && svc.mainHandler != null) {
+            if (!svc.serviceStarted && ctx != null && MainActivity.isActivityInForeground) {
+                ensureServiceStartedSafe(ctx);
+            }
+            svc.mainHandler.post(() -> svc.playNativeTrackInternal(jsonPayload));
+            return;
+        }
+        pendingNativePlayPayload = jsonPayload;
+        ensureServiceStartedSafe(ctx);
+    }
+
+    public static void dispatchNativeControl(Context ctx, String cmd, long valueMs) {
+        if (cmd == null || cmd.isEmpty()) return;
+        SpotyFlowPlaybackService svc = instance;
+        if (svc != null && svc.mainHandler != null) {
+            svc.mainHandler.post(() -> svc.handleNativeControlInternal(cmd, valueMs));
+        }
+    }
+
+    public static void dispatchLyricUpdate(Context ctx, String lyricText, boolean enabled) {
+        String clean = lyricText == null ? "" : lyricText.trim();
+        if (clean.length() > 140) clean = clean.substring(0, 140);
+        if (clean.equals(currentLyricLine) && enabled == islandLyricsEnabled) {
+            return;
+        }
+        currentLyricLine = clean;
+        islandLyricsEnabled = enabled;
+        SpotyFlowPlaybackService svc = instance;
+        if (svc != null && svc.mainHandler != null) {
+            svc.mainHandler.post(() -> {
+                if (svc.remotePlayer != null) {
+                    svc.remotePlayer.updateLiveLyric(clean, enabled);
+                }
+                if (svc.mediaSession != null && isPlaying) {
+                    try {
+                        svc.onUpdateNotification(svc.mediaSession, false);
+                    } catch (Throwable ignored) {
+                    }
+                }
+                SpotyFlowWidgetProvider.updateAllWidgets(svc.getApplicationContext());
+            });
+        } else if (ctx != null) {
+            SpotyFlowWidgetProvider.updateAllWidgets(ctx);
+        }
+    }
+
     public static void dispatchStateUpdate(Context ctx, String jsonPayload) {
         if (jsonPayload == null || jsonPayload.isEmpty()) return;
-        // Update flag isPlaying SEKETIKA sebelum mainHandler.post agar SpotyFlowWebView langsung melindungi audio walau Home/Power ditekan 50ms setelah Play!
         boolean playingQuick = false;
         boolean hasPlayingField = false;
         try {
@@ -780,45 +1519,42 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             if (quickObj.has("isPlaying")) {
                 hasPlayingField = true;
                 playingQuick = quickObj.optBoolean("isPlaying", SpotyFlowPlaybackService.isPlaying);
-                SpotyFlowPlaybackService.isPlaying = playingQuick;
+                if (!nativeExoActive) {
+                    SpotyFlowPlaybackService.isPlaying = playingQuick;
+                }
             }
         } catch (Throwable ignored) {
         }
         SpotyFlowPlaybackService svc = instance;
         if (svc != null && svc.mainHandler != null) {
-            // Pastikan service benar-benar STARTED Foreground Service (bukan hanya bound oleh MediaController)
-            // saat musik mulai diputar di foreground agar Android 15/16 tidak pernah membekukan proses saat tombol Home ditekan!
             if (hasPlayingField && playingQuick && !svc.serviceStarted && ctx != null && MainActivity.isActivityInForeground) {
-                try {
-                    ContextCompat.startForegroundService(ctx, new Intent(ctx, SpotyFlowPlaybackService.class));
-                } catch (Throwable ignored) {
-                }
+                ensureServiceStartedSafe(ctx);
             }
             svc.mainHandler.post(() -> svc.applyJsonState(jsonPayload));
             return;
         }
         pendingJsonPayload = jsonPayload;
-        if (ctx != null) {
-            try {
-                Intent intent = new Intent(ctx, SpotyFlowPlaybackService.class);
-                ContextCompat.startForegroundService(ctx, intent);
-            } catch (Throwable ignored) {
-                try {
-                    ctx.startService(new Intent(ctx, SpotyFlowPlaybackService.class));
-                } catch (Throwable ignored2) {
-                }
-            }
-        }
+        ensureServiceStartedSafe(ctx);
     }
 
     public static void requestStopService(Context ctx) {
         isPlaying = false;
+        nativeExoActive = false;
         pendingJsonPayload = null;
+        pendingNativePlayPayload = null;
         SpotyFlowPlaybackService svc = instance;
         if (svc != null && svc.mainHandler != null) {
             svc.mainHandler.post(() -> {
                 svc.serviceStarted = false;
+                svc.mainHandler.removeCallbacks(svc.exoProgressTicker);
                 svc.updateWakeAndWifiLocks(false);
+                if (svc.exoPlayer != null) {
+                    try {
+                        svc.exoPlayer.stop();
+                        svc.exoPlayer.clearMediaItems();
+                    } catch (Throwable ignored) {
+                    }
+                }
                 if (svc.remotePlayer != null) {
                     svc.remotePlayer.setLocalPlayingState(false);
                 }
@@ -846,8 +1582,8 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         artworkExecutor = Executors.newSingleThreadExecutor();
 
         ensureNotificationChannels(this);
+        initNativeExoPlayer();
 
-        // Official Media3 Notification Provider (Playback channel + crisp white music note vector + async artworkUri loader)
         DefaultMediaNotificationProvider notificationProvider =
                 new DefaultMediaNotificationProvider.Builder(this)
                         .setChannelId(CHANNEL_PLAYBACK)
@@ -855,7 +1591,6 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         notificationProvider.setSmallIcon(R.drawable.ic_stat_music);
         setMediaNotificationProvider(notificationProvider);
 
-        // SimpleBasePlayer mirrors YouTube/WebView state to Origin Island / Lockscreen / TWS without fighting Audio Focus!
         remotePlayer = new SpotyFlowRemotePlayer(Looper.getMainLooper());
 
         ForwardingPlayer forwardingPlayer = new ForwardingPlayer(remotePlayer) {
@@ -928,6 +1663,12 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         initWakeAndWifiLocks();
         registerBecomingNoisyReceiver();
 
+        String queuedNative = pendingNativePlayPayload;
+        pendingNativePlayPayload = null;
+        if (queuedNative != null && !queuedNative.isEmpty()) {
+            mainHandler.post(() -> playNativeTrackInternal(queuedNative));
+        }
+
         String queued = pendingJsonPayload;
         pendingJsonPayload = null;
         if (queued != null && !queued.isEmpty()) {
@@ -935,10 +1676,298 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         }
     }
 
+    private void initNativeExoPlayer() {
+        try {
+            SimpleCache cache = getOrCreateSimpleCache(this);
+            DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
+                    .setAllowCrossProtocolRedirects(true)
+                    .setConnectTimeoutMs(6000)
+                    .setReadTimeoutMs(8000)
+                    .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0");
+
+            DefaultDataSource.Factory upstreamFactory = new DefaultDataSource.Factory(this, httpFactory);
+
+            CacheDataSource.Factory cacheDataSourceFactory = new CacheDataSource.Factory()
+                    .setCache(cache)
+                    .setUpstreamDataSourceFactory(upstreamFactory)
+                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
+
+            DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                    .setBufferDurationsMs(15000, 50000, 350, 800)
+                    .setPrioritizeTimeOverSizeThresholds(true)
+                    .build();
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                    .build();
+
+            exoPlayer = new ExoPlayer.Builder(this)
+                    .setMediaSourceFactory(new DefaultMediaSourceFactory(cacheDataSourceFactory))
+                    .setLoadControl(loadControl)
+                    .setAudioAttributes(audioAttributes, true)
+                    .setHandleAudioBecomingNoisy(true)
+                    .setWakeMode(C.WAKE_MODE_NETWORK)
+                    .build();
+
+            exoPlayer.addListener(new Player.Listener() {
+                @Override
+                public void onPlaybackStateChanged(int playbackState) {
+                    if (!nativeExoActive || exoPlayer == null) return;
+                    try {
+                        if (playbackState == Player.STATE_BUFFERING) {
+                            JSONObject ev = new JSONObject();
+                            ev.put("trackId", currentNativeTrackId);
+                            MainActivity.dispatchNativeAudioEvent("buffering", ev.toString());
+                        } else if (playbackState == Player.STATE_READY) {
+                            long dur = exoPlayer.getDuration();
+                            if (dur == C.TIME_UNSET || dur < 1000L) dur = lastDurationMs;
+                            if (dur >= 1000L) lastDurationMs = dur;
+                            long pos = Math.max(0L, exoPlayer.getCurrentPosition());
+                            if (remotePlayer != null) {
+                                remotePlayer.syncTimingFromExo(exoPlayer.isPlaying(), dur, pos);
+                            }
+                            JSONObject ev = new JSONObject();
+                            ev.put("trackId", currentNativeTrackId);
+                            ev.put("durationMs", dur);
+                            ev.put("positionMs", pos);
+                            ev.put("isPlaying", exoPlayer.isPlaying());
+                            MainActivity.dispatchNativeAudioEvent("ready", ev.toString());
+                        } else if (playbackState == Player.STATE_ENDED) {
+                            isPlaying = false;
+                            mainHandler.removeCallbacks(exoProgressTicker);
+                            if (remotePlayer != null) {
+                                remotePlayer.setLocalPlayingState(false);
+                            }
+                            JSONObject ev = new JSONObject();
+                            ev.put("trackId", currentNativeTrackId);
+                            ev.put("videoId", currentNativeVideoId);
+                            MainActivity.dispatchNativeAudioEvent("ended", ev.toString());
+                            SpotyFlowWidgetProvider.updateAllWidgets(getApplicationContext());
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                @Override
+                public void onIsPlayingChanged(boolean playingNow) {
+                    if (!nativeExoActive || exoPlayer == null) return;
+                    isPlaying = playingNow;
+                    updateWakeAndWifiLocks(playingNow);
+                    long dur = exoPlayer.getDuration();
+                    if (dur == C.TIME_UNSET || dur < 1000L) dur = lastDurationMs;
+                    long pos = Math.max(0L, exoPlayer.getCurrentPosition());
+                    if (remotePlayer != null) {
+                        remotePlayer.syncTimingFromExo(playingNow, dur, pos);
+                    }
+                    mainHandler.removeCallbacks(exoProgressTicker);
+                    if (playingNow) {
+                        mainHandler.postDelayed(exoProgressTicker, 350L);
+                    }
+                    try {
+                        JSONObject ev = new JSONObject();
+                        ev.put("trackId", currentNativeTrackId);
+                        ev.put("positionMs", pos);
+                        ev.put("durationMs", dur);
+                        ev.put("isPlaying", playingNow);
+                        MainActivity.dispatchNativeAudioEvent(playingNow ? "playing" : "paused", ev.toString());
+                    } catch (Throwable ignored) {
+                    }
+                    SpotyFlowWidgetProvider.updateAllWidgets(getApplicationContext());
+                    if (mediaSession != null) {
+                        try {
+                            onUpdateNotification(mediaSession, playingNow);
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                }
+
+                @Override
+                public void onPlayerError(@NonNull PlaybackException error) {
+                    if (!nativeExoActive) return;
+                    nativeExoActive = false;
+                    isPlaying = false;
+                    mainHandler.removeCallbacks(exoProgressTicker);
+                    try {
+                        JSONObject ev = new JSONObject();
+                        ev.put("trackId", currentNativeTrackId);
+                        ev.put("videoId", currentNativeVideoId);
+                        ev.put("message", error.getMessage() != null ? error.getMessage() : "ExoPlayer error");
+                        MainActivity.dispatchNativeAudioEvent("error", ev.toString());
+                    } catch (Throwable ignored) {
+                    }
+                }
+            });
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void playNativeTrackInternal(String jsonPayload) {
+        if (exoPlayer == null) {
+            initNativeExoPlayer();
+        }
+        if (exoPlayer == null) {
+            try {
+                JSONObject ev = new JSONObject();
+                ev.put("message", "ExoPlayer unavailable");
+                MainActivity.dispatchNativeAudioEvent("error", ev.toString());
+            } catch (Throwable ignored) {
+            }
+            return;
+        }
+        try {
+            JSONObject obj = new JSONObject(jsonPayload);
+            final String trackId = obj.optString("trackId", "track");
+            final String videoId = obj.optString("videoId", "").trim();
+            final String title = obj.optString("title", "SpotyFlow");
+            final String artist = obj.optString("artist", "SpotyFlow");
+            final String album = obj.optString("album", "SpotyFlow");
+            String coverUrl = obj.optString("coverUrl", "https://spotyflow.vercel.app/icon-512.png");
+            if (!coverUrl.startsWith("https://") && !coverUrl.startsWith("http://")) {
+                coverUrl = "https://spotyflow.vercel.app/icon-512.png";
+            }
+            final String safeCoverUrl = coverUrl;
+            final long startMs = Math.max(0L, (long) (obj.optDouble("startSec", 0.0) * 1000.0));
+            final boolean dataSaver = obj.optBoolean("dataSaver", false);
+            final int token = nativePlayToken.incrementAndGet();
+
+            currentNativeTrackId = trackId;
+            currentNativeVideoId = videoId;
+            currentNativeStartMs = startMs;
+            nativeExoActive = true;
+            currentLyricLine = "";
+            origTitle = title;
+            origArtist = artist;
+            lastTrackId = trackId;
+            lastTitle = title;
+            lastArtist = artist;
+            lastAlbum = album;
+            lastCoverUrl = safeCoverUrl;
+            lastWidgetTitle = title;
+            lastWidgetArtist = artist;
+
+            // Update metadata instan (0ms!) ke Dynamic Island & 3 Widget sebelum stream selesai resolve
+            byte[] artForCover = safeCoverUrl.equals(cachedCoverUrl) ? cachedArtworkBytes : null;
+            if (artForCover != null) {
+                updateWidgetBitmapFromBytes(artForCover);
+            }
+            if (remotePlayer != null) {
+                remotePlayer.updateFromJs(trackId, title, artist, album, safeCoverUrl, artForCover, true, Math.max(1000L, lastDurationMs), startMs, lastPlaybackRate);
+            }
+            SpotyFlowWidgetProvider.updateAllWidgets(getApplicationContext());
+            if (!safeCoverUrl.equals(cachedCoverUrl) && !safeCoverUrl.equals(fetchingCoverUrl)) {
+                fetchAndCacheCoverAsync(safeCoverUrl);
+            }
+
+            try {
+                JSONObject bev = new JSONObject();
+                bev.put("trackId", trackId);
+                MainActivity.dispatchNativeAudioEvent("buffering", bev.toString());
+            } catch (Throwable ignored) {
+            }
+
+            SpotyFlowNewPipeEngine.getExecutor().execute(() -> {
+                SpotyFlowNewPipeEngine.StreamResult res = SpotyFlowNewPipeEngine.resolveAudioStream(
+                        getApplicationContext(), trackId, videoId, dataSaver
+                );
+                if (mainHandler == null) return;
+                mainHandler.post(() -> {
+                    if (token != nativePlayToken.get() || !nativeExoActive || exoPlayer == null) return;
+                    if (!res.ok || res.streamUrl == null || res.streamUrl.isEmpty()) {
+                        nativeExoActive = false;
+                        try {
+                            JSONObject errEv = new JSONObject();
+                            errEv.put("trackId", trackId);
+                            errEv.put("videoId", videoId);
+                            errEv.put("message", res.error != null ? res.error : "Resolve failed");
+                            MainActivity.dispatchNativeAudioEvent("error", errEv.toString());
+                        } catch (Throwable ignored) {
+                        }
+                        return;
+                    }
+                    try {
+                        if (res.durationSec > 0L) {
+                            lastDurationMs = res.durationSec * 1000L;
+                        }
+                        MediaItem.Builder itemBuilder = new MediaItem.Builder()
+                                .setMediaId(trackId)
+                                .setUri(Uri.parse(res.streamUrl));
+                        if (!res.isOffline && videoId != null && !videoId.isEmpty()) {
+                            itemBuilder.setCustomCacheKey("yt_" + videoId + "_" + (dataSaver ? "ds" : "hq"));
+                        }
+                        exoPlayer.setMediaItem(itemBuilder.build());
+                        exoPlayer.prepare();
+                        if (startMs > 500L) {
+                            exoPlayer.seekTo(startMs);
+                        }
+                        exoPlayer.play();
+                    } catch (Throwable t) {
+                        nativeExoActive = false;
+                        try {
+                            JSONObject errEv = new JSONObject();
+                            errEv.put("trackId", trackId);
+                            errEv.put("videoId", videoId);
+                            errEv.put("message", t.getMessage() != null ? t.getMessage() : "Playback start error");
+                            MainActivity.dispatchNativeAudioEvent("error", errEv.toString());
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                });
+            });
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void handleNativeControlInternal(String cmd, long valueMs) {
+        if (exoPlayer == null) return;
+        try {
+            if ("play".equals(cmd)) {
+                if (nativeExoActive) {
+                    exoPlayer.play();
+                }
+            } else if ("pause".equals(cmd)) {
+                exoPlayer.pause();
+            } else if ("stop".equals(cmd)) {
+                nativePlayToken.incrementAndGet();
+                nativeExoActive = false;
+                mainHandler.removeCallbacks(exoProgressTicker);
+                exoPlayer.pause();
+                exoPlayer.stop();
+                exoPlayer.clearMediaItems();
+            } else if ("seek".equals(cmd)) {
+                if (nativeExoActive) {
+                    long target = Math.max(0L, valueMs);
+                    exoPlayer.seekTo(target);
+                    if (remotePlayer != null) {
+                        long dur = exoPlayer.getDuration();
+                        if (dur == C.TIME_UNSET || dur < 1000L) dur = lastDurationMs;
+                        remotePlayer.syncTimingFromExo(exoPlayer.isPlaying(), dur, target);
+                    }
+                }
+            } else if ("volume".equals(cmd)) {
+                float vol = Math.max(0f, Math.min(1f, valueMs / 100f));
+                exoPlayer.setVolume(vol);
+            } else if ("speed".equals(cmd)) {
+                float spd = Math.max(0.25f, Math.min(2.5f, valueMs / 100f));
+                lastPlaybackRate = spd;
+                exoPlayer.setPlaybackParameters(new PlaybackParameters(spd));
+                if (remotePlayer != null) {
+                    remotePlayer.setLocalPlaybackRate(spd);
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         serviceStarted = true;
         super.onStartCommand(intent, flags, startId);
+        String queuedNative = pendingNativePlayPayload;
+        pendingNativePlayPayload = null;
+        if (queuedNative != null && !queuedNative.isEmpty()) {
+            playNativeTrackInternal(queuedNative);
+        }
         String queued = pendingJsonPayload;
         pendingJsonPayload = null;
         if (queued != null && !queued.isEmpty()) {
@@ -973,12 +2002,23 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             instance = null;
         }
         serviceStarted = false;
+        nativeExoActive = false;
         isPlaying = false;
+        if (mainHandler != null) {
+            mainHandler.removeCallbacks(exoProgressTicker);
+        }
         updateWakeAndWifiLocks(false);
         unregisterBecomingNoisyReceiver();
         if (artworkExecutor != null) {
             artworkExecutor.shutdownNow();
             artworkExecutor = null;
+        }
+        if (exoPlayer != null) {
+            try {
+                exoPlayer.release();
+            } catch (Exception ignored) {
+            }
+            exoPlayer = null;
         }
         if (mediaSession != null) {
             try {
@@ -1077,13 +2117,12 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             if (!coverUrl.startsWith("https://") && !coverUrl.startsWith("http://")) {
                 coverUrl = "https://spotyflow.vercel.app/icon-512.png";
             }
-            boolean playingNow = obj.optBoolean("isPlaying", false);
+            boolean playingNow = nativeExoActive && exoPlayer != null ? exoPlayer.isPlaying() : obj.optBoolean("isPlaying", false);
             long durationMs = Math.max(1000L, obj.optLong("durationMs", 210000L));
             long positionMs = Math.max(0L, obj.optLong("positionMs", 0L));
             float playbackRate = (float) obj.optDouble("playbackRate", 1.0);
             if (playbackRate <= 0.1f || playbackRate > 4.0f) playbackRate = 1.0f;
 
-            // Diff-check ketat: jika metadata, playing, durationMs, playbackRate SAMA dan posisi < 2.5s drift, SKIP invalidateState()!
             long estPos = remotePlayer.getEstimatedPositionMs();
             boolean sameMeta = hasAppliedState
                     && trackId.equals(lastTrackId)
@@ -1098,6 +2137,10 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 return;
             }
 
+            if (!trackId.equals(lastTrackId)) {
+                currentLyricLine = "";
+            }
+
             boolean wasPlaying = isPlaying;
             hasAppliedState = true;
             lastTrackId = trackId;
@@ -1109,6 +2152,8 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             lastDurationMs = durationMs;
             lastPlaybackRate = playbackRate;
 
+            origTitle = title;
+            origArtist = artist;
             isPlaying = playingNow;
             lastWidgetTitle = title;
             lastWidgetArtist = artist;
@@ -1142,10 +2187,6 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         }
     }
 
-    /**
-     * Downloads cover artwork ONCE per URL on background thread, resizes to max 256x256 JPEG (~15 KB),
-     * caches in RAM, and triggers a single invalidateState() so Dynamic Island stays sharp with 0% UI lag.
-     */
     private void fetchAndCacheCoverAsync(final String urlStr) {
         if (urlStr == null || !urlStr.startsWith("http")) return;
         if (artworkExecutor == null || artworkExecutor.isShutdown()) return;
@@ -1160,7 +2201,7 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 conn.setConnectTimeout(4000);
                 conn.setReadTimeout(4000);
                 conn.setInstanceFollowRedirects(true);
-                conn.setRequestProperty("User-Agent", "SpotyFlow-Android/12.2");
+                conn.setRequestProperty("User-Agent", "SpotyFlow-Android/2.0");
                 if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     byte[] raw;
                     try (InputStream is = conn.getInputStream();
@@ -1231,11 +2272,45 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         });
     }
 
+    private void extractDominantColorFromBitmap(Bitmap bmp) {
+        if (bmp == null || bmp.isRecycled()) return;
+        try {
+            int w = bmp.getWidth();
+            int h = bmp.getHeight();
+            if (w < 4 || h < 4) return;
+            long sumR = 0L, sumG = 0L, sumB = 0L;
+            int count = 0;
+            for (int row = 1; row <= 4; row++) {
+                int py = Math.min(h - 1, (h * row) / 5);
+                for (int col = 1; col <= 4; col++) {
+                    int px = Math.min(w - 1, (w * col) / 5);
+                    int pxColor = bmp.getPixel(px, py);
+                    sumR += Color.red(pxColor);
+                    sumG += Color.green(pxColor);
+                    sumB += Color.blue(pxColor);
+                    count++;
+                }
+            }
+            if (count > 0) {
+                int avgR = (int) (sumR / count);
+                int avgG = (int) (sumG / count);
+                int avgB = (int) (sumB / count);
+                // Gelapkan 45% agar teks putih & lirik di Widget 4x2 selalu terbaca tajam
+                int darkR = Math.max(18, Math.min(92, (int) (avgR * 0.45f)));
+                int darkG = Math.max(20, Math.min(92, (int) (avgG * 0.45f)));
+                int darkB = Math.max(26, Math.min(104, (int) (avgB * 0.45f)));
+                dominantColorInt = Color.argb(236, darkR, darkG, darkB);
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
     private void updateWidgetBitmapFromBytes(byte[] jpegBytes) {
         if (jpegBytes == null || jpegBytes.length < 64) return;
         try {
             Bitmap decoded = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.length);
             if (decoded == null) return;
+            extractDominantColorFromBitmap(decoded);
             int w = decoded.getWidth();
             int h = decoded.getHeight();
             if (w > 160 || h > 160) {
@@ -1254,10 +2329,6 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         }
     }
 
-    /**
-     * Media3 SimpleBasePlayer proxy that mirrors WebView/YouTube playback state cleanly
-     * without requesting or clashing with WebView Audio Focus.
-     */
     private static class SpotyFlowRemotePlayer extends SimpleBasePlayer {
         private boolean hasTrack = false;
         private String trackId = "track";
@@ -1271,6 +2342,8 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
         private long anchorPosMs = 0L;
         private long anchorRealtimeMs = SystemClock.elapsedRealtime();
         private float playbackRate = 1.0f;
+        private String liveLyric = "";
+        private boolean lyricsInIsland = true;
 
         private final PositionSupplier livePositionSupplier = () -> {
             if (!playing) return anchorPosMs;
@@ -1291,6 +2364,9 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 String trackId, String title, String artist, String album, String coverUrl, byte[] artworkBytes,
                 boolean playing, long durationMs, long positionMs, float playbackRate
         ) {
+            if (!trackId.equals(this.trackId)) {
+                this.liveLyric = "";
+            }
             this.hasTrack = true;
             this.trackId = trackId;
             this.title = title;
@@ -1303,6 +2379,27 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             this.anchorPosMs = positionMs;
             this.anchorRealtimeMs = SystemClock.elapsedRealtime();
             this.playbackRate = playbackRate;
+            invalidateState();
+        }
+
+        void syncTimingFromExo(boolean playingNow, long durMs, long posMs) {
+            this.playing = playingNow;
+            if (durMs > 1000L) this.durationMs = durMs;
+            this.anchorPosMs = Math.max(0L, posMs);
+            this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+            invalidateState();
+        }
+
+        void setLocalPlaybackRate(float rate) {
+            this.anchorPosMs = livePositionSupplier.get();
+            this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+            this.playbackRate = rate;
+            invalidateState();
+        }
+
+        void updateLiveLyric(String lyric, boolean enabled) {
+            this.liveLyric = lyric != null ? lyric : "";
+            this.lyricsInIsland = enabled;
             invalidateState();
         }
 
@@ -1346,12 +2443,16 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
                 String safeCover = (coverUrl != null && coverUrl.startsWith("http"))
                         ? coverUrl
                         : "https://spotyflow.vercel.app/icon-512.png";
+                boolean showLyric = lyricsInIsland && liveLyric != null && !liveLyric.isEmpty();
+                String shownTitle = showLyric ? ("♪ " + liveLyric) : title;
+                String shownArtist = showLyric ? (title + " • " + artist) : artist;
+
                 MediaMetadata.Builder metaBuilder = new MediaMetadata.Builder()
-                        .setTitle(title)
-                        .setArtist(artist)
+                        .setTitle(shownTitle)
+                        .setArtist(shownArtist)
                         .setAlbumTitle(album)
-                        .setDisplayTitle(title)
-                        .setSubtitle(artist)
+                        .setDisplayTitle(shownTitle)
+                        .setSubtitle(shownArtist)
                         .setArtworkUri(Uri.parse(safeCover));
                 if (artworkBytes != null && artworkBytes.length > 0) {
                     metaBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER);
@@ -1398,6 +2499,10 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
             if (svc != null) {
                 svc.updateWakeAndWifiLocks(playWhenReady);
+                if (nativeExoActive && svc.exoPlayer != null) {
+                    if (playWhenReady) svc.exoPlayer.play();
+                    else svc.exoPlayer.pause();
+                }
             }
             invalidateState();
             MainActivity.sendMediaActionToJs(playWhenReady ? "play" : "pause", 0L);
@@ -1416,6 +2521,10 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             } else if (positionMs != C.TIME_UNSET) {
                 this.anchorPosMs = Math.max(0L, positionMs);
                 this.anchorRealtimeMs = SystemClock.elapsedRealtime();
+                SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
+                if (svc != null && nativeExoActive && svc.exoPlayer != null) {
+                    svc.exoPlayer.seekTo(this.anchorPosMs);
+                }
                 invalidateState();
                 MainActivity.sendMediaActionToJs("seek", this.anchorPosMs);
             }
@@ -1432,6 +2541,9 @@ public class SpotyFlowPlaybackService extends MediaSessionService {
             SpotyFlowPlaybackService svc = SpotyFlowPlaybackService.instance;
             if (svc != null) {
                 svc.updateWakeAndWifiLocks(false);
+                if (nativeExoActive && svc.exoPlayer != null) {
+                    svc.exoPlayer.pause();
+                }
             }
             invalidateState();
             MainActivity.sendMediaActionToJs("pause", 0L);
@@ -1487,6 +2599,7 @@ public class MainActivity extends BridgeActivity {
     private static final int REQ_SPOTYFLOW_PERMISSIONS = 1001;
     private static WeakReference<MainActivity> activeInstance = new WeakReference<>(null);
     public static volatile boolean isActivityInForeground = false;
+    public static volatile boolean isAppBackgrounded = false;
 
     private Handler mainHandler;
     private ListenableFuture<MediaController> controllerFuture;
@@ -1715,6 +2828,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     public static void dispatchAppBackgroundedToWebView(final boolean isBg) {
+        isAppBackgrounded = isBg;
         MainActivity act = activeInstance != null ? activeInstance.get() : null;
         if (act == null) return;
         act.runOnUiThread(() -> {
@@ -1729,11 +2843,46 @@ public class MainActivity extends BridgeActivity {
         });
     }
 
+    public static void dispatchNativeAudioEvent(final String type, final String payloadJson) {
+        MainActivity act = activeInstance != null ? activeInstance.get() : null;
+        if (act == null || type == null) return;
+        final String qType = JSONObject.quote(type);
+        final String safePayload = (payloadJson != null && !payloadJson.isEmpty()) ? payloadJson : "{}";
+        act.runOnUiThread(() -> {
+            try {
+                if (act.getBridge() != null && act.getBridge().getWebView() != null) {
+                    String js = "try{if(window.__sfOnNativeAudioEvent){window.__sfOnNativeAudioEvent("
+                            + qType + "," + safePayload + ");}}catch(e){}";
+                    act.getBridge().getWebView().evaluateJavascript(js, null);
+                }
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
+    public static void dispatchOfflineProgress(final String trackId, final int percent, final String status) {
+        MainActivity act = activeInstance != null ? activeInstance.get() : null;
+        if (act == null || trackId == null) return;
+        final String qId = JSONObject.quote(trackId);
+        final String qStatus = JSONObject.quote(status != null ? status : "downloading");
+        act.runOnUiThread(() -> {
+            try {
+                if (act.getBridge() != null && act.getBridge().getWebView() != null) {
+                    String js = "try{if(window.__sfOnOfflineDownloadProgress){window.__sfOnOfflineDownloadProgress("
+                            + qId + "," + percent + "," + qStatus + ");}}catch(e){}";
+                    act.getBridge().getWebView().evaluateJavascript(js, null);
+                }
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         activeInstance = new WeakReference<>(this);
         isActivityInForeground = true;
+        isAppBackgrounded = false;
         dispatchAppBackgroundedToWebView(false);
         dispatchAppVisibilityToWebView(true);
     }
@@ -1741,6 +2890,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onPause() {
         isActivityInForeground = false;
+        isAppBackgrounded = true;
         // Segera istirahatkan animasi visual berat sebelum transisi keluar APK agar animasi sistem mulus tanpa merebut CPU dari audio!
         dispatchAppBackgroundedToWebView(true);
         super.onPause();
@@ -1790,6 +2940,51 @@ public class MainActivity extends BridgeActivity {
         @JavascriptInterface
         public void updateState(final String jsonPayload) {
             SpotyFlowPlaybackService.dispatchStateUpdate(getApplicationContext(), jsonPayload);
+        }
+
+        @JavascriptInterface
+        public void playNativeTrack(final String jsonPayload) {
+            SpotyFlowPlaybackService.dispatchPlayNativeTrack(getApplicationContext(), jsonPayload);
+        }
+
+        @JavascriptInterface
+        public void prefetchTrack(final String videoId, final boolean dataSaver) {
+            SpotyFlowNewPipeEngine.prefetchAsync(getApplicationContext(), videoId, dataSaver);
+        }
+
+        @JavascriptInterface
+        public void nativeControl(final String cmd, final long valueMs) {
+            SpotyFlowPlaybackService.dispatchNativeControl(getApplicationContext(), cmd, valueMs);
+        }
+
+        @JavascriptInterface
+        public void updateLyricLine(final String lyricText, final boolean enabled) {
+            SpotyFlowPlaybackService.dispatchLyricUpdate(getApplicationContext(), lyricText, enabled);
+        }
+
+        @JavascriptInterface
+        public void downloadOfflineTrack(final String trackId, final String videoId) {
+            SpotyFlowNewPipeEngine.downloadOfflineAsync(
+                    getApplicationContext(),
+                    trackId,
+                    videoId,
+                    (id, percent, status) -> MainActivity.dispatchOfflineProgress(id, percent, status)
+            );
+        }
+
+        @JavascriptInterface
+        public boolean hasOfflineTrack(final String trackId) {
+            return SpotyFlowNewPipeEngine.hasOfflineTrack(getApplicationContext(), trackId);
+        }
+
+        @JavascriptInterface
+        public boolean deleteOfflineTrack(final String trackId) {
+            return SpotyFlowNewPipeEngine.deleteOfflineTrack(getApplicationContext(), trackId);
+        }
+
+        @JavascriptInterface
+        public String getOfflineTracksJson() {
+            return SpotyFlowNewPipeEngine.getOfflineTracksJson(getApplicationContext());
         }
 
         @JavascriptInterface
@@ -1883,6 +3078,30 @@ public class MainActivity extends BridgeActivity {
 }
 `;
 
+function patchRootBuildGradle() {
+  if (fs.existsSync(ROOT_BUILD_GRADLE)) {
+    let content = fs.readFileSync(ROOT_BUILD_GRADLE, 'utf8');
+    if (!content.includes('https://jitpack.io')) {
+      content = content.replace(
+        /(allprojects\s*\{\s*[\s\S]*?repositories\s*\{)/,
+        `$1\n        maven { url 'https://jitpack.io' }`
+      );
+      fs.writeFileSync(ROOT_BUILD_GRADLE, content, 'utf8');
+    }
+    console.log('  + Patched android/build.gradle (added JitPack repository for NewPipeExtractor v0.27.1)');
+  }
+  if (fs.existsSync(SETTINGS_GRADLE)) {
+    let sContent = fs.readFileSync(SETTINGS_GRADLE, 'utf8');
+    if (sContent.includes('dependencyResolutionManagement') && !sContent.includes('https://jitpack.io')) {
+      sContent = sContent.replace(
+        /(dependencyResolutionManagement\s*\{[\s\S]*?repositories\s*\{)/,
+        `$1\n        maven { url 'https://jitpack.io' }`
+      );
+      fs.writeFileSync(SETTINGS_GRADLE, sContent, 'utf8');
+    }
+  }
+}
+
 function patchVariablesGradle() {
   if (!fs.existsSync(VARIABLES_GRADLE)) return;
   let content = fs.readFileSync(VARIABLES_GRADLE, 'utf8');
@@ -1902,7 +3121,6 @@ function patchBuildGradle() {
   }
   let content = fs.readFileSync(BUILD_GRADLE, 'utf8');
 
-  // Ensure namespace & applicationId match dynamic APP_ID from capacitor.config.json
   if (/namespace\s+["'][^"']+["']/.test(content)) {
     content = content.replace(/namespace\s+["'][^"']+["']/, `namespace "${APP_ID}"`);
   } else {
@@ -1912,34 +3130,27 @@ function patchBuildGradle() {
     content = content.replace(/applicationId\s+["'][^"']+["']/, `applicationId "${APP_ID}"`);
   }
 
-  // Official SpotyFlow v1.5.3 versionCode 153 & versionName "1.5.3"
+  // Official SpotyFlow v2.0.0 versionCode 200 & versionName "2.0.0"
   if (/versionCode\s+\d+/.test(content)) {
-    content = content.replace(/versionCode\s+\d+/, 'versionCode 153');
+    content = content.replace(/versionCode\s+\d+/, 'versionCode 200');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 153');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 200');
   }
   if (/versionName\s+["'][^"']+["']/.test(content)) {
-    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "1.5.3"');
+    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "2.0.0"');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "1.5.3"');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "2.0.0"');
   }
 
-  // Ensure Java 17 compileOptions inside android { ... } (proven Capacitor 6 + Gradle 8 + SDK 34 stack)
-  if (!content.includes('JavaVersion.VERSION_17')) {
-    if (/compileOptions\s*\{/.test(content)) {
-      content = content.replace(
-        /compileOptions\s*\{[\s\S]*?\}/,
-        `compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`
-      );
-    } else {
-      content = content.replace(
-        /android\s*\{/,
-        `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`
-      );
-    }
+  // Core Library Desugaring (wajib untuk NewPipeExtractor pada Android < 13) + Java 17
+  const compileOptsBlock = `compileOptions {\n        coreLibraryDesugaringEnabled true\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }`;
+  if (/compileOptions\s*\{[\s\S]*?\}/.test(content)) {
+    content = content.replace(/compileOptions\s*\{[\s\S]*?\}/, compileOptsBlock);
+  } else {
+    content = content.replace(/android\s*\{/, `android {\n    ${compileOptsBlock}`);
   }
 
-  // Production Release BuildType (full Android ART speed, non-debuggable, zero R8/ProGuard breakage, installable with debug keystore)
+  // Production Release BuildType
   const releaseBlock = `release {\n            minifyEnabled false\n            shrinkResources false\n            signingConfig signingConfigs.debug\n        }`;
   if (/buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?\}/.test(content)) {
     content = content.replace(/release\s*\{[\s\S]*?\}/, releaseBlock);
@@ -1949,14 +3160,18 @@ function patchBuildGradle() {
     content = content.replace(/android\s*\{/, `android {\n    buildTypes {\n        ${releaseBlock}\n    }`);
   }
 
-  // Remove unused heavy ExoPlayer or incompatible Media3 1.5.x dependencies if present
-  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-(?:exoplayer|common|session):1\.5\.[^"']*["']\s*$/gm, '');
-  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-exoplayer:[^"']+["']\s*$/gm, '');
+  // Remove incompatible Media3 1.5.x dependencies if present
+  content = content.replace(/^\s*implementation\s+["']androidx\.media3:media3-(?:exoplayer|common|session|datasource|database):1\.5\.[^"']*["']\s*$/gm, '');
 
-  // Add lightweight AndroidX Media3 1.4.1 (common + session) + Guava for Capacitor 6 / SDK 34
+  // Official SpotyFlow v2.0.0 dependencies: Desugaring 2.0.4 (AGP 8.2 safe) + NewPipeExtractor v0.27.1 + Media3 1.4.1 ExoPlayer + Guava
   const requiredDeps = [
+    'coreLibraryDesugaring "com.android.tools:desugar_jdk_libs_nio:2.0.4"',
+    'implementation "com.github.teamnewpipe:NewPipeExtractor:v0.27.1"',
     'implementation "androidx.media3:media3-common:1.4.1"',
     'implementation "androidx.media3:media3-session:1.4.1"',
+    'implementation "androidx.media3:media3-exoplayer:1.4.1"',
+    'implementation "androidx.media3:media3-datasource:1.4.1"',
+    'implementation "androidx.media3:media3-database:1.4.1"',
     'implementation "com.google.guava:guava:32.1.3-android"',
   ];
   const missingDeps = requiredDeps.filter((dep) => {
@@ -1971,7 +3186,7 @@ function patchBuildGradle() {
   }
 
   fs.writeFileSync(BUILD_GRADLE, content, 'utf8');
-  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, v1.5.3/153, Media3 1.4.1, Guava, Java 17, Production release buildType)`);
+  console.log(`  + Patched android/app/build.gradle (appId=${APP_ID}, v2.0.0/200, Desugaring 2.0.4, NewPipeExtractor v0.27.1, Media3 1.4.1 ExoPlayer, Java 17)`);
 }
 
 function patchAndroidManifest() {
@@ -2093,13 +3308,14 @@ function patchAndroidManifest() {
     xml = xml.replace('</application>', `${serviceBlock}\n    </application>`);
   }
 
-  // Register Native Android Home Screen Widgets 4x1 & 4x2
-  if (!xml.includes('android:name=".SpotyFlowWidgetProvider"')) {
-    const widgetReceiversBlock = `
+  // Register 3 Auralys-Class Native Android Home Screen Widgets (4x1 Mini Glass, 4x2 Album Card, 4x2 Live Lyrics)
+  // First strip old widget blocks if re-patching an existing Android folder so labels & 3rd widget are always fresh
+  xml = xml.replace(/\s*<receiver[^>]*android:name="\.(SpotyFlowWidgetProvider|SpotyFlowWidgetLargeProvider|SpotyFlowWidgetLyricsProvider)"[\s\S]*?<\/receiver>\s*/g, '\n');
+  const widgetReceiversBlock = `
         <receiver
             android:name=".SpotyFlowWidgetProvider"
             android:exported="true"
-            android:label="SpotyFlow Mini (4×1)">
+            android:label="SpotyFlow Mini Glass (4×1)">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="${APP_ID}.WIDGET_CMD" />
@@ -2112,7 +3328,7 @@ function patchAndroidManifest() {
         <receiver
             android:name=".SpotyFlowWidgetLargeProvider"
             android:exported="true"
-            android:label="SpotyFlow Player (4×2)">
+            android:label="SpotyFlow Album Card (4×2)">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="${APP_ID}.WIDGET_CMD" />
@@ -2121,16 +3337,27 @@ function patchAndroidManifest() {
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_spotyflow_large_info" />
         </receiver>
+
+        <receiver
+            android:name=".SpotyFlowWidgetLyricsProvider"
+            android:exported="true"
+            android:label="SpotyFlow Live Lyrics (4×2)">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="${APP_ID}.WIDGET_CMD" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_spotyflow_lyrics_info" />
+        </receiver>
     `;
-    xml = xml.replace('</application>', `${widgetReceiversBlock}\n    </application>`);
-  }
+  xml = xml.replace('</application>', `${widgetReceiversBlock}\n    </application>`);
 
   fs.writeFileSync(MANIFEST_XML, xml, 'utf8');
-  console.log('  + Patched AndroidManifest.xml (14 Spotify permissions, appCategory=audio, Media3 MediaSessionService, MediaButtonReceiver & 4x1/4x2 Widgets)');
+  console.log('  + Patched AndroidManifest.xml (14 Spotify permissions, appCategory=audio, Media3 MediaSessionService, MediaButtonReceiver & 3 Auralys Widgets)');
 }
 
 function writeJavaAndResSources() {
-  // Remove stale legacy com/spotyflow/music Java folder so javac never hits duplicate class errors
   if (APP_ID !== 'com.spotyflow.music') {
     const legacyDir = path.join(JAVA_ROOT_DIR, 'com', 'spotyflow', 'music');
     if (fs.existsSync(legacyDir)) {
@@ -2148,7 +3375,6 @@ function writeJavaAndResSources() {
   fs.mkdirSync(RES_DRAWABLE_DIR, { recursive: true });
   fs.mkdirSync(RES_XML_DIR, { recursive: true });
 
-  // Clean up any legacy ExoPlayer / resolver / service Java files
   for (const legacy of ['NativeYouTubeResolver.java', 'SpotyFlowMediaService.java', 'SpotyFlowMediaPlugin.java']) {
     const p = path.join(JAVA_PKG_DIR, legacy);
     if (fs.existsSync(p)) {
@@ -2157,22 +3383,27 @@ function writeJavaAndResSources() {
     }
   }
 
-  // 5 Native Java classes (WebView, PlaybackService, MainActivity, 4x1 Widget, 4x2 Widget)
+  // 7 Native Java classes (WebView, NewPipeEngine, PlaybackService, MainActivity, 3 Auralys Widgets)
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), SPOTYFLOW_WEBVIEW_JAVA, 'utf8');
+  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowNewPipeEngine.java'), SPOTYFLOW_NEWPIPE_ENGINE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), SPOTYFLOW_PLAYBACK_SERVICE_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), MAIN_ACTIVITY_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetProvider.java'), SPOTYFLOW_WIDGET_PROVIDER_JAVA, 'utf8');
   fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLargeProvider.java'), SPOTYFLOW_WIDGET_LARGE_PROVIDER_JAVA, 'utf8');
+  fs.writeFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLyricsProvider.java'), SPOTYFLOW_WIDGET_LYRICS_PROVIDER_JAVA, 'utf8');
 
-  // WebView layouts (both Capacitor 6 & 7 compatibility) + 4x1 & 4x2 Home Screen Widget layouts
+  // WebView layouts + 3 Auralys Home Screen Widget layouts
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), BRIDGE_LAYOUT_MAIN_XML, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_small.xml'), WIDGET_SPOTYFLOW_SMALL_XML, 'utf8');
   fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_large.xml'), WIDGET_SPOTYFLOW_LARGE_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_lyrics.xml'), WIDGET_SPOTYFLOW_LYRICS_XML, 'utf8');
 
   // Notification + Widget drawables
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'), IC_STAT_MUSIC_XML, 'utf8');
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_bg_dark.xml'), WIDGET_BG_DARK_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_bg_adaptive.xml'), WIDGET_BG_ADAPTIVE_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_bg_stroke_overlay.xml'), WIDGET_BG_STROKE_OVERLAY_XML, 'utf8');
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_cover_bg.xml'), WIDGET_COVER_BG_XML, 'utf8');
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'widget_btn_play_bg.xml'), WIDGET_BTN_PLAY_BG_XML, 'utf8');
   fs.writeFileSync(path.join(RES_DRAWABLE_DIR, 'ic_widget_prev.xml'), IC_WIDGET_PREV_XML, 'utf8');
@@ -2183,25 +3414,32 @@ function writeJavaAndResSources() {
   // AppWidget provider metadata XMLs
   fs.writeFileSync(path.join(RES_XML_DIR, 'widget_spotyflow_small_info.xml'), WIDGET_SPOTYFLOW_SMALL_INFO_XML, 'utf8');
   fs.writeFileSync(path.join(RES_XML_DIR, 'widget_spotyflow_large_info.xml'), WIDGET_SPOTYFLOW_LARGE_INFO_XML, 'utf8');
+  fs.writeFileSync(path.join(RES_XML_DIR, 'widget_spotyflow_lyrics_info.xml'), WIDGET_SPOTYFLOW_LYRICS_INFO_XML, 'utf8');
 
-  console.log(`  + Written 5 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + WebView layouts + 4x1/4x2 Widgets & drawables`);
+  console.log(`  + Written 7 Java classes to ${path.relative(ROOT, JAVA_PKG_DIR)} (package ${APP_ID}) + WebView layouts + 3 Auralys Widgets & drawables`);
 }
 
 function verifyPatchedProject() {
   const mustExist = [
+    ROOT_BUILD_GRADLE,
     BUILD_GRADLE,
     MANIFEST_XML,
     path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowNewPipeEngine.java'),
     path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'),
     path.join(JAVA_PKG_DIR, 'MainActivity.java'),
     path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetProvider.java'),
     path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLargeProvider.java'),
+    path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLyricsProvider.java'),
     path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'),
     path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'),
     path.join(RES_LAYOUT_DIR, 'widget_spotyflow_small.xml'),
     path.join(RES_LAYOUT_DIR, 'widget_spotyflow_large.xml'),
+    path.join(RES_LAYOUT_DIR, 'widget_spotyflow_lyrics.xml'),
     path.join(RES_DRAWABLE_DIR, 'ic_stat_music.xml'),
     path.join(RES_DRAWABLE_DIR, 'widget_bg_dark.xml'),
+    path.join(RES_DRAWABLE_DIR, 'widget_bg_adaptive.xml'),
+    path.join(RES_DRAWABLE_DIR, 'widget_bg_stroke_overlay.xml'),
     path.join(RES_DRAWABLE_DIR, 'widget_cover_bg.xml'),
     path.join(RES_DRAWABLE_DIR, 'widget_btn_play_bg.xml'),
     path.join(RES_DRAWABLE_DIR, 'ic_widget_prev.xml'),
@@ -2210,6 +3448,7 @@ function verifyPatchedProject() {
     path.join(RES_DRAWABLE_DIR, 'ic_widget_pause.xml'),
     path.join(RES_XML_DIR, 'widget_spotyflow_small_info.xml'),
     path.join(RES_XML_DIR, 'widget_spotyflow_large_info.xml'),
+    path.join(RES_XML_DIR, 'widget_spotyflow_lyrics_info.xml'),
   ];
   for (const f of mustExist) {
     if (!fs.existsSync(f)) {
@@ -2230,56 +3469,59 @@ function verifyPatchedProject() {
     }
   }
 
+  const rootGradle = fs.readFileSync(ROOT_BUILD_GRADLE, 'utf8');
   const variablesGradle = fs.existsSync(VARIABLES_GRADLE) ? fs.readFileSync(VARIABLES_GRADLE, 'utf8') : '';
   const gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
   const manifest = fs.readFileSync(MANIFEST_XML, 'utf8');
+  const np = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowNewPipeEngine.java'), 'utf8');
   const svc = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowPlaybackService.java'), 'utf8');
   const act = fs.readFileSync(path.join(JAVA_PKG_DIR, 'MainActivity.java'), 'utf8');
   const webv = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWebView.java'), 'utf8');
   const wSmall = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetProvider.java'), 'utf8');
   const wLarge = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLargeProvider.java'), 'utf8');
+  const wLyrics = fs.readFileSync(path.join(JAVA_PKG_DIR, 'SpotyFlowWidgetLyricsProvider.java'), 'utf8');
   const wLayoutSm = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_small.xml'), 'utf8');
   const wLayoutLg = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_large.xml'), 'utf8');
+  const wLayoutLy = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'widget_spotyflow_lyrics.xml'), 'utf8');
   const capLayout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'capacitor_bridge_layout_main.xml'), 'utf8');
   const layout = fs.readFileSync(path.join(RES_LAYOUT_DIR, 'bridge_layout_main.xml'), 'utf8');
 
   const pkgDecl = `package ${APP_ID};`;
   const checks = [
+    [rootGradle.includes('https://jitpack.io'), 'android/build.gradle missing JitPack repository'],
     [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 34') && variablesGradle.includes('targetSdkVersion = 34')), 'variables.gradle missing compileSdk/targetSdk = 34'],
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('versionCode 153') && gradle.includes('versionName "1.5.3"'), 'build.gradle missing versionCode 153 / versionName "1.5.3"'],
-    [gradle.includes('androidx.media3:media3-common:1.4.1'), 'build.gradle missing media3-common:1.4.1'],
-    [gradle.includes('androidx.media3:media3-session:1.4.1'), 'build.gradle missing media3-session:1.4.1'],
-    [!gradle.includes('media3-exoplayer'), 'build.gradle should NOT include heavy media3-exoplayer'],
+    [gradle.includes('versionCode 200') && gradle.includes('versionName "2.0.0"'), 'build.gradle missing versionCode 200 / versionName "2.0.0"'],
+    [gradle.includes('coreLibraryDesugaringEnabled true'), 'build.gradle missing coreLibraryDesugaringEnabled true'],
+    [gradle.includes('com.android.tools:desugar_jdk_libs_nio:2.0.4'), 'build.gradle missing desugar_jdk_libs_nio:2.0.4'],
+    [gradle.includes('com.github.teamnewpipe:NewPipeExtractor:v0.27.1'), 'build.gradle missing NewPipeExtractor:v0.27.1'],
+    [gradle.includes('androidx.media3:media3-common:1.4.1') && gradle.includes('androidx.media3:media3-session:1.4.1') && gradle.includes('androidx.media3:media3-exoplayer:1.4.1') && gradle.includes('androidx.media3:media3-datasource:1.4.1') && gradle.includes('androidx.media3:media3-database:1.4.1'), 'build.gradle missing Media3 1.4.1 ExoPlayer stack'],
     [gradle.includes('com.google.guava:guava:32.1.3-android'), 'build.gradle missing guava'],
     [gradle.includes('JavaVersion.VERSION_17'), 'build.gradle missing Java 17'],
     [gradle.includes('minifyEnabled false') && gradle.includes('shrinkResources false') && gradle.includes('signingConfig signingConfigs.debug'), 'build.gradle missing production release buildType config'],
-    [svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl) && wSmall.startsWith(pkgDecl) && wLarge.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
-    [wSmall.includes('PendingIntent.FLAG_IMMUTABLE') && !wLayoutSm.includes('ConstraintLayout') && !wLayoutSm.includes('CardView') && !wLayoutLg.includes('ConstraintLayout') && !wLayoutLg.includes('CardView'), 'Widget RemoteViews or FLAG_IMMUTABLE rule violated'],
-    [act.includes('hasActiveWebView()') && svc.includes('lastWidgetTitle') && svc.includes('lastWidgetBitmap') && svc.includes('updateAllWidgets'), 'MainActivity/Service missing Widget integration'],
-    [manifest.includes('SpotyFlowWidgetProvider') && manifest.includes('SpotyFlowWidgetLargeProvider'), 'Manifest missing 4x1 or 4x2 Widget receiver'],
-    [capLayout.includes(`<${APP_ID}.SpotyFlowWebView`), `capacitor_bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
-    [layout.includes(`<${APP_ID}.SpotyFlowWebView`), `bridge_layout_main.xml missing <${APP_ID}.SpotyFlowWebView`],
+    [np.startsWith(pkgDecl) && svc.startsWith(pkgDecl) && act.startsWith(pkgDecl) && webv.startsWith(pkgDecl) && wSmall.startsWith(pkgDecl) && wLarge.startsWith(pkgDecl) && wLyrics.startsWith(pkgDecl), `Java files missing ${pkgDecl}`],
+    [np.includes('s.getContent()') && !np.includes('s.getUrl()') && !np.includes('okhttp3') && np.includes('HttpURLConnection'), 'SpotyFlowNewPipeEngine must use pure HttpURLConnection & getContent()'],
+    [svc.includes('SimpleCache') && svc.includes('DefaultLoadControl') && svc.includes('setBufferDurationsMs(15000, 50000, 350, 800)') && svc.includes('C.WAKE_MODE_NETWORK'), 'SpotyFlowPlaybackService missing ExoPlayer SimpleCache/LoadControl/WakeMode'],
+    [svc.includes('dispatchLyricUpdate') && svc.includes('dominantColorInt') && svc.includes('islandLyricsEnabled'), 'SpotyFlowPlaybackService missing Live Island Lyrics or Dominant Color'],
+    [wSmall.includes('PendingIntent.FLAG_IMMUTABLE') && wSmall.includes('SpotyFlowWidgetLyricsProvider') && !wLayoutSm.includes('ConstraintLayout') && !wLayoutLg.includes('ConstraintLayout') && !wLayoutLy.includes('ConstraintLayout') && wLayoutLy.includes('widget_live_lyric'), '3 Auralys Widgets RemoteViews or FLAG_IMMUTABLE rule violated'],
+    [act.includes('playNativeTrack') && act.includes('prefetchTrack') && act.includes('nativeControl') && act.includes('updateLyricLine') && act.includes('downloadOfflineTrack') && act.includes('hasOfflineTrack') && act.includes('deleteOfflineTrack') && act.includes('getOfflineTracksJson'), 'MainActivity missing v2.0.0 JS bridge methods'],
+    [manifest.includes('SpotyFlowWidgetProvider') && manifest.includes('SpotyFlowWidgetLargeProvider') && manifest.includes('SpotyFlowWidgetLyricsProvider'), 'Manifest missing 3 Auralys Widget receivers'],
+    [capLayout.includes(`<${APP_ID}.SpotyFlowWebView`) && layout.includes(`<${APP_ID}.SpotyFlowWebView`), `WebView layouts missing <${APP_ID}.SpotyFlowWebView`],
     [svc.includes('serviceStarted') && act.includes('isActivityInForeground'), 'Service/MainActivity missing foreground service promotion guard'],
     [act.includes('getSystemStatus()') && act.includes('openNotificationSettings()') && act.includes('openBatterySettings()') && act.includes('clearHttpCache()'), 'MainActivity missing 4 native utility bridge methods'],
     [webv.includes('onWindowVisibilityChanged') && webv.includes('dispatchWindowVisibilityChanged') && webv.includes('onVisibilityChanged') && webv.includes('SpotyFlowPlaybackService.isPlaying'), 'SpotyFlowWebView missing full background visibility & pause overrides'],
     [manifest.includes('android:appCategory="audio"'), 'Manifest missing appCategory="audio"'],
     [manifest.includes('android:launchMode="singleTask"'), 'Manifest missing launchMode="singleTask" on MainActivity'],
-    [manifest.includes('android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"'), 'Manifest missing full configChanges (including navigation) on MainActivity'],
-    [manifest.includes('androidx.media3.session.MediaSessionService'), 'Manifest missing MediaSessionService'],
-    [manifest.includes('androidx.media3.session.MediaButtonReceiver'), 'Manifest missing Media3 MediaButtonReceiver'],
-    [!manifest.includes('SpotyFlowMediaService'), 'Manifest still has legacy SpotyFlowMediaService'],
-    [!manifest.includes('SYSTEM_ALERT_WINDOW'), 'Manifest must NOT contain SYSTEM_ALERT_WINDOW'],
+    [manifest.includes('android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"'), 'Manifest missing full configChanges on MainActivity'],
+    [manifest.includes('androidx.media3.session.MediaSessionService') && manifest.includes('androidx.media3.session.MediaButtonReceiver'), 'Manifest missing MediaSessionService or MediaButtonReceiver'],
+    [!manifest.includes('SpotyFlowMediaService') && !manifest.includes('SYSTEM_ALERT_WINDOW'), 'Manifest contains forbidden legacy service or SYSTEM_ALERT_WINDOW'],
     [svc.includes('extends MediaSessionService') && svc.includes('extends SimpleBasePlayer') && svc.includes('@UnstableApi'), 'Service must use SimpleBasePlayer + MediaSessionService + @UnstableApi'],
     [svc.includes('ForwardingPlayer') && svc.includes('hasNextMediaItem') && svc.includes('hasPreviousMediaItem'), 'Service missing ForwardingPlayer Next/Prev overrides'],
     [svc.includes('spotyflow_general') && svc.includes('spotyflow_playback') && svc.includes('spotyflow_music') && svc.includes('spotyflow_downloads'), 'Service missing 4 notification channels'],
     [svc.includes('PARTIAL_WAKE_LOCK') && svc.includes('wakeLock.acquire()') && svc.includes('ACTION_AUDIO_BECOMING_NOISY'), 'Service missing indefinite WakeLock or Noisy receiver'],
     [act.includes('"SpotyFlowMediaBridge"') && act.includes('sendMediaActionToJs') && act.includes('setMediaPlaybackRequiresUserGesture(false)') && act.includes('setDomStorageEnabled(true)'), 'MainActivity missing SpotyFlowMediaBridge or WebView settings'],
-    [act.includes('RENDERER_PRIORITY_IMPORTANT') && act.includes('moveTaskToBack(true)') && act.includes('__sfSetAppBackgrounded'), 'MainActivity missing renderer priority, moveTaskToBack, or __sfSetAppBackgrounded'],
-    [!act.includes('LAYER_TYPE_HARDWARE'), 'MainActivity must NOT force LAYER_TYPE_HARDWARE (causes GPU double-compositing lag!)'],
-    [act.includes('View.SCROLLBARS_INSIDE_OVERLAY') && act.includes('View.OVER_SCROLL_NEVER'), 'MainActivity missing WebView scroll/overscroll flags'],
-    [svc.includes('cachedArtworkBytes') && svc.includes('createScaledBitmap') && svc.includes('Math.abs(positionMs - estPos) < 2500L'), 'Service missing diff-check debounce or 256x256 artwork cache'],
+    [act.includes('RENDERER_PRIORITY_IMPORTANT') && act.includes('moveTaskToBack(true)') && act.includes('__sfSetAppBackgrounded') && !act.includes('LAYER_TYPE_HARDWARE'), 'MainActivity missing renderer priority/moveTaskToBack or has forbidden LAYER_TYPE_HARDWARE'],
     [(manifest.match(/android:hardwareAccelerated="true"/g) || []).length >= 2, 'Manifest missing android:hardwareAccelerated="true" on <application> and <activity>'],
   ];
 
@@ -2289,7 +3531,7 @@ function verifyPatchedProject() {
       process.exit(1);
     }
   }
-  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} SpotyFlow v1.5.3 Capacitor 6 + SDK 34 + Media3 1.4.1 + 4x1/4x2 Widgets + Release checks)`);
+  console.log(`  + Strict self-verification passed (${checks.length}/${checks.length} SpotyFlow v2.0.0 Auralys-Class checks)`);
 }
 
 function main() {
@@ -2297,13 +3539,14 @@ function main() {
     if (!fs.existsSync(ANDROID_DIR)) {
       throw new Error('Folder android/ belum ada. Jalankan `npx cap add android && npx cap sync android` terlebih dahulu.');
     }
-    console.log(`[SpotyFlow Media3 Patcher] Injecting SpotyFlow v1.5.3 (Capacitor 6 + SDK 34 + Media3 1.4.1 + 4x1/4x2 Widgets + Release, appId=${APP_ID})...`);
+    console.log(`[SpotyFlow Media3 Patcher] Injecting SpotyFlow v2.0.0 Auralys-Class (NewPipe v0.27.1 + Media3 1.4.1 ExoPlayer + Live Island Lyrics + 3 Widgets, appId=${APP_ID})...`);
+    patchRootBuildGradle();
     patchVariablesGradle();
     patchBuildGradle();
     patchAndroidManifest();
     writeJavaAndResSources();
     verifyPatchedProject();
-    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle 8 / Java 17 Release v1.5.3!');
+    console.log('[SpotyFlow Media3 Patcher] SELESAI — siap kompilasi Gradle 8 / Java 17 Release v2.0.0!');
   } catch (err) {
     console.error('[SpotyFlow Media3 Patcher] ERROR:', err?.message || err);
     process.exit(1);
