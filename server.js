@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '3.0.1';
-const NATIVE_APK_VERSION_CODE = 301;
+const VERSION = '3.0.2';
+const NATIVE_APK_VERSION_CODE = 302;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -3620,7 +3620,7 @@ async function runMultiSourceSearch(q, source = 'all', limit = 20, offset = 0, r
   };
 }
 
-app.get('/api/search/all', async (req, res) => {
+app.get(['/api/search/all', '/api/search'], async (req, res) => {
   const q = String(req.query.q || '').trim();
   const source = String(req.query.source || 'all').trim().toLowerCase();
   const limit = Math.min(40, Math.max(5, Number(req.query.limit) || 25));

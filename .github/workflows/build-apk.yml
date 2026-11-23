@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (v3.0.1 Interactive Liquid Glass Auralys · SDK 34)
+name: Build SpotyFlow Android APK (v3.0.2 Full Search + Artist/Album/User Profile · SDK 34)
 
 on:
   workflow_dispatch:
@@ -91,8 +91,8 @@ jobs:
           grep -q "jitpack.io" android/build.gradle
           grep -q "compileSdkVersion = 34" android/variables.gradle
           grep -q "targetSdkVersion = 34" android/variables.gradle
-          grep -q "versionCode 301" android/app/build.gradle
-          grep -q 'versionName "3.0.1"' android/app/build.gradle
+          grep -q "versionCode 302" android/app/build.gradle
+          grep -q 'versionName "3.0.2"' android/app/build.gradle
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
           grep -q "coreLibraryDesugaringEnabled true" android/app/build.gradle
@@ -130,7 +130,7 @@ jobs:
           chmod +x gradlew
           GRADLE_OPTS="-Xmx4096m" ./gradlew assembleRelease --no-daemon
 
-      - name: Export SpotyFlow.apk (Release v3.0.1) & Show Size
+      - name: Export SpotyFlow.apk (Release v3.0.2) & Show Size
         run: |
           test -f android/app/build/outputs/apk/release/app-release.apk
           cp android/app/build/outputs/apk/release/app-release.apk SpotyFlow.apk
@@ -139,7 +139,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-v3.0.1-Release
+          name: SpotyFlow-APK-v3.0.2-Release
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -147,12 +147,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow v3.0.1
+          name: SpotyFlow v3.0.2
           body: |
-            ### SpotyFlow v3.0.1 — Audit Total Bug + Interactive Draggable Liquid Glass Lens Bubble (Auralys Standard)
-            - **Gelembung Lensa Kaca Prisma Interaktif (`#sf3-lens-bubble`)**: Tekan & geser dengan jari secara real-time 60–120 FPS di Dock 4 Tab dengan refraksi prisma warna optik, elastisitas pegas, efek *hover-under-lens*, dan *spring snap* mulus!
-            - **Animasi Mikro Ekspresif Per-Ikon**: Beranda bounce, Cari scan, Pustaka tilt, Kamu nod, Play/Pause glow pulse, Heart Pop + 6 partikel mini, Shuffle/Repeat spin, Streak api berkedip lembut, & Active EQ bars.
-            - **Ambient Aurora Depth & Bebas CSS Bentrok**: Pendar warna sampul halus di latar Terang/Gelap, 0% placeholder hitam/hijau, modal kontras tinggi 100% terbaca di semua tema, & 1-klik Install APK di Web (`/api/download-apk` & `/download`)!
+            ### SpotyFlow v3.0.2 — Pencarian Multi-Sumber Lengkap + Profil Artis, Album & Profil Pengguna
+            - **Perbaikan Total Sistem Pencarian & API APK (`API_BASE` + `/api/search/all`)**: Pencarian kini menampilkan **Hasil Teratas**, **Artis** (foto bulat + jumlah pengikut), **Lagu** (sampul HD + nama artis & album bisa diklik), **Album**, **Playlist**, & saran pencarian real-time di Web maupun APK Android!
+            - **Halaman Profil Artis & Halaman Album Penuh**: Ketuk nama artis untuk membuka banner profil, pengikut, tombol Ikuti, Top 25 lagu populer, diskografi album, & artis serupa; ketuk album untuk daftar trek lengkap & simpan album!
+            - **Kartu Profil Pengguna & Edit Profil di Tab Kamu**: Foto profil/avatar kustom, nama, bio, statistik Disukai/Playlist/Diikuti, & sinkronisasi dengan Pustaka (tab Artis & Album tersimpan aktif penuh!).
+            - **Interactive Draggable Liquid Glass Lens Bubble + Animasi Per-Ikon + 1-Klik Install APK di Web (`/download`)**!
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true

@@ -4569,7 +4569,7 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
-    const APP_VERSION = '3.0.1';
+    const APP_VERSION = '3.0.2';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -38840,7 +38840,7 @@ html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
 
   <script id="sf-v3-parity-js">
 /* =========================================================================
- * 28. SPOTYFLOW v3.0.1 — 100% PARITY EDITION (MODULAR ENGINE: window.SF300)
+ * 28. SPOTYFLOW v3.0.2 — 100% PARITY EDITION (MODULAR ENGINE: window.SF300)
  * Stages 1–4: Liquid Glass/Editorial + 3 Themes + Morphing 4-Tab Dock +
  * Streak + Clean Fullscreen Stage + 10-Category Settings + Native Audio Pro
  * + 5-Band EQ + Kenali Lagu + 5-Widget Live Editor + 6 Pustaka Collections
@@ -39290,7 +39290,23 @@ window.SF300 = (function createSpotyFlow300Module() {
   let activeTab = 'beranda';
   let activeMood = '';
   let moodTracksCache = {};
-  let searchState = { query: '', filter: 'Semua', results: [], loading: false };
+  let searchState = {
+    query: '',
+    filter: 'Semua',
+    results: [],
+    artists: [],
+    albums: [],
+    playlists: [],
+    podcasts: [],
+    suggestions: [],
+    loading: false,
+    error: '',
+  };
+  const searchRamCache = new Map();
+  let suggestDebounceTimer = null;
+  let lastArtistsRegistry = [];
+  let lastAlbumsRegistry = [];
+  let lastPlaylistsRegistry = [];
   let libraryState = { subTab: 'Semua', sortBy: 'added', sortAsc: false, query: '', viewMode: 'list' };
   let uploadedTracks = [];
   let deviceTracks = safeJsonParse(localStorage.getItem(DEVICE_CACHE_KEY), []);
@@ -39344,6 +39360,166 @@ window.SF300 = (function createSpotyFlow300Module() {
     return out;
   }
 
+  function getApiBase() {
+    try {
+      if (typeof window.API_BASE === 'string' && window.API_BASE.startsWith('http')) {
+        return window.API_BASE.replace(/\/+$/, '');
+      }
+      const proto = String(window.location?.protocol || '');
+      const host = String(window.location?.hostname || '');
+      if (!isWebBrowserMode() || proto === 'capacitor:' || proto === 'file:' || (host === 'localhost' && window.location?.port === '')) {
+        return 'https://spotyflow.vercel.app';
+      }
+      return '';
+    } catch {
+      return 'https://spotyflow.vercel.app';
+    }
+  }
+
+  function apiUrl(p) {
+    const clean = String(p || '');
+    if (/^https?:\/\//i.test(clean)) return clean;
+    const base = getApiBase();
+    return base + (clean.startsWith('/') ? clean : '/' + clean);
+  }
+
+  async function apiGetJson(pathStr, timeoutMs = 11000) {
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), timeoutMs) : null;
+    try {
+      const resp = await fetch(apiUrl(pathStr), ctrl ? { signal: ctrl.signal } : undefined);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return await resp.json();
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  function formatFans(n) {
+    const num = Number(n || 0);
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + ' jt pengikut';
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + ' rb pengikut';
+    return num > 0 ? num + ' pengikut' : 'Artis Terverifikasi';
+  }
+
+  function getUserProfile() {
+    const stored = safeJsonParse(localStorage.getItem('sf_user_profile'), {}) || {};
+    const appProf = (window.AppState && window.AppState.userProfile) ? window.AppState.userProfile : {};
+    const authUser = (window.AppState && window.AppState.authUser) ? window.AppState.authUser : {};
+    const name = String(appProf.name || stored.name || authUser.name || 'Pendengar SpotyFlow').trim() || 'Pendengar SpotyFlow';
+    const bio = String(appProf.bio || stored.bio || 'Penikmat musik di SpotyFlow').trim();
+    const avatar = String(appProf.avatar || stored.avatar || authUser.picture || authUser.avatar || '').trim();
+    const email = String(authUser.email || stored.email || '').trim();
+    const handle = String(appProf.handle || stored.handle || ('@' + name.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 14) || '@spotyflow')).trim();
+    return { name, bio, avatar, email, handle, loggedIn: Boolean(email || authUser.id) };
+  }
+
+  function saveUserProfile(patch) {
+    const cur = getUserProfile();
+    const next = Object.assign({}, cur, patch);
+    try { localStorage.setItem('sf_user_profile', JSON.stringify(next)); } catch {}
+    if (window.AppState) {
+      window.AppState.userProfile = Object.assign({}, window.AppState.userProfile || {}, next);
+    }
+    return next;
+  }
+
+  function getFollowedArtists() {
+    const arr = Array.isArray(window.AppState?.followedArtists)
+      ? window.AppState.followedArtists
+      : safeJsonParse(localStorage.getItem('sf_followed_artists'), []);
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function isArtistFollowed(artistNameOrId) {
+    const key = String(artistNameOrId || '').trim().toLowerCase();
+    if (!key) return false;
+    return getFollowedArtists().some((a) => String(a.id || '').toLowerCase() === key || String(a.name || '').toLowerCase() === key);
+  }
+
+  function toggleFollowArtistV3(artistObj) {
+    if (!artistObj || !artistObj.name) return false;
+    const list = getFollowedArtists().slice();
+    const keyName = String(artistObj.name).trim().toLowerCase();
+    const keyId = String(artistObj.id || '').trim().toLowerCase();
+    const idx = list.findIndex((a) => (keyId && String(a.id || '').toLowerCase() === keyId) || String(a.name || '').toLowerCase() === keyName);
+    let followed = false;
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      toast(`Berhenti mengikuti ${artistObj.name}`, 'info');
+    } else {
+      list.unshift({
+        id: artistObj.id || ('art_' + Date.now()),
+        name: artistObj.name,
+        picture_medium: artistObj.picture_medium || artistObj.picture_xl || artistObj.picture || '',
+        nb_fan: artistObj.nb_fan || 0,
+      });
+      followed = true;
+      toast(`Mengikuti ${artistObj.name} ✨`, 'check');
+    }
+    try { localStorage.setItem('sf_followed_artists', JSON.stringify(list)); } catch {}
+    if (window.AppState) window.AppState.followedArtists = list;
+    return followed;
+  }
+
+  function getSavedAlbums() {
+    const arr = Array.isArray(window.AppState?.savedAlbums)
+      ? window.AppState.savedAlbums
+      : safeJsonParse(localStorage.getItem('sf_saved_albums'), []);
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function isAlbumSaved(albumIdOrTitle) {
+    const key = String(albumIdOrTitle || '').trim().toLowerCase();
+    if (!key) return false;
+    return getSavedAlbums().some((al) => String(al.id || '').toLowerCase() === key || String(al.title || '').toLowerCase() === key);
+  }
+
+  function toggleSaveAlbumV3(albumObj) {
+    if (!albumObj || !albumObj.title) return false;
+    const list = getSavedAlbums().slice();
+    const keyId = String(albumObj.id || '').trim().toLowerCase();
+    const keyTit = String(albumObj.title).trim().toLowerCase();
+    const idx = list.findIndex((al) => (keyId && String(al.id || '').toLowerCase() === keyId) || String(al.title || '').toLowerCase() === keyTit);
+    let saved = false;
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      toast(`Album "${albumObj.title}" dihapus dari Pustaka`, 'info');
+    } else {
+      list.unshift({
+        id: albumObj.id || ('alb_' + Date.now()),
+        title: albumObj.title,
+        artist: typeof albumObj.artist === 'string' ? { name: albumObj.artist } : (albumObj.artist || { name: 'SpotyFlow' }),
+        cover_medium: albumObj.cover_medium || albumObj.cover_xl || albumObj.cover || '',
+        nb_tracks: albumObj.nb_tracks || 0,
+      });
+      saved = true;
+      toast(`Album "${albumObj.title}" disimpan ke Pustaka 💿`, 'check');
+    }
+    try { localStorage.setItem('sf_saved_albums', JSON.stringify(list)); } catch {}
+    if (window.AppState) window.AppState.savedAlbums = list;
+    return saved;
+  }
+
+  function normalizeTrackItem(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const title = String(raw.title || raw.name || '').trim();
+    if (!title) return null;
+    const artistObj = typeof raw.artist === 'string'
+      ? { name: raw.artist }
+      : (raw.artist && typeof raw.artist === 'object' ? raw.artist : { name: raw.channelTitle || 'SpotyFlow' });
+    const albumObj = typeof raw.album === 'string'
+      ? { title: raw.album, cover_medium: raw.cover || raw.coverUrl || '' }
+      : (raw.album && typeof raw.album === 'object' ? raw.album : { title: '', cover_medium: raw.cover || raw.coverUrl || '' });
+    return Object.assign({}, raw, {
+      id: String(raw.id || raw.videoId || raw.ytId || ('tr_' + title.slice(0, 12))),
+      title,
+      artist: artistObj,
+      album: albumObj,
+      cover: raw.cover || raw.coverUrl || albumObj.cover_xl || albumObj.cover_medium || albumObj.cover || '',
+    });
+  }
+
   const FALLBACK_SEEDS = [
     { id: 'sf_seed_1', title: 'Sialan', artist: { name: 'Adrian Khalif, Juicy Luicy' }, album: { title: 'Sialan' }, duration: 241, cover: '' },
     { id: 'sf_seed_2', title: 'Mati-Matian', artist: { name: 'Mahalini' }, album: { title: 'Mati-Matian' }, duration: 244, cover: '' },
@@ -39353,28 +39529,83 @@ window.SF300 = (function createSpotyFlow300Module() {
     { id: 'sf_seed_6', title: 'Nanti Kita Seperti Ini', artist: { name: 'Batas Senja' }, album: { title: 'Nanti Kita Seperti Ini' }, duration: 228, cover: '' },
   ];
   let hydratedHomeTracks = null;
+  let hydratedHomeArtists = [];
+
   async function hydrateSeedCoversOnce() {
-    if (hydratedHomeTracks || getUserTracksPool().length >= 6) return;
+    if (hydratedHomeTracks) return;
     try {
-      const hits = await apiSearchTracks('top hits Indonesia pop viral 2025', 9);
-      if (Array.isArray(hits) && hits.length >= 4) {
-        hydratedHomeTracks = hits;
+      const code = statePrefs.region || 'ID';
+      let tracks = [];
+      try {
+        const ch = await apiGetJson(`/api/charts/country/${encodeURIComponent(code)}`, 9000);
+        tracks = Array.isArray(ch?.tracks) ? ch.tracks.map(normalizeTrackItem).filter(Boolean) : [];
+      } catch {}
+      if (tracks.length < 4) {
+        const sr = await apiSearchAll('top hits Indonesia pop viral', 15);
+        tracks = sr.tracks || [];
+        if (sr.artists?.length) hydratedHomeArtists = sr.artists.slice(0, 10);
+      }
+      if (tracks.length >= 4) {
+        hydratedHomeTracks = tracks;
+        if (!hydratedHomeArtists.length) {
+          const seen = new Set();
+          for (const t of tracks) {
+            const an = trackArtist(t);
+            if (!an || seen.has(an.toLowerCase())) continue;
+            seen.add(an.toLowerCase());
+            hydratedHomeArtists.push({
+              id: t.artist?.id || '',
+              name: an,
+              picture_medium: t.artist?.picture_medium || t.artist?.picture_xl || trackCover(t),
+              nb_fan: t.artist?.nb_fan || 0,
+            });
+            if (hydratedHomeArtists.length >= 10) break;
+          }
+        }
         if (activeTab === 'beranda') pages.render();
       }
     } catch {}
   }
 
-  async function apiSearchTracks(query, limit = 16) {
+  async function apiSearchAll(query, limit = 28) {
     const q = String(query || '').trim();
-    if (!q) return [];
-    try {
-      const resp = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=${limit}`);
-      const json = await resp.json();
-      const arr = json?.data || json?.tracks || json?.results || [];
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
+    if (!q) return { tracks: [], artists: [], albums: [], playlists: [], podcasts: [], error: '' };
+    const cacheKey = `${q.toLowerCase()}::${limit}`;
+    const cached = searchRamCache.get(cacheKey);
+    if (cached && (Date.now() - cached.at) < 5 * 60 * 1000) {
+      return cached.data;
     }
+    try {
+      const json = await apiGetJson(`/api/search/all?q=${encodeURIComponent(q)}&limit=${limit}`, 12000);
+      const data = {
+        tracks: (Array.isArray(json?.tracks) ? json.tracks : []).map(normalizeTrackItem).filter(Boolean),
+        artists: Array.isArray(json?.artists) ? json.artists : [],
+        albums: Array.isArray(json?.albums) ? json.albums : [],
+        playlists: Array.isArray(json?.playlists) ? json.playlists : [],
+        podcasts: Array.isArray(json?.podcasts) ? json.podcasts : [],
+        error: '',
+      };
+      if (data.tracks.length || data.artists.length || data.albums.length) {
+        searchRamCache.set(cacheKey, { at: Date.now(), data });
+        return data;
+      }
+    } catch {}
+
+    // Resilient Fallback #2: Direct YouTube Music Python Engine (/api/ytm)
+    try {
+      const ytm = await apiGetJson(`/api/ytm?action=search&q=${encodeURIComponent(q)}`, 10000);
+      const tracks = (Array.isArray(ytm?.tracks) ? ytm.tracks : []).map(normalizeTrackItem).filter(Boolean);
+      const data = { tracks, artists: [], albums: [], playlists: [], podcasts: [], error: tracks.length ? '' : 'Tidak ada hasil ditemukan.' };
+      if (tracks.length) searchRamCache.set(cacheKey, { at: Date.now(), data });
+      return data;
+    } catch {
+      return { tracks: [], artists: [], albums: [], playlists: [], podcasts: [], error: 'Koneksi ke server pencarian gagal. Periksa internet lalu ketuk Coba Lagi.' };
+    }
+  }
+
+  async function apiSearchTracks(query, limit = 16) {
+    const res = await apiSearchAll(query, limit);
+    return res.tracks || [];
   }
 
   function playTrackSafe(list, idx, label) {
@@ -39718,11 +39949,16 @@ window.SF300 = (function createSpotyFlow300Module() {
 
   function renderTrackRow(t, idx, listTag) {
     const title = esc(t.title || 'Tanpa Judul');
-    const artist = esc(trackArtist(t));
+    const artistName = trackArtist(t);
+    const artist = esc(artistName);
+    const albumTitle = typeof t.album === 'string' ? t.album : (t.album?.title || '');
     const cover = esc(trackCover(t));
     const dur = t.duration || t.durationSec ? fmtTime(t.duration || t.durationSec) : '';
     const isCur = window.AppState?.currentTrack && String(window.AppState.currentTrack.id) === String(t.id);
     const isCurPlaying = isCur && Boolean(window.AppState?.isPlaying);
+    const subParts = [artist];
+    if (albumTitle && albumTitle.toLowerCase() !== String(t.title || '').toLowerCase()) subParts.push(esc(albumTitle));
+    if (dur) subParts.push(dur);
     return `
       <div class="sf3-row" onclick="window.SF300.pages.playFromRendered(${idx}, '${esc(listTag)}')">
         <img src="${cover}" alt="" loading="lazy" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-black/5" onerror="this.onerror=null;this.src=window.SF300._artFallback('${title}')" />
@@ -39731,11 +39967,19 @@ window.SF300 = (function createSpotyFlow300Module() {
             ${isCurPlaying ? '<span class="sf3-eq-bars" aria-hidden="true"><span class="sf3-eq-bar"></span><span class="sf3-eq-bar"></span><span class="sf3-eq-bar"></span></span>' : ''}
             <span class="text-[14px] font-bold truncate" style="${isCur ? 'color:var(--sf3-accent);' : ''}">${title}</span>
           </div>
-          <div class="text-[12px] sf3-muted truncate">${artist}${dur ? ' • ' + dur : ''}</div>
+          <div class="text-[12px] sf3-muted truncate">${subParts.join(' • ')}</div>
         </div>
         <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center sf3-muted shrink-0" aria-label="Menu lagu" onclick="event.stopPropagation();window.SF300.audioTools.openTrackMenu(${idx})">⋮</button>
       </div>
     `;
+  }
+
+  function renderAvatarCircle(prof, sizeCls = 'w-10 h-10') {
+    if (prof.avatar) {
+      return `<img src="${esc(prof.avatar)}" alt="${esc(prof.name)}" class="${sizeCls} rounded-full object-cover shadow-sm border border-black/10" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(prof.name)}')" />`;
+    }
+    const init = esc((prof.name || 'S').slice(0, 1).toUpperCase());
+    return `<span class="${sizeCls} rounded-full flex items-center justify-center font-extrabold text-sm shadow-sm shrink-0" style="background:linear-gradient(135deg,#1ED760,#0EA5E9);color:#000;">${init}</span>`;
   }
 
   const pages = {
@@ -39769,12 +40013,67 @@ window.SF300 = (function createSpotyFlow300Module() {
       }
       this.render();
     },
+    onSearchInput(val) {
+      const q = String(val || '').trim();
+      searchState.query = val;
+      if (suggestDebounceTimer) clearTimeout(suggestDebounceTimer);
+      if (q.length < 2) {
+        searchState.suggestions = [];
+        const box = document.getElementById('sf3-suggest-box');
+        if (box) box.innerHTML = '';
+        return;
+      }
+      suggestDebounceTimer = setTimeout(async () => {
+        try {
+          const data = await apiGetJson(`/api/search/suggest?q=${encodeURIComponent(q)}`, 5000);
+          const list = [];
+          const seen = new Set();
+          for (const a of (data?.artists || []).slice(0, 3)) {
+            if (a?.name && !seen.has(a.name.toLowerCase())) {
+              seen.add(a.name.toLowerCase());
+              list.push({ type: 'Artis', label: a.name, q: a.name });
+            }
+          }
+          for (const t of (data?.tracks || []).slice(0, 4)) {
+            const lbl = t?.title ? `${t.title}${t.artist?.name ? ' — ' + t.artist.name : ''}` : '';
+            if (lbl && !seen.has(lbl.toLowerCase())) {
+              seen.add(lbl.toLowerCase());
+              list.push({ type: 'Lagu', label: lbl, q: t.title });
+            }
+          }
+          searchState.suggestions = list;
+          const box = document.getElementById('sf3-suggest-box');
+          if (box && !searchState.loading) {
+            box.innerHTML = list.length ? `
+              <div class="sf3-card overflow-hidden">
+                ${list.map((s) => `
+                  <div class="sf3-settings-row" style="padding:10px 14px;" onclick="window.SF300.pages.runSearch(${JSON.stringify(s.q).replace(/"/g, '&quot;')})">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="text-xs font-extrabold px-2 py-0.5 rounded-full sf3-card-soft">${esc(s.type)}</span>
+                      <span class="text-xs font-bold truncate">${esc(s.label)}</span>
+                    </div>
+                    <span class="sf3-muted text-xs">↗</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '';
+          }
+        } catch {}
+      }, 280);
+    },
     async runSearch(qOverride) {
+      if (suggestDebounceTimer) clearTimeout(suggestDebounceTimer);
+      searchState.suggestions = [];
       const input = document.getElementById('sf3-search-input');
-      const q = (qOverride !== undefined ? qOverride : (input ? input.value : searchState.query)).trim();
+      const q = (qOverride !== undefined ? String(qOverride) : (input ? input.value : searchState.query)).trim();
       searchState.query = q;
       if (!q) {
         searchState.results = [];
+        searchState.artists = [];
+        searchState.albums = [];
+        searchState.playlists = [];
+        searchState.podcasts = [];
+        searchState.error = '';
         this.render();
         return;
       }
@@ -39784,9 +40083,16 @@ window.SF300 = (function createSpotyFlow300Module() {
         try { localStorage.setItem(SEARCH_HIST_KEY, JSON.stringify(next)); } catch {}
       }
       searchState.loading = true;
+      searchState.error = '';
       this.render();
-      const suffix = searchState.filter === 'Video' ? ' official music video' : (searchState.filter === 'Album' ? ' full album' : '');
-      searchState.results = await apiSearchTracks(q + suffix, 18);
+      const suffix = searchState.filter === 'Video' ? ' official music video' : '';
+      const res = await apiSearchAll(q + suffix, 30);
+      searchState.results = res.tracks || [];
+      searchState.artists = res.artists || [];
+      searchState.albums = res.albums || [];
+      searchState.playlists = res.playlists || [];
+      searchState.podcasts = res.podcasts || [];
+      searchState.error = res.error || '';
       searchState.loading = false;
       this.render();
     },
@@ -39824,12 +40130,13 @@ window.SF300 = (function createSpotyFlow300Module() {
       const quickItems = basePool.slice(0, 6);
       const andalanList = activeMood && moodTracksCache[activeMood]
         ? moodTracksCache[activeMood]
-        : (pool.length >= 3 ? pool.slice(0, 12) : (hydratedHomeTracks || FALLBACK_SEEDS));
+        : (pool.length >= 6 ? pool.slice(0, 12) : (hydratedHomeTracks || FALLBACK_SEEDS));
       registerPlayableList(andalanList);
       const gridCols = statePrefs.gridLayout === 'large' ? 'grid-cols-2' : 'grid-cols-3';
-      const user = window.AppState?.user || safeJsonParse(localStorage.getItem('sf_user_profile'), null);
-      const initials = esc((user?.name || 'S').slice(0, 1).toUpperCase());
+      const prof = getUserProfile();
       const isGlass = statePrefs.uiStyle !== 'editorial';
+      const popArtists = hydratedHomeArtists.length ? hydratedHomeArtists : getFollowedArtists();
+      lastArtistsRegistry = popArtists.slice();
 
       return `
         <div class="space-y-5">
@@ -39837,7 +40144,7 @@ window.SF300 = (function createSpotyFlow300Module() {
             <h1 class="sf3-page-title">${esc(getGreeting())}</h1>
             <div class="flex items-center gap-2 shrink-0">
               <button type="button" class="w-10 h-10 rounded-full sf3-glass-float flex items-center justify-center text-base" title="${isGlass ? 'Gaya Kaca (Ketuk untuk Editorial)' : 'Gaya Editorial (Ketuk untuk Kaca)'}" onclick="window.SF300.pages.toggleQuickStyle()">${isGlass ? '✨' : '📰'}</button>
-              <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm shadow-sm" style="background:var(--sf3-accent);color:#000;" title="Pengaturan" onclick="window.SF300.settings.openMenu()">${initials}</button>
+              <button type="button" class="rounded-full flex items-center justify-center" title="Profil &amp; Pengaturan" onclick="window.SF300.nav.go('kamu')">${renderAvatarCircle(prof, 'w-10 h-10')}</button>
             </div>
           </div>
 
@@ -39846,7 +40153,8 @@ window.SF300 = (function createSpotyFlow300Module() {
               <button type="button" class="sf3-card flex items-center gap-2.5 p-1.5 pr-3 text-left overflow-hidden active:scale-[0.98] transition-transform" style="border-radius:16px;" onclick="window.SF300.pages.playQuick(${i})">
                 <img src="${esc(trackCover(t))}" alt="" class="w-12 h-12 rounded-[13px] object-cover shrink-0 shadow-sm" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(t.title)}')" />
                 <div class="min-w-0 flex-1">
-                  <div class="text-[12.5px] font-extrabold leading-tight line-clamp-2">${esc(t.title)}</div>
+                  <div class="text-[12.5px] font-extrabold leading-tight line-clamp-1">${esc(t.title)}</div>
+                  <div class="text-[10.5px] sf3-muted truncate mt-0.5">${esc(trackArtist(t))}</div>
                 </div>
               </button>
             `).join('')}
@@ -39877,6 +40185,23 @@ window.SF300 = (function createSpotyFlow300Module() {
               `).join('')}
             </div>
           </div>
+
+          ${popArtists.length ? `
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h2 class="sf3-sec-title">Artis Populer</h2>
+                <button type="button" class="text-xs font-bold" style="color:var(--sf3-accent);" onclick="window.SF300.nav.go('cari')">Cari Artis ›</button>
+              </div>
+              <div class="sf3-chip-row" style="gap:14px;">
+                ${popArtists.slice(0, 10).map((a, idx) => `
+                  <button type="button" class="flex flex-col items-center gap-1.5 shrink-0 w-20 text-center active:scale-95 transition-transform" onclick="window.SF300.complete.openArtistByIndex(${idx})">
+                    <img src="${esc(a.picture_medium || a.picture_xl || makeArtCover(a.name))}" alt="${esc(a.name)}" loading="lazy" class="w-18 h-18 rounded-full object-cover sf3-card" style="width:72px;height:72px;" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(a.name)}')" />
+                    <span class="text-[11.5px] font-bold truncate w-full">${esc(a.name)}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
       `;
     },
@@ -39892,33 +40217,165 @@ window.SF300 = (function createSpotyFlow300Module() {
       playTrackSafe(quickItems, idx, 'Putar Cepat');
     },
     _renderCari() {
-      const filters = ['Semua', 'Lagu', 'Video', 'Album', 'Artis', 'Playlist'];
+      const filters = ['Semua', 'Lagu', 'Artis', 'Album', 'Playlist', 'Video'];
       const hist = safeJsonParse(localStorage.getItem(SEARCH_HIST_KEY), []);
-      registerPlayableList(searchState.results);
+      const tracks = searchState.results || [];
+      const artists = searchState.artists || [];
+      const albums = searchState.albums || [];
+      const playlists = searchState.playlists || [];
+      registerPlayableList(tracks);
+      lastArtistsRegistry = artists.slice();
+      lastAlbumsRegistry = albums.slice();
+      lastPlaylistsRegistry = playlists.slice();
+      const hasAny = tracks.length || artists.length || albums.length || playlists.length;
+      const f = searchState.filter;
+
+      const topArtist = artists[0] || null;
+      const topTrack = tracks[0] || null;
+
       return `
         <div class="space-y-4">
           <h1 class="sf3-page-title pt-1">Cari</h1>
 
           <form onsubmit="event.preventDefault();window.SF300.pages.runSearch()" class="sf3-card flex items-center gap-2 px-3.5 py-2.5" style="border-radius:999px;">
             <span class="sf3-muted">${SVG_ICONS.cari}</span>
-            <input id="sf3-search-input" type="search" value="${esc(searchState.query)}" placeholder="Cari lagu, artis, album, lirik..." class="flex-1 bg-transparent outline-none text-[14.5px] font-medium" style="color:var(--sf3-text);" />
+            <input id="sf3-search-input" type="search" value="${esc(searchState.query)}" oninput="window.SF300.pages.onSearchInput(this.value)" placeholder="Cari lagu, artis, album, playlist..." class="flex-1 bg-transparent outline-none text-[14.5px] font-medium" style="color:var(--sf3-text);" />
             ${searchState.query ? `<button type="button" class="text-sm font-bold px-2 sf3-muted" onclick="window.SF300.pages.runSearch('')">✕</button>` : ''}
             <button type="submit" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold" style="background:var(--sf3-accent);color:#000;">Cari</button>
           </form>
 
+          <div id="sf3-suggest-box"></div>
+
           <div class="sf3-chip-row">
-            ${filters.map((f) => `
-              <button type="button" class="sf3-chip ${searchState.filter === f ? 'active' : ''}" onclick="window.SF300.pages.setSearchFilter('${f}')">${f}</button>
+            ${filters.map((flt) => `
+              <button type="button" class="sf3-chip ${f === flt ? 'active' : ''}" onclick="window.SF300.pages.setSearchFilter('${flt}')">${flt}</button>
             `).join('')}
           </div>
 
           ${searchState.loading ? `
-            <div class="sf3-card p-6 text-center text-sm sf3-muted">Mencari "${esc(searchState.query)}"...</div>
-          ` : searchState.results.length ? `
-            <div class="sf3-card p-2">
-              ${searchState.results.map((t, i) => renderTrackRow(t, i, 'Hasil Pencarian')).join('')}
+            <div class="sf3-card p-6 text-center space-y-2">
+              <div class="text-sm font-bold">Mencari "${esc(searchState.query)}"...</div>
+              <div class="text-xs sf3-muted">Mengambil lagu, profil artis, album &amp; playlist</div>
+            </div>
+          ` : searchState.error && !hasAny ? `
+            <div class="sf3-card p-6 text-center space-y-3">
+              <p class="text-sm font-bold">${esc(searchState.error)}</p>
+              <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.pages.runSearch()">Coba Lagi</button>
+            </div>
+          ` : hasAny ? `
+            <div class="space-y-5">
+              ${f === 'Semua' && (topArtist || topTrack) ? `
+                <div>
+                  <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2 px-1">Hasil Teratas</p>
+                  ${topArtist && topArtist.name.toLowerCase().includes(searchState.query.trim().toLowerCase().slice(0, 4)) ? `
+                    <div class="sf3-card p-4 flex items-center justify-between gap-3 cursor-pointer" onclick="window.SF300.complete.openArtistByIndex(0)">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <img src="${esc(topArtist.picture_medium || topArtist.picture_xl || makeArtCover(topArtist.name))}" class="w-16 h-16 rounded-full object-cover shrink-0 shadow" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(topArtist.name)}')" />
+                        <div class="min-w-0">
+                          <span class="inline-block text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">Artis</span>
+                          <div class="text-lg font-extrabold truncate">${esc(topArtist.name)}</div>
+                          <div class="text-xs sf3-muted">${esc(formatFans(topArtist.nb_fan))}</div>
+                        </div>
+                      </div>
+                      <span class="px-3 py-1.5 rounded-full text-xs font-extrabold sf3-card-soft shrink-0">Profil ›</span>
+                    </div>
+                  ` : topTrack ? `
+                    <div class="sf3-card p-4 flex items-center justify-between gap-3 cursor-pointer" onclick="window.SF300.pages.playFromRendered(0, 'Hasil Pencarian')">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <img src="${esc(trackCover(topTrack))}" class="w-16 h-16 rounded-2xl object-cover shrink-0 shadow" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(topTrack.title)}')" />
+                        <div class="min-w-0">
+                          <span class="inline-block text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">Lagu Teratas</span>
+                          <div class="text-base font-extrabold truncate">${esc(topTrack.title)}</div>
+                          <div class="text-xs sf3-muted truncate">${esc(trackArtist(topTrack))}</div>
+                        </div>
+                      </div>
+                      <span class="w-11 h-11 rounded-full flex items-center justify-center text-black shrink-0 shadow" style="background:var(--sf3-accent);">${SVG_ICONS.play}</span>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
+
+              ${(f === 'Semua' || f === 'Artis') && artists.length ? `
+                <div>
+                  <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2.5 px-1">Artis (${artists.length})</p>
+                  ${f === 'Artis' ? `
+                    <div class="sf3-card overflow-hidden">
+                      ${artists.map((a, i) => `
+                        <div class="sf3-settings-row" onclick="window.SF300.complete.openArtistByIndex(${i})">
+                          <div class="flex items-center gap-3 min-w-0">
+                            <img src="${esc(a.picture_medium || a.picture_xl || makeArtCover(a.name))}" class="w-12 h-12 rounded-full object-cover shrink-0" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(a.name)}')" />
+                            <div class="min-w-0">
+                              <div class="font-bold text-sm truncate">${esc(a.name)}</div>
+                              <div class="text-xs sf3-muted">${esc(formatFans(a.nb_fan))}</div>
+                            </div>
+                          </div>
+                          <span class="sf3-muted text-lg">›</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `
+                    <div class="sf3-chip-row" style="gap:14px;">
+                      ${artists.slice(0, 10).map((a, i) => `
+                        <button type="button" class="flex flex-col items-center gap-1.5 shrink-0 w-20 text-center active:scale-95 transition-transform" onclick="window.SF300.complete.openArtistByIndex(${i})">
+                          <img src="${esc(a.picture_medium || a.picture_xl || makeArtCover(a.name))}" loading="lazy" class="rounded-full object-cover sf3-card" style="width:74px;height:74px;" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(a.name)}')" />
+                          <span class="text-[11.5px] font-bold truncate w-full">${esc(a.name)}</span>
+                        </button>
+                      `).join('')}
+                    </div>
+                  `}
+                </div>
+              ` : ''}
+
+              ${(f === 'Semua' || f === 'Lagu' || f === 'Video') && tracks.length ? `
+                <div>
+                  <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2 px-1">Lagu (${tracks.length})</p>
+                  <div class="sf3-card p-2">
+                    ${tracks.slice(0, f === 'Semua' ? 12 : 30).map((t, i) => renderTrackRow(t, i, 'Hasil Pencarian')).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${(f === 'Semua' || f === 'Album') && albums.length ? `
+                <div>
+                  <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2.5 px-1">Album (${albums.length})</p>
+                  <div class="${f === 'Album' ? 'grid grid-cols-2 gap-3' : 'sf3-chip-row'}" style="${f === 'Album' ? '' : 'gap:12px;'}">
+                    ${albums.slice(0, f === 'Album' ? 20 : 10).map((al, i) => `
+                      <button type="button" class="text-left shrink-0 active:scale-95 transition-transform" style="${f === 'Album' ? '' : 'width:128px;'}" onclick="window.SF300.complete.openAlbumByIndex(${i})">
+                        <div class="aspect-square rounded-2xl overflow-hidden sf3-card mb-1.5">
+                          <img src="${esc(al.cover_medium || al.cover_xl || al.cover || makeArtCover(al.title))}" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(al.title)}')" />
+                        </div>
+                        <div class="text-[12.5px] font-bold truncate">${esc(al.title)}</div>
+                        <div class="text-[11px] sf3-muted truncate">${esc(al.artist?.name || al.artist || 'Album')}</div>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${(f === 'Semua' || f === 'Playlist') && playlists.length ? `
+                <div>
+                  <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2.5 px-1">Playlist (${playlists.length})</p>
+                  <div class="sf3-chip-row" style="gap:12px;">
+                    ${playlists.slice(0, 10).map((pl, i) => `
+                      <button type="button" class="text-left shrink-0 active:scale-95 transition-transform" style="width:128px;" onclick="window.SF300.complete.openRemotePlaylistByIndex(${i})">
+                        <div class="aspect-square rounded-2xl overflow-hidden sf3-card mb-1.5">
+                          <img src="${esc(pl.picture_medium || pl.picture_xl || pl.cover || makeArtCover(pl.title))}" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(pl.title)}')" />
+                        </div>
+                        <div class="text-[12.5px] font-bold truncate">${esc(pl.title)}</div>
+                        <div class="text-[11px] sf3-muted truncate">${pl.nb_tracks ? pl.nb_tracks + ' lagu' : 'Playlist'}</div>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
             </div>
           ` : `
+            ${searchState.query ? `
+              <div class="sf3-card p-6 text-center space-y-2">
+                <p class="text-sm font-bold">Tidak ada hasil untuk "${esc(searchState.query)}"</p>
+                <p class="text-xs sf3-muted">Coba kata kunci lain seperti nama artis atau judul lagu.</p>
+              </div>
+            ` : ''}
             ${Array.isArray(hist) && hist.length ? `
               <div class="sf3-card p-4 space-y-2.5">
                 <div class="flex items-center justify-between">
@@ -39936,7 +40393,7 @@ window.SF300 = (function createSpotyFlow300Module() {
               </div>
             ` : ''}
             <div class="sf3-card p-4 space-y-2">
-              <div class="text-xs font-extrabold uppercase tracking-wider sf3-muted">Coba telusuri suasana</div>
+              <div class="text-xs font-extrabold uppercase tracking-wider sf3-muted">Coba telusuri suasana &amp; artis</div>
               <div class="grid grid-cols-2 gap-2.5 pt-1">
                 ${MOODS.map((m) => `
                   <button type="button" class="sf3-card-soft p-3.5 text-left font-bold text-sm" onclick="window.SF300.pages.runSearch('${esc(m.query)}')">${esc(m.label)} ›</button>
@@ -40041,10 +40498,61 @@ window.SF300 = (function createSpotyFlow300Module() {
             </div>
           ` : ''}
 
-          ${['Album', 'Artis', 'Podcast'].includes(libraryState.subTab) ? `
+          ${libraryState.subTab === 'Artis' ? (() => {
+            const followed = getFollowedArtists();
+            lastArtistsRegistry = followed.slice();
+            return followed.length ? `
+              <div class="sf3-card overflow-hidden">
+                ${followed.map((a, i) => `
+                  <div class="sf3-settings-row" onclick="window.SF300.complete.openArtistByIndex(${i})">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="${esc(a.picture_medium || a.picture_xl || makeArtCover(a.name))}" class="w-12 h-12 rounded-full object-cover shrink-0" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(a.name)}')" />
+                      <div class="min-w-0">
+                        <div class="font-bold text-sm truncate">${esc(a.name)}</div>
+                        <div class="text-xs sf3-muted">${esc(formatFans(a.nb_fan))}</div>
+                      </div>
+                    </div>
+                    <span class="sf3-muted text-lg">›</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="sf3-card p-5 text-center space-y-2">
+                <p class="text-sm font-bold">Belum ada Artis Diikuti</p>
+                <p class="text-xs sf3-muted">Cari artis favoritmu di tab Cari lalu ketuk tombol Ikuti.</p>
+                <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" onclick="window.SF300.nav.go('cari')">Cari Artis</button>
+              </div>
+            `;
+          })() : ''}
+
+          ${libraryState.subTab === 'Album' ? (() => {
+            const albums = getSavedAlbums();
+            lastAlbumsRegistry = albums.slice();
+            return albums.length ? `
+              <div class="grid grid-cols-2 gap-3">
+                ${albums.map((al, i) => `
+                  <button type="button" class="sf3-card p-2.5 text-left active:scale-95 transition-transform" onclick="window.SF300.complete.openAlbumByIndex(${i})">
+                    <div class="aspect-square rounded-xl overflow-hidden mb-2">
+                      <img src="${esc(al.cover_medium || al.cover_xl || al.cover || makeArtCover(al.title))}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(al.title)}')" />
+                    </div>
+                    <div class="text-xs font-extrabold truncate">${esc(al.title)}</div>
+                    <div class="text-[11px] sf3-muted truncate">${esc(al.artist?.name || al.artist || 'Album')}</div>
+                  </button>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="sf3-card p-5 text-center space-y-2">
+                <p class="text-sm font-bold">Belum ada Album Tersimpan</p>
+                <p class="text-xs sf3-muted">Cari album favoritmu di tab Cari lalu ketuk Simpan Album.</p>
+                <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" onclick="window.SF300.nav.go('cari')">Cari Album</button>
+              </div>
+            `;
+          })() : ''}
+
+          ${libraryState.subTab === 'Podcast' ? `
             <div class="sf3-card p-5 text-center space-y-2">
-              <p class="text-sm font-bold">${esc(libraryState.subTab)} Tersimpan</p>
-              <p class="text-xs sf3-muted">Cari ${esc(libraryState.subTab.toLowerCase())} favoritmu di tab Cari untuk menyimpannya di sini.</p>
+              <p class="text-sm font-bold">Podcast Tersimpan</p>
+              <p class="text-xs sf3-muted">Cari podcast favoritmu di tab Cari untuk langsung memutarnya.</p>
               <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" onclick="window.SF300.nav.go('cari')">Buka Pencarian</button>
             </div>
           ` : ''}
@@ -40052,13 +40560,40 @@ window.SF300 = (function createSpotyFlow300Module() {
       `;
     },
     _renderKamu() {
-      const user = window.AppState?.user || safeJsonParse(localStorage.getItem('sf_user_profile'), null);
-      const name = esc(user?.name || 'Pendengar SpotyFlow');
+      const prof = getUserProfile();
+      const likedCount = (Array.isArray(window.AppState?.likedTracks) ? window.AppState.likedTracks : safeJsonParse(localStorage.getItem('sf_liked_tracks'), [])).length || 0;
+      const plCount = (safeJsonParse(localStorage.getItem('sf_user_playlists'), []) || []).length || 0;
+      const artCount = getFollowedArtists().length;
+      const albCount = getSavedAlbums().length;
       return `
         <div class="space-y-4">
           <div class="flex items-center justify-between pt-1">
             <h1 class="sf3-page-title">Kamu</h1>
-            <span class="text-xs font-bold px-3 py-1.5 rounded-full sf3-card">${name}</span>
+            <button type="button" class="px-3 py-1.5 rounded-full sf3-card text-xs font-extrabold" onclick="window.SF300.complete.openEditProfile()">✏️ Edit Profil</button>
+          </div>
+
+          <div class="sf3-card p-4 space-y-3.5">
+            <div class="flex items-center gap-3.5">
+              ${renderAvatarCircle(prof, 'w-16 h-16')}
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <div class="text-[17px] font-extrabold truncate">${esc(prof.name)}</div>
+                  ${prof.loggedIn ? '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">Cloud</span>' : ''}
+                </div>
+                <div class="text-xs sf3-muted truncate">${esc(prof.email || prof.handle)}</div>
+                ${prof.bio ? `<p class="text-xs sf3-muted mt-1 line-clamp-2">${esc(prof.bio)}</p>` : ''}
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-center pt-1">
+              <div class="sf3-card-soft py-2 px-1 cursor-pointer" onclick="window.SF300.complete.openCollection('liked')"><div class="text-sm font-extrabold">${likedCount}</div><div class="text-[10px] sf3-muted font-bold">Disukai</div></div>
+              <div class="sf3-card-soft py-2 px-1 cursor-pointer" onclick="window.SF300.nav.go('pustaka')"><div class="text-sm font-extrabold">${plCount}</div><div class="text-[10px] sf3-muted font-bold">Playlist</div></div>
+              <div class="sf3-card-soft py-2 px-1 cursor-pointer" onclick="window.SF300.pages.setLibSubTab('Artis');window.SF300.nav.go('pustaka')"><div class="text-sm font-extrabold">${artCount}</div><div class="text-[10px] sf3-muted font-bold">Artis</div></div>
+              <div class="sf3-card-soft py-2 px-1 cursor-pointer" onclick="window.SF300.pages.setLibSubTab('Album');window.SF300.nav.go('pustaka')"><div class="text-sm font-extrabold">${albCount}</div><div class="text-[10px] sf3-muted font-bold">Album</div></div>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" class="flex-1 py-2 rounded-full sf3-card-soft text-xs font-extrabold" onclick="window.SF300.complete.openEditProfile()">Ubah Foto &amp; Nama</button>
+              <button type="button" class="flex-1 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.complete.openUserAccountAuth()">${prof.loggedIn ? 'Kelola Akun' : 'Masuk / Sinkron Cloud'}</button>
+            </div>
           </div>
 
           ${streak.renderCardHtml()}
@@ -40111,7 +40646,7 @@ window.SF300 = (function createSpotyFlow300Module() {
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(29,185,84,0.20);">📲</div>
                 <div class="min-w-0">
                   <div class="font-extrabold text-[14px] leading-tight">Install Aplikasi Android (SpotyFlow.apk)</div>
-                  <div class="text-[11.5px] sf3-muted mt-0.5 leading-snug">Versi v3.0.1 • Putar layar mati, Dynamic Island, Poster 3D &amp; Widget</div>
+                  <div class="text-[11.5px] sf3-muted mt-0.5 leading-snug">Versi v3.0.2 • Putar layar mati, Dynamic Island, Poster 3D &amp; Widget</div>
                 </div>
               </div>
               <button type="button" class="px-3.5 py-2 rounded-full text-xs font-extrabold text-black shrink-0 shadow" style="background:var(--sf3-accent);" onclick="window.SF300.complete.triggerWebApkDownload()">Download APK</button>
@@ -40132,7 +40667,7 @@ window.SF300 = (function createSpotyFlow300Module() {
               <span class="sf3-muted text-lg">›</span>
             </div>
             <div class="sf3-settings-row" onclick="window.SF300.settings.openCategory('tentang')">
-              <div class="flex items-center gap-3"><span class="text-lg">ℹ️</span><div><div class="font-bold text-[14.5px]">Tentang SpotyFlow</div><div class="text-xs sf3-muted">v3.0.1 • Build 301</div></div></div>
+              <div class="flex items-center gap-3"><span class="text-lg">ℹ️</span><div><div class="font-bold text-[14.5px]">Tentang SpotyFlow</div><div class="text-xs sf3-muted">v3.0.2 • Build 302</div></div></div>
               <span class="sf3-muted text-lg">›</span>
             </div>
           </div>
@@ -40256,6 +40791,8 @@ window.SF300 = (function createSpotyFlow300Module() {
               <div class="text-xs sf3-muted truncate">${esc(trackArtist(t))}</div>
             </div>
           </div>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.stage.close();window.SF300.complete.openArtistProfile(window.AppState?.currentTrack?.artist || window.SF300.stage.getCurArtistName())">👤 Lihat Profil Artis</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.stage.close();window.SF300.complete.openAlbumFromTrack(window.AppState?.currentTrack)">💿 Lihat Album</button>
           <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF202?.poster3d?.open?.(window.AppState?.currentTrack)">🧊 Buat Poster Lagu 3D Depth</button>
           <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();if(typeof toggleTrackOffline==='function')toggleTrackOffline(window.AppState?.currentTrack)">⬇️ Unduh Offline (.m4a)</button>
           <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();if(typeof startTrackRadio==='function')startTrackRadio(window.AppState?.currentTrack)">📻 Mulai Radio Lagu Ini</button>
@@ -40266,10 +40803,13 @@ window.SF300 = (function createSpotyFlow300Module() {
         </div>
       `);
     },
+    getCurArtistName() {
+      return trackArtist(window.AppState?.currentTrack);
+    },
     shareCurrent() {
       const t = window.AppState?.currentTrack;
       if (!t) return;
-      const text = `Mendengarkan "${t.title}" oleh ${trackArtist(t)} di SpotyFlow v3.0.1 🎵`;
+      const text = `Mendengarkan "${t.title}" oleh ${trackArtist(t)} di SpotyFlow v3.0.2 🎵`;
       if (navigator.share) {
         navigator.share({ title: t.title, text, url: 'https://spotyflow.vercel.app' }).catch(() => {});
       } else if (navigator.clipboard) {
@@ -40327,7 +40867,7 @@ window.SF300 = (function createSpotyFlow300Module() {
           <div class="flex items-start justify-between gap-3 pt-1">
             <div class="min-w-0 flex-1">
               <div id="sf3-stage-title" class="text-[22px] font-extrabold leading-tight truncate">${esc(t.title)}</div>
-              <div id="sf3-stage-artist" class="text-[14.5px] text-white/75 truncate mt-0.5">${esc(trackArtist(t))}</div>
+              <button type="button" id="sf3-stage-artist" class="text-[14.5px] text-white/80 hover:underline truncate mt-0.5 text-left max-w-full" onclick="window.SF300.stage.close();window.SF300.complete.openArtistProfile(window.AppState?.currentTrack?.artist || '${esc(trackArtist(t))}')">${esc(trackArtist(t))} ›</button>
               ${statePrefs.miniLyricsInPlayer ? `
                 <div id="sf3-stage-mini-lyric" class="text-[12.5px] font-semibold mt-1.5 truncate" style="color:#1ED760;min-height:18px;">${activeLyric ? '♪ ' + activeLyric : ''}</div>
               ` : ''}
@@ -40481,7 +41021,7 @@ window.SF300 = (function createSpotyFlow300Module() {
         { id: 'cadangan', icon: '📦', title: 'Cadangan dan impor', sub: 'Ekspor & pulihkan data likes, playlist, tema (.json)' },
         { id: 'androidauto', icon: '🚗', title: 'Android Auto', sub: 'Putar otomatis di mobil & kontrol setir Bluetooth' },
         { id: 'tautan', icon: '🔗', title: 'Tautan', sub: 'Putar langsung tautan YouTube / Spotify di SpotyFlow' },
-        { id: 'tentang', icon: 'ℹ️', title: 'Tentang SpotyFlow', sub: 'v3.0.1 (Build 300) • Cek pembaruan & Apa yang Baru' },
+        { id: 'tentang', icon: 'ℹ️', title: 'Tentang SpotyFlow', sub: 'v3.0.2 (Build 300) • Cek pembaruan & Apa yang Baru' },
       ];
       nav.openSubpage('Pengaturan', `
         <div class="sf3-card overflow-hidden">
@@ -40819,14 +41359,14 @@ window.SF300 = (function createSpotyFlow300Module() {
           <div class="space-y-4">
             <div class="sf3-card p-5 text-center space-y-2">
               <div class="w-16 h-16 rounded-2xl mx-auto shadow-md flex items-center justify-center text-3xl text-white" style="background:linear-gradient(135deg,#1ED760,#0EA5E9,#7C3AED);">♪</div>
-              <div class="text-lg font-extrabold">SpotyFlow v3.0.1</div>
-              <div class="text-xs sf3-muted">Interactive Liquid Glass Auralys • Build 301</div>
+              <div class="text-lg font-extrabold">SpotyFlow v3.0.2</div>
+              <div class="text-xs sf3-muted">Interactive Liquid Glass Auralys • Build 302</div>
               <p class="text-xs sf3-muted pt-1">Engine: AndroidX Media3 ExoPlayer 1.4.1 + NewPipe v0.27.1 + Google ML Kit Offline Depth + 5 Dynamic Glass Widgets.</p>
             </div>
             <div class="sf3-card overflow-hidden">
               ${isWebBrowserMode() ? `
                 <div class="sf3-settings-row" onclick="window.SF300.complete.triggerWebApkDownload()">
-                  <div class="font-bold text-sm" style="color:var(--sf3-accent);">📲 Unduh &amp; Install APK (v3.0.1)</div>
+                  <div class="font-bold text-sm" style="color:var(--sf3-accent);">📲 Unduh &amp; Install APK (v3.0.2)</div>
                   <span class="sf3-muted">›</span>
                 </div>
               ` : ''}
@@ -40835,7 +41375,7 @@ window.SF300 = (function createSpotyFlow300Module() {
                 <span class="sf3-muted">›</span>
               </div>
               <div class="sf3-settings-row" onclick="if(typeof openWhatsNewV152Modal==='function')openWhatsNewV152Modal(true)">
-                <div class="font-bold text-sm">✨ Lihat Apa yang Baru di v3.0.1</div>
+                <div class="font-bold text-sm">✨ Lihat Apa yang Baru di v3.0.2</div>
                 <span class="sf3-muted">›</span>
               </div>
             </div>
@@ -40911,7 +41451,7 @@ window.SF300 = (function createSpotyFlow300Module() {
     exportBackupJson() {
       const bundle = {
         app: 'SpotyFlow',
-        version: '3.0.1',
+        version: '3.0.2',
         exportedAt: new Date().toISOString(),
         prefs: statePrefs,
         streak: streakState,
@@ -40973,11 +41513,10 @@ window.SF300 = (function createSpotyFlow300Module() {
     },
     async checkAppUpdate() {
       try {
-        const r = await fetch('/api/app/version');
-        const j = await r.json();
-        toast(`SpotyFlow v${j.version || '3.0.1'} (Build ${j.versionCode || 300}) — Sudah versi terbaru! ✅`, 'check');
+        const j = await apiGetJson('/api/app/version', 7000);
+        toast(`SpotyFlow v${j.version || '3.0.2'} (Build ${j.versionCode || 302}) — Sudah versi terbaru! ✅`, 'check');
       } catch {
-        toast('SpotyFlow v3.0.1 aktif', 'info');
+        toast('SpotyFlow v3.0.2 aktif', 'info');
       }
     },
   };
@@ -41176,8 +41715,7 @@ window.SF300 = (function createSpotyFlow300Module() {
         </div>
       `);
       try {
-        const resp = await fetch(`/api/lyrics?artist=${encodeURIComponent(trackArtist(t))}&title=${encodeURIComponent(t.title)}`);
-        const data = await resp.json();
+        const data = await apiGetJson(`/api/lyrics?artist=${encodeURIComponent(trackArtist(t))}&title=${encodeURIComponent(t.title)}`, 9000);
         const raw = data?.syncedLyrics || data?.plainLyrics || data?.lyrics || '';
         const box = document.getElementById('sf3-lyrics-box');
         if (!box) return;
@@ -41208,6 +41746,8 @@ window.SF300 = (function createSpotyFlow300Module() {
           <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();window.SF300.pages.playFromRendered(${idx}, 'Putar Sekarang')">▶️ Putar Sekarang</button>
           <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof addToQueue==='function')addToQueue(window.SF300._getRenderedTrack(${idx}), true)">⏭️ Putar Berikutnya</button>
           <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof addToQueue==='function')addToQueue(window.SF300._getRenderedTrack(${idx}), false)">➕ Tambahkan ke Antrean</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();window.SF300.complete.openArtistProfile(window.SF300._getRenderedTrack(${idx})?.artist || '${esc(trackArtist(t))}')">👤 Buka Profil Artis</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();window.SF300.complete.openAlbumFromTrack(window.SF300._getRenderedTrack(${idx}))">💿 Buka Album</button>
           <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof toggleLikeTrack==='function')toggleLikeTrack(window.SF300._getRenderedTrack(${idx}))">💚 Suka / Batal Suka</button>
           <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof toggleTrackOffline==='function')toggleTrackOffline(window.SF300._getRenderedTrack(${idx}))">⬇️ Unduh Offline</button>
           <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();window.SF202?.poster3d?.open?.(window.SF300._getRenderedTrack(${idx}))">🧊 Buat Poster 3D</button>
@@ -41679,6 +42219,296 @@ window.SF300 = (function createSpotyFlow300Module() {
       nav.go('cari');
       await pages.runSearch(firstLine);
     },
+    openArtistByIndex(idx) {
+      const a = lastArtistsRegistry[idx];
+      if (a) this.openArtistProfile(a);
+    },
+    async openArtistProfile(artistInput) {
+      const baseArtist = typeof artistInput === 'string'
+        ? { id: '', name: artistInput.trim() }
+        : (artistInput && typeof artistInput === 'object' ? artistInput : { id: '', name: '' });
+      const artistName = String(baseArtist.name || '').trim();
+      if (!artistName) return toast('Info artis tidak tersedia', 'info');
+
+      nav.openSubpage(artistName, `
+        <div class="sf3-card p-6 text-center space-y-2">
+          <div class="text-sm font-bold">Memuat profil ${esc(artistName)}...</div>
+          <div class="text-xs sf3-muted">Mengambil lagu populer, diskografi album &amp; artis serupa</div>
+        </div>
+      `);
+
+      let data = null;
+      try {
+        data = await apiGetJson(`/api/artist/full-profile?name=${encodeURIComponent(artistName)}&id=${encodeURIComponent(baseArtist.id || '')}`, 11000);
+      } catch {}
+
+      const art = Object.assign({}, baseArtist, data?.artist || {});
+      let topTracks = Array.isArray(data?.topTracks) ? data.topTracks.map(normalizeTrackItem).filter(Boolean) : [];
+      let albums = Array.isArray(data?.albums) ? data.albums : [];
+      const related = Array.isArray(data?.relatedArtists) ? data.relatedArtists : [];
+
+      if (!topTracks.length) {
+        const fb = await apiSearchAll(artistName, 20);
+        topTracks = fb.tracks || [];
+        if (!albums.length) albums = fb.albums || [];
+      }
+
+      registerPlayableList(topTracks);
+      lastAlbumsRegistry = albums.slice();
+      lastArtistsRegistry = related.slice();
+      window.SF300._activeArtistObj = art;
+      const followed = isArtistFollowed(art.id || art.name);
+      const pic = art.picture_xl || art.picture_big || art.picture_medium || (topTracks[0] ? trackCover(topTracks[0]) : makeArtCover(art.name));
+
+      nav.replaceSubpage(art.name || artistName, `
+        <div class="space-y-5">
+          <div class="sf3-card p-5 text-center space-y-3" style="background:linear-gradient(160deg, rgba(var(--sf3-aurora-rgb), 0.20), var(--sf3-surface) 70%);">
+            <img src="${esc(pic)}" alt="${esc(art.name)}" class="w-28 h-28 rounded-full object-cover mx-auto shadow-lg border-2 border-white/25" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(art.name)}')" />
+            <div>
+              <span class="inline-block text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">✓ Artis Terverifikasi</span>
+              <h2 class="text-2xl font-extrabold mt-1">${esc(art.name || artistName)}</h2>
+              <p class="text-xs sf3-muted mt-0.5">${esc(formatFans(art.nb_fan))}${albums.length ? ' • ' + albums.length + ' Album' : ''}</p>
+            </div>
+            <div class="flex items-center justify-center gap-2 pt-1">
+              ${topTracks.length ? `<button type="button" class="px-5 py-2.5 rounded-full text-xs font-extrabold text-black shadow" style="background:var(--sf3-accent);" onclick="window.SF300.pages.playFromRendered(0, '${esc(art.name)}')">▶️ Putar Populer</button>` : ''}
+              <button type="button" id="sf3-artist-follow-btn" class="px-4 py-2.5 rounded-full text-xs font-extrabold sf3-card-soft" onclick="window.SF300.complete._toggleFollowActiveArtist()">${followed ? '✓ Mengikuti' : '+ Ikuti'}</button>
+            </div>
+          </div>
+
+          ${topTracks.length ? `
+            <div>
+              <h3 class="sf3-sec-title mb-2 px-1">Lagu Populer (${topTracks.length})</h3>
+              <div class="sf3-card p-2">
+                ${topTracks.slice(0, 20).map((t, i) => renderTrackRow(t, i, art.name || artistName)).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${albums.length ? `
+            <div>
+              <h3 class="sf3-sec-title mb-2.5 px-1">Album &amp; Single (${albums.length})</h3>
+              <div class="grid grid-cols-2 gap-3">
+                ${albums.slice(0, 14).map((al, i) => `
+                  <button type="button" class="sf3-card p-2.5 text-left active:scale-95 transition-transform" onclick="window.SF300.complete.openAlbumByIndex(${i})">
+                    <div class="aspect-square rounded-xl overflow-hidden mb-2">
+                      <img src="${esc(al.cover_medium || al.cover_xl || al.cover || makeArtCover(al.title))}" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(al.title)}')" />
+                    </div>
+                    <div class="text-xs font-extrabold truncate">${esc(al.title)}</div>
+                    <div class="text-[11px] sf3-muted truncate">${esc(al.release_date ? String(al.release_date).slice(0, 4) : (al.record_type || 'Album'))}</div>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${related.length ? `
+            <div>
+              <h3 class="sf3-sec-title mb-2.5 px-1">Artis Serupa</h3>
+              <div class="sf3-chip-row" style="gap:14px;">
+                ${related.slice(0, 10).map((ra, i) => `
+                  <button type="button" class="flex flex-col items-center gap-1.5 shrink-0 w-20 text-center" onclick="window.SF300.complete.openArtistByIndex(${i})">
+                    <img src="${esc(ra.picture_medium || ra.picture_xl || makeArtCover(ra.name))}" loading="lazy" class="rounded-full object-cover sf3-card" style="width:68px;height:68px;" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(ra.name)}')" />
+                    <span class="text-[11px] font-bold truncate w-full">${esc(ra.name)}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `);
+    },
+    _toggleFollowActiveArtist() {
+      const art = window.SF300._activeArtistObj;
+      if (!art) return;
+      const nowFollowed = toggleFollowArtistV3(art);
+      const btn = document.getElementById('sf3-artist-follow-btn');
+      if (btn) btn.textContent = nowFollowed ? '✓ Mengikuti' : '+ Ikuti';
+    },
+    openAlbumByIndex(idx) {
+      const al = lastAlbumsRegistry[idx];
+      if (al) this.openAlbumDetail(al);
+    },
+    openAlbumFromTrack(t) {
+      if (!t) return toast('Info album tidak tersedia', 'info');
+      const albumObj = typeof t.album === 'object' && t.album
+        ? Object.assign({}, t.album, { artist: t.artist })
+        : { id: '', title: String(t.album || t.title || ''), artist: t.artist, cover: trackCover(t) };
+      this.openAlbumDetail(albumObj);
+    },
+    async openAlbumDetail(albumInput) {
+      const baseAl = albumInput && typeof albumInput === 'object' ? albumInput : { title: String(albumInput || '') };
+      const title = String(baseAl.title || '').trim();
+      const artistName = typeof baseAl.artist === 'string' ? baseAl.artist : (baseAl.artist?.name || '');
+      if (!title && !baseAl.id) return toast('Info album tidak tersedia', 'info');
+
+      nav.openSubpage(title || 'Album', `
+        <div class="sf3-card p-6 text-center space-y-2">
+          <div class="text-sm font-bold">Memuat album "${esc(title || 'Album')}"...</div>
+          <div class="text-xs sf3-muted">Mengambil daftar lagu lengkap</div>
+        </div>
+      `);
+
+      let data = null;
+      const rawId = String(baseAl.id || '').trim();
+      try {
+        if (rawId && /^itunes_/i.test(rawId)) {
+          data = await apiGetJson(`/api/album/itunes/${encodeURIComponent(rawId.replace(/^itunes_/i, ''))}`, 10000);
+        } else if (rawId && /^\d+$/.test(rawId)) {
+          data = await apiGetJson(`/api/catalog/album/${encodeURIComponent(rawId)}`, 10000);
+        }
+      } catch {}
+
+      const al = Object.assign({}, baseAl, data || {});
+      const rawTracks = Array.isArray(data?.tracks?.data) ? data.tracks.data : (Array.isArray(data?.tracks) ? data.tracks : []);
+      let tracks = rawTracks.map((tr) => normalizeTrackItem(Object.assign({
+        album: { id: al.id, title: al.title, cover_medium: al.cover_medium || al.cover_xl || al.cover },
+        artist: tr.artist || al.artist || { name: artistName || 'SpotyFlow' },
+      }, tr))).filter(Boolean);
+
+      if (!tracks.length && title) {
+        const sr = await apiSearchAll(`${title} ${artistName}`.trim(), 16);
+        tracks = sr.tracks || [];
+      }
+
+      registerPlayableList(tracks);
+      window.SF300._activeAlbumObj = al;
+      const saved = isAlbumSaved(al.id || al.title);
+      const cov = al.cover_xl || al.cover_medium || al.cover || (tracks[0] ? trackCover(tracks[0]) : makeArtCover(al.title));
+      const finalArtist = typeof al.artist === 'string' ? al.artist : (al.artist?.name || artistName || 'SpotyFlow');
+
+      nav.replaceSubpage(al.title || title || 'Album', `
+        <div class="space-y-5">
+          <div class="sf3-card p-5 text-center space-y-3" style="background:linear-gradient(160deg, rgba(var(--sf3-aurora-rgb), 0.20), var(--sf3-surface) 70%);">
+            <img src="${esc(cov)}" alt="${esc(al.title)}" class="w-40 h-40 rounded-2xl object-cover mx-auto shadow-xl" onerror="this.onerror=null;this.src=window.SF300._artFallback('${esc(al.title)}')" />
+            <div>
+              <h2 class="text-xl font-extrabold">${esc(al.title || title)}</h2>
+              <button type="button" class="text-sm font-bold mt-1" style="color:var(--sf3-accent);" onclick="window.SF300.complete.openArtistProfile('${esc(finalArtist)}')">${esc(finalArtist)} ›</button>
+              <p class="text-xs sf3-muted mt-0.5">${tracks.length} lagu${al.release_date ? ' • ' + esc(String(al.release_date).slice(0, 4)) : ''}</p>
+            </div>
+            <div class="flex items-center justify-center gap-2 pt-1">
+              ${tracks.length ? `<button type="button" class="px-5 py-2.5 rounded-full text-xs font-extrabold text-black shadow" style="background:var(--sf3-accent);" onclick="window.SF300.pages.playFromRendered(0, '${esc(al.title || title)}')">▶️ Putar Album</button>` : ''}
+              <button type="button" id="sf3-album-save-btn" class="px-4 py-2.5 rounded-full text-xs font-extrabold sf3-card-soft" onclick="window.SF300.complete._toggleSaveActiveAlbum()">${saved ? '✓ Tersimpan' : '+ Simpan Album'}</button>
+            </div>
+          </div>
+
+          ${tracks.length ? `
+            <div class="sf3-card p-2">
+              ${tracks.map((t, i) => renderTrackRow(t, i, al.title || title)).join('')}
+            </div>
+          ` : '<div class="sf3-card p-6 text-center text-sm sf3-muted">Daftar trek album tidak tersedia.</div>'}
+        </div>
+      `);
+    },
+    _toggleSaveActiveAlbum() {
+      const al = window.SF300._activeAlbumObj;
+      if (!al) return;
+      const nowSaved = toggleSaveAlbumV3(al);
+      const btn = document.getElementById('sf3-album-save-btn');
+      if (btn) btn.textContent = nowSaved ? '✓ Tersimpan' : '+ Simpan Album';
+    },
+    async openRemotePlaylistByIndex(idx) {
+      const pl = lastPlaylistsRegistry[idx];
+      if (!pl) return;
+      nav.openSubpage(pl.title || 'Playlist', `<div class="sf3-card p-6 text-center text-sm sf3-muted">Memuat playlist "${esc(pl.title)}"...</div>`);
+      let tracks = [];
+      try {
+        if (pl.id && /^\d+$/.test(String(pl.id))) {
+          const data = await apiGetJson(`/api/catalog/playlist/${encodeURIComponent(pl.id)}`, 10000);
+          const arr = Array.isArray(data?.tracks?.data) ? data.tracks.data : (Array.isArray(data?.tracks) ? data.tracks : []);
+          tracks = arr.map(normalizeTrackItem).filter(Boolean);
+        }
+      } catch {}
+      if (!tracks.length) {
+        const sr = await apiSearchAll(pl.title || '', 18);
+        tracks = sr.tracks || [];
+      }
+      registerPlayableList(tracks);
+      nav.replaceSubpage(pl.title || 'Playlist', `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs sf3-muted font-bold">${tracks.length} lagu</span>
+            ${tracks.length ? `<button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.pages.playFromRendered(0, '${esc(pl.title)}')">▶️ Putar Semua</button>` : ''}
+          </div>
+          ${tracks.length ? `<div class="sf3-card p-2">${tracks.map((t, i) => renderTrackRow(t, i, pl.title)).join('')}</div>` : '<div class="sf3-card p-6 text-center text-sm sf3-muted">Playlist kosong.</div>'}
+        </div>
+      `);
+    },
+    openEditProfile() {
+      const prof = getUserProfile();
+      nav.openDialog(`
+        <div class="space-y-3.5">
+          <div class="flex items-center justify-between">
+            <h3 class="font-extrabold text-base">Edit Profil Kamu</h3>
+            <button type="button" class="w-8 h-8 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.nav.closeDialog()">✕</button>
+          </div>
+          <div class="flex items-center gap-3">
+            <div id="sf3-edit-avatar-prev">${renderAvatarCircle(prof, 'w-16 h-16')}</div>
+            <label class="px-4 py-2 rounded-full sf3-card-soft text-xs font-extrabold cursor-pointer">
+              📷 Pilih Foto Galeri
+              <input type="file" accept="image/*" class="hidden" onchange="window.SF300.complete._handleAvatarPick(this)" />
+            </label>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold sf3-muted">Nama Tampilan</label>
+            <input id="sf3-prof-name" type="text" value="${esc(prof.name)}" maxlength="40" class="sf3-card-soft w-full px-3.5 py-2.5 text-sm font-bold outline-none" style="color:var(--sf3-text);" />
+            <label class="text-xs font-bold sf3-muted">Bio Singkat</label>
+            <input id="sf3-prof-bio" type="text" value="${esc(prof.bio)}" maxlength="120" class="sf3-card-soft w-full px-3.5 py-2.5 text-sm outline-none" style="color:var(--sf3-text);" />
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" class="flex-1 py-2.5 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.nav.closeDialog()">Batal</button>
+            <button type="button" class="flex-1 py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.complete._saveEditProfile()">Simpan Profil</button>
+          </div>
+        </div>
+      `);
+    },
+    _pendingAvatarDataUrl: null,
+    _handleAvatarPick(input) {
+      const file = input?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          const sz = 256;
+          c.width = sz;
+          c.height = sz;
+          const ctx = c.getContext('2d');
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side) / 2;
+          const sy = (img.height - side) / 2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, sz, sz);
+          const dataUrl = c.toDataURL('image/jpeg', 0.85);
+          window.SF300.complete._pendingAvatarDataUrl = dataUrl;
+          const prev = document.getElementById('sf3-edit-avatar-prev');
+          if (prev) prev.innerHTML = `<img src="${dataUrl}" class="w-16 h-16 rounded-full object-cover shadow-sm" />`;
+        };
+        img.src = String(reader.result || '');
+      };
+      reader.readAsDataURL(file);
+    },
+    _saveEditProfile() {
+      const name = (document.getElementById('sf3-prof-name')?.value || '').trim() || 'Pendengar SpotyFlow';
+      const bio = (document.getElementById('sf3-prof-bio')?.value || '').trim();
+      const patch = { name, bio };
+      if (this._pendingAvatarDataUrl) {
+        patch.avatar = this._pendingAvatarDataUrl;
+        this._pendingAvatarDataUrl = null;
+      }
+      saveUserProfile(patch);
+      nav.closeDialog();
+      toast('Profil berhasil diperbarui! ✨', 'check');
+      pages.render();
+    },
+    openUserAccountAuth() {
+      const authOverlay = document.getElementById('auth-gate-overlay');
+      if (authOverlay) {
+        authOverlay.classList.remove('hidden');
+        authOverlay.style.zIndex = '160';
+        return;
+      }
+      this.openEditProfile();
+    },
     triggerWebApkDownload() {
       try {
         const a = document.createElement('a');
@@ -41695,8 +42525,8 @@ window.SF300 = (function createSpotyFlow300Module() {
         <div class="space-y-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="inline-block text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">SPOTYFLOW v3.0.1 ANDROID</span>
-              <h3 class="font-extrabold text-base mt-1.5">📥 Mengunduh SpotyFlow v3.0.1 (.apk)...</h3>
+              <span class="inline-block text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background:var(--sf3-accent-soft);color:var(--sf3-accent);">SPOTYFLOW v3.0.2 ANDROID</span>
+              <h3 class="font-extrabold text-base mt-1.5">📥 Mengunduh SpotyFlow v3.0.2 (.apk)...</h3>
             </div>
             <button type="button" class="w-8 h-8 rounded-full sf3-card-soft flex items-center justify-center text-sm font-bold" onclick="window.SF300.nav.closeDialog()">✕</button>
           </div>
@@ -41787,7 +42617,7 @@ window.SF300 = (function createSpotyFlow300Module() {
   }
 
   return {
-    version: '3.0.1',
+    version: '3.0.2',
     prefs: { get: () => Object.assign({}, statePrefs), save: savePrefs, apply: applyPrefsToDomAndNative },
     streak,
     nav,

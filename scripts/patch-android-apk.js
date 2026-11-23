@@ -4554,16 +4554,16 @@ function patchBuildGradle() {
     content = content.replace(/applicationId\s+["'][^"']+["']/, `applicationId "${APP_ID}"`);
   }
 
-  // Official SpotyFlow v3.0.1 versionCode 301 & versionName "3.0.1" + minSdk >= 23 for ML Kit
+  // Official SpotyFlow v3.0.2 versionCode 302 & versionName "3.0.2" + minSdk >= 23 for ML Kit
   if (/versionCode\s+\d+/.test(content)) {
-    content = content.replace(/versionCode\s+\d+/, 'versionCode 301');
+    content = content.replace(/versionCode\s+\d+/, 'versionCode 302');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 301');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionCode 302');
   }
   if (/versionName\s+["'][^"']+["']/.test(content)) {
-    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "3.0.1"');
+    content = content.replace(/versionName\s+["'][^"']+["']/, 'versionName "3.0.2"');
   } else {
-    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "3.0.1"');
+    content = content.replace(/defaultConfig\s*\{/, 'defaultConfig {\n        versionName "3.0.2"');
   }
   content = content.replace(/minSdkVersion\s+(\d+)/, (m, v) => (parseInt(v, 10) < 23 ? 'minSdkVersion 24' : m));
 
@@ -4991,7 +4991,7 @@ function verifyPatchedProject() {
     [!variablesGradle || (variablesGradle.includes('compileSdkVersion = 34') && variablesGradle.includes('targetSdkVersion = 34')), 'variables.gradle missing compileSdk/targetSdk = 34'],
     [gradle.includes(`namespace "${APP_ID}"`), `build.gradle missing namespace "${APP_ID}"`],
     [gradle.includes(`applicationId "${APP_ID}"`), `build.gradle missing applicationId "${APP_ID}"`],
-    [gradle.includes('versionCode 301') && gradle.includes('versionName "3.0.1"'), 'build.gradle missing versionCode 301 / versionName "3.0.1"'],
+    [gradle.includes('versionCode 302') && gradle.includes('versionName "3.0.2"'), 'build.gradle missing versionCode 302 / versionName "3.0.2"'],
     [gradle.includes('coreLibraryDesugaringEnabled true'), 'build.gradle missing coreLibraryDesugaringEnabled true'],
     [gradle.includes('com.android.tools:desugar_jdk_libs_nio:2.0.4'), 'build.gradle missing desugar_jdk_libs_nio:2.0.4'],
     [gradle.includes('com.github.teamnewpipe:NewPipeExtractor:v0.27.1'), 'build.gradle missing NewPipeExtractor:v0.27.1'],
