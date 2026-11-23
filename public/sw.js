@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'spotyflow-shell-v78';
-const RUNTIME_CACHE = 'spotyflow-runtime-v78';
+const SHELL_CACHE = 'spotyflow-shell-v79';
+const RUNTIME_CACHE = 'spotyflow-runtime-v79';
 const SHELL_ASSETS = [
   '/',
   '/index.html',

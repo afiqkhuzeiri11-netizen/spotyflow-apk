@@ -1359,14 +1359,14 @@
       padding-top: 8px;
       padding-bottom: 8px;
       background: linear-gradient(180deg, rgba(10, 12, 20, 0.56) 0%, rgba(10, 12, 20, 0.24) 100%) !important;
-      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
-      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
       border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
     }
     html[data-sf-style="liquid"] #sf-style-pill-switch {
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
-      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
       border-top-color: rgba(255, 255, 255, 0.38) !important;
       box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
@@ -1400,8 +1400,8 @@
     }
     html[data-sf-style="liquid"] body > footer {
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.12) 0%, rgba(12, 15, 24, 0.72) 100%) !important;
-      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
-      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
       border-top: 1px solid rgba(255, 255, 255, 0.22) !important;
     }
 
@@ -1438,8 +1438,8 @@
       padding: 6px !important;
       border-radius: 30px !important;
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
-      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
       border-top-color: rgba(255, 255, 255, 0.38) !important;
       box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 rgba(255, 255, 255, 0.06) !important;
@@ -1464,8 +1464,8 @@
       border-radius: 24px !important;
       padding: 8px 12px !important;
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.16) 0%, rgba(var(--sf-mesh-rgb, 30, 41, 59), 0.34) 100%) !important;
-      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
-      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
       border-top-color: rgba(255, 255, 255, 0.38) !important;
       box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 rgba(255, 255, 255, 0.06) !important;
@@ -1531,8 +1531,8 @@
     }
     html[data-sf-style="liquid"] #fullscreen-stage .sf-smoked-glass {
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
-      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(155%) brightness(1.04) !important;
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
       border-top-color: rgba(255, 255, 255, 0.38) !important;
       box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
@@ -1820,10 +1820,126 @@
       box-shadow: 0 8px 22px rgba(255, 255, 255, 0.15);
     }
   </style>
+
+  <!-- =====================================================================
+       SPOTYFLOW v2.0.2 — AURALYS 4.3.5 3D DEPTH EFFECT POSTER STUDIO CSS
+       ===================================================================== -->
+  <style id="sf-poster-3d-css">
+    #sf-poster-3d-modal {
+      background: #08090D;
+      color: #FFFFFF;
+      overscroll-behavior: contain;
+    }
+    #sf-poster-3d-modal .sf-p3d-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: rgba(255, 255, 255, 0.84);
+      transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease;
+    }
+    #sf-poster-3d-modal .sf-p3d-pill:active {
+      transform: scale(0.96);
+    }
+    #sf-poster-3d-modal .sf-p3d-pill.sf-p3d-active {
+      background: #FFFFFF;
+      color: #08090D;
+      border-color: #FFFFFF;
+      box-shadow: 0 6px 18px rgba(255, 255, 255, 0.18);
+    }
+    #sf-poster-3d-modal .sf-p3d-slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #sf-poster-3d-modal .sf-p3d-slider-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.88);
+    }
+    #sf-poster-3d-modal .sf-p3d-slider-val {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.72);
+      font-variant-numeric: tabular-nums;
+    }
+    #sf-poster-3d-modal input[type="range"].sf-p3d-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 18px;
+      border-radius: 9999px;
+      outline: none;
+      cursor: pointer;
+      background: linear-gradient(
+        to right,
+        #FFFFFF 0%,
+        #FFFFFF var(--val-pct, 35%),
+        rgba(255, 255, 255, 0.12) var(--val-pct, 35%),
+        rgba(255, 255, 255, 0.12) 100%
+      );
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      touch-action: pan-y;
+    }
+    #sf-poster-3d-modal input[type="range"].sf-p3d-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 6px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #FFFFFF;
+      border: 1.5px solid #08090D;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+      cursor: grab;
+    }
+    #sf-poster-3d-modal input[type="range"].sf-p3d-slider::-moz-range-thumb {
+      width: 6px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #FFFFFF;
+      border: 1.5px solid #08090D;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+      cursor: grab;
+    }
+    #sf-poster-3d-modal .sf-p3d-opt-card {
+      padding: 11px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      text-align: left;
+      transition: background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+    }
+    #sf-poster-3d-modal .sf-p3d-opt-card:active {
+      transform: scale(0.97);
+    }
+    #sf-poster-3d-modal .sf-p3d-opt-card.sf-p3d-opt-active {
+      background: #FFFFFF;
+      color: #08090D;
+      border-color: #FFFFFF;
+      box-shadow: 0 8px 22px rgba(255, 255, 255, 0.16);
+    }
+    #sf-poster-3d-canvas {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
-  <!-- Living Multi-Orb Ambient Mesh Canvas (SpotyFlow v2.0.1 True Liquid Glass) -->
-  <canvas id="sf-ambient-mesh-canvas" width="160" height="160" aria-hidden="true"></canvas>
+  <!-- Living Multi-Orb Ambient Mesh Canvas (SpotyFlow v2.0.2 Static 128x128 Zero-Lag Mesh) -->
+  <canvas id="sf-ambient-mesh-canvas" width="128" height="128" aria-hidden="true"></canvas>
   <div id="sf-ambient-mesh-scrim" aria-hidden="true"></div>
 
   <!-- =====================================================================
@@ -2083,7 +2199,7 @@
               <i data-lucide="settings" aria-hidden="true" class="w-4 h-4 text-[#1ED760] shrink-0"></i>
               <span class="truncate">Pengaturan</span>
             </span>
-            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v2.0.1</span>
+            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v2.0.2</span>
           </button>
           <button type="button" role="menuitem" onclick="closeHeaderQuickMenu(); openAiMoodDjModal()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/[0.08] text-xs font-bold text-[#E5C99B] text-left transition-colors">
             <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
@@ -2533,7 +2649,7 @@
             <div class="flex items-center justify-between pt-1.5 gap-2">
               <span class="text-[11px] text-[#B3B3B3] shrink-0">Auto-Update OTA</span>
               <button type="button" id="console-app-version" onclick="SFAutoUpdate.checkNow(true)" class="font-mono text-[11px] font-bold text-white hover:text-[#1ED760] text-right truncate transition-colors">
-                v2.0.1 • Cek Update
+                v2.0.2 • Cek Update
               </button>
             </div>
           </div>
@@ -3610,7 +3726,7 @@
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
-    const APP_VERSION = '2.0.1';
+    const APP_VERSION = '2.0.2';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -8959,6 +9075,7 @@
       if (!track) return;
 
       const sessionId = ++AppState.playSessionId;
+      if (window.__sfPrefetchTimer) { clearTimeout(window.__sfPrefetchTimer); window.__sfPrefetchTimer = null; }
       if (typeof cancelPendingAutoAiTranscribe === 'function') cancelPendingAutoAiTranscribe();
       revokeScopedObjectUrls('track');
       AppState.playSessionAccumSec = 0;
@@ -10410,12 +10527,18 @@
 
     function highlightPlayingTrackRows() {
       const curId = AppState.currentTrack ? String(AppState.currentTrack.id) : null;
-      const pausedCls = AppState.isPlaying ? '' : 'eq-paused';
+      const isPlayingNow = Boolean(AppState.isPlaying);
+      const pausedCls = isPlayingNow ? '' : 'eq-paused';
       document.querySelectorAll('.track-row').forEach((row) => {
         const active = row.dataset.trackId === curId;
+        const wasActive = row.classList.contains('sf-track-active') || row.dataset.playing === 'true';
+        if (!active && !wasActive) return; // Zero DOM/SVG churn for inactive rows!
+        row.classList.toggle('sf-track-active', active);
+        row.classList.toggle('is-playing', active && isPlayingNow);
         row.classList.toggle('bg-white/[0.08]', active);
         row.classList.toggle('border-white/12', active);
         row.classList.toggle('border-transparent', !active);
+        row.dataset.playing = active ? 'true' : 'false';
         const titleEl = row.querySelector('.track-title');
         const slot = row.querySelector('.track-index-slot');
         const coverEq = row.querySelector('.track-cover-eq');
@@ -10427,14 +10550,19 @@
           coverEq.classList.toggle('hidden', !active);
           coverEq.classList.toggle('flex', active);
           const innerEq = coverEq.querySelector('.sf-track-eq');
-          if (innerEq) innerEq.classList.toggle('eq-paused', !AppState.isPlaying);
+          if (innerEq) innerEq.classList.toggle('eq-paused', !isPlayingNow);
         }
         if (slot) {
           if (active) {
-            slot.innerHTML = `
-              <div class="sf-track-eq flex items-end justify-center gap-[2px] h-3.5 w-4 ${pausedCls}">
-                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-              </div>`;
+            const existingEq = slot.querySelector('.sf-track-eq');
+            if (existingEq) {
+              existingEq.classList.toggle('eq-paused', !isPlayingNow);
+            } else {
+              slot.innerHTML = `
+                <div class="sf-track-eq flex items-end justify-center gap-[2px] h-3.5 w-4 ${pausedCls}">
+                  <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                </div>`;
+            }
           } else {
             slot.innerHTML = `<span class="font-mono text-xs text-zinc-500 group-hover:hidden">${row.dataset.indexNum}</span>
               <i data-lucide="play" aria-hidden="true" class="w-3.5 h-3.5 text-white fill-current hidden group-hover:block mx-auto"></i>`;
@@ -12292,7 +12420,7 @@
             <div class="space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
                 <div>
-                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v2.0.1</p>
+                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v2.0.2</p>
                   <h1 class="font-display font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-tight text-white mt-0.5">${greetingText}</h1>
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
@@ -15078,11 +15206,11 @@
 
           ${typeof renderWeeklyMiniWrappedCardHtml === 'function' ? renderWeeklyMiniWrappedCardHtml() : ''}
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button type="button" onclick="window.SF201?.posterStudio?.open(AppState.currentTrack || null)" class="sf-tap text-left rounded-2xl p-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/18 to-[#18181B] border border-purple-400/35 hover:border-purple-300/70 transition-all flex items-center justify-between gap-3">
+            <button type="button" onclick="(window.SF202?.poster3d?.open || window.SF201?.posterStudio?.open)?.(AppState.currentTrack || null)" class="sf-tap text-left rounded-2xl p-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/18 to-[#18181B] border border-purple-400/35 hover:border-purple-300/70 transition-all flex items-center justify-between gap-3">
               <div class="min-w-0">
                 <span class="font-mono text-[9.5px] font-extrabold uppercase tracking-widest text-purple-300">AURALYS STUDIO</span>
                 <p class="font-display font-extrabold text-sm sm:text-base text-white mt-0.5">🎨 Poster Maker Studio</p>
-                <p class="text-[11px] text-white/65 truncate">Kolase 1–5 lagu miring 3D, foto sendiri, 5 tab &amp; simpan Galeri</p>
+                <p class="text-[11px] text-white/65 truncate">Kartu 3D perspektif di belakang foto, drag jari, stiker &amp; simpan Galeri</p>
               </div>
               <i data-lucide="palette" aria-hidden="true" class="w-5 h-5 text-purple-300 shrink-0"></i>
             </button>
@@ -30069,8 +30197,10 @@
       'sf_visual_style_v2',
       'sf_offline_meta_v2',
       'sf_perf_hud_v1',
+      'sf_custom_stickers_v1',
       'sf_seen_whats_new_2_0_0',
       'sf_seen_whats_new_2_0_1',
+      'sf_seen_whats_new_2_0_2',
       'sf_liked_tracks',
       'sf_user_playlists',
       'sf_playlist_folders',
@@ -30406,8 +30536,8 @@
       `);
     }
 
-    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v2.0.1" (AUTO 1X) ---
-    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_2_0_1';
+    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v2.0.2" (AUTO 1X) ---
+    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_2_0_2';
 
     function dismissWhatsNewV152Modal() {
       safeStorageSet(SF_SEEN_WHATS_NEW_KEY, '1');
@@ -30420,7 +30550,7 @@
         <div class="space-y-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#E5C99B]/20 text-[#1ED760] border border-[#1ED760]/40">v2.0.1 • ULTRA-FAST + TRUE LIQUID GLASS</span>
+              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#E5C99B]/20 text-[#1ED760] border border-[#1ED760]/40">v2.0.2 • ZERO-STUTTER + 3D DEPTH POSTER</span>
               <h3 class="font-display font-extrabold text-xl text-white mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
             </div>
             <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80 shrink-0">
@@ -30428,10 +30558,9 @@
             </button>
           </div>
           <ul class="space-y-2.5 text-xs text-zinc-200 leading-relaxed">
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">⚡</span><span><strong>Play Instan &lt; 0.7 Detik</strong> — Direct InnerTube <code>ANDROID_VR</code> + Native <code>videoId</code> Search + Auto-Retry 2-Lapis &amp; Prefetch 2 lagu berikutnya!</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#38BDF8] font-bold">🫧</span><span><strong>True Liquid Glass &amp; True Editorial</strong> — Living Multi-Orb Mesh Canvas anti-kusam, kaca specular iOS 26, dan layar penuh super bersih.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-pink-400 font-bold">🎨</span><span><strong>Poster Maker Studio 4 Tab Ala Auralys</strong> — Pilih lagu apa saja, upload foto sendiri dari galeri, 5 gaya HD &amp; simpan langsung ke Galeri HP (<code>Pictures/SpotyFlow</code>)!</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#E5C99B] font-bold">🏝️</span><span><strong>Dynamic Island Lyrics + 3 Widget Android</strong> — Lirik live real-time, sakelar <code>Lagu | Video</code>, &amp; unduhan offline 0ms.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">⚡</span><span><strong>Anti-Patah-Patah 4G &amp; 60–120 FPS Mulus</strong> — Buffer 4G stabil, interpolasi progres lokal 60 FPS, blur GPU super ringan, &amp; update lirik widget tanpa lag.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-purple-300 font-bold">🧊</span><span><strong>Poster Lagu 3D Depth Effect (ML Kit Offline)</strong> — Kartu &amp; sampul 3D perspektif nyata di <strong>belakang subjek foto</strong> kamu, bisa digeser langsung pakai jari!</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-pink-400 font-bold">✨</span><span><strong>Tab Stiker Lengkap Ala Auralys</strong> — Stiker <em>Burung</em>, <em>Kilau (✦)</em>, upload stiker PNG sendiri, &amp; simpan HD langsung ke Galeri (<code>Pictures/SpotyFlow</code>)!</span></li>
           </ul>
           <button type="button" onclick="dismissWhatsNewV152Modal()" class="w-full py-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-sm font-extrabold transition-colors shadow-lg">
             Mulai Mendengarkan
@@ -32119,16 +32248,59 @@
         } catch {}
       }
 
+      // v2.0.2 Anti-Stutter: Smooth local 60 FPS time interpolation synced with 2000ms native IPC
+      const interpAnchor = { basePosSec: 0, anchorPerfMs: 0, rate: 1, playing: false };
+      let interpRaf = 0;
+      let lastRenderedWholeSec = -1;
+
+      function syncInterpAnchor(posSec, rate, playing) {
+        interpAnchor.basePosSec = Math.max(0, Number(posSec) || 0);
+        interpAnchor.anchorPerfMs = performance.now();
+        interpAnchor.rate = Number(rate) > 0 ? Number(rate) : 1;
+        interpAnchor.playing = Boolean(playing);
+        if (interpAnchor.playing && !window.__sfIsAppBackgrounded) {
+          startInterpLoop();
+        } else {
+          stopInterpLoop();
+        }
+      }
+
+      function stopInterpLoop() {
+        if (interpRaf) {
+          cancelAnimationFrame(interpRaf);
+          interpRaf = 0;
+        }
+      }
+
+      function startInterpLoop() {
+        if (interpRaf) return;
+        function tick(now) {
+          if (!st.nativeActive || !interpAnchor.playing || window.__sfIsAppBackgrounded) {
+            interpRaf = 0;
+            return;
+          }
+          const estSec = interpAnchor.basePosSec + ((now - interpAnchor.anchorPerfMs) / 1000) * interpAnchor.rate;
+          st.nativePositionSec = estSec;
+          updateNativeProgressUI(estSec, st.nativeDurationSec);
+          interpRaf = requestAnimationFrame(tick);
+        }
+        interpRaf = requestAnimationFrame(tick);
+      }
+
       function updateNativeProgressUI(posSec, durSec) {
         if (AppState.isSeeking || window.__sfIsAppBackgrounded) return;
         const dur = durSec > 1 ? durSec : (Number(AppState.currentTrack?.duration) || 210);
         const pos = Math.max(0, Math.min(dur, posSec));
         const pct = dur > 0 ? Math.min(100, (pos / dur) * 100) : 0;
-        const curTxt = typeof formatTime === 'function' ? formatTime(pos) : '0:00';
-        const tCur = document.getElementById('time-current');
-        const stCur = document.getElementById('stage-time-current');
-        if (tCur) tCur.textContent = curTxt;
-        if (stCur) stCur.textContent = curTxt;
+        const wholeSec = Math.floor(pos);
+        if (wholeSec !== lastRenderedWholeSec) {
+          lastRenderedWholeSec = wholeSec;
+          const curTxt = typeof formatTime === 'function' ? formatTime(pos) : '0:00';
+          const tCur = document.getElementById('time-current');
+          const stCur = document.getElementById('stage-time-current');
+          if (tCur) tCur.textContent = curTxt;
+          if (stCur) stCur.textContent = curTxt;
+        }
         ['seek-slider', 'stage-seek-slider'].forEach((id) => {
           const el = document.getElementById(id);
           if (el) {
@@ -32144,7 +32316,6 @@
         if (typeof syncLyricsWithTime === 'function') {
           syncLyricsWithTime(pos);
         }
-        // A-B Loop support on Native ExoPlayer
         if (AppState.abLoop && AppState.abLoop.active && AppState.abLoop.b > AppState.abLoop.a + 1 && pos >= AppState.abLoop.b) {
           nativeControl('seek', Math.round(AppState.abLoop.a * 1000));
         }
@@ -32276,6 +32447,8 @@
             }
             st.nativePositionSec = posSec;
             AppState.isPlaying = true;
+            lastRenderedWholeSec = -1;
+            syncInterpAnchor(posSec, Number(data.playbackRate || 1), true);
             if (typeof setLoadingBanner === 'function') setLoadingBanner(false);
             const isOff = hasNativeOfflineTrack(AppState.currentTrack?.id);
             const engineTag = String(data.engine || (isOff ? 'OFFLINE' : 'EXO-FAST'));
@@ -32308,22 +32481,29 @@
           if (type === 'paused') {
             if (!st.nativeActive) return;
             if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
+            const posSec = Number(data.positionMs || 0) / 1000;
+            if (posSec >= 0) st.nativePositionSec = posSec;
+            syncInterpAnchor(st.nativePositionSec, Number(data.playbackRate || 1), false);
             AppState.isPlaying = false;
             if (typeof updatePlayPauseIcons === 'function') updatePlayPauseIcons();
             if (typeof highlightPlayingTrackRows === 'function') highlightPlayingTrackRows();
             return;
           }
-          if (type === 'time') {
+          if (type === 'time' || type === 'seeked') {
             if (!st.nativeActive) return;
             const posSec = Number(data.positionMs || 0) / 1000;
             const durSec = Number(data.durationMs || 0) / 1000;
             st.nativePositionSec = posSec;
             if (durSec > 1) st.nativeDurationSec = durSec;
+            if (type === 'seeked') lastRenderedWholeSec = -1;
+            const playingNow = data.playing !== undefined ? Boolean(data.playing) : (data.isPlaying !== undefined ? Boolean(data.isPlaying) : AppState.isPlaying);
+            syncInterpAnchor(posSec, Number(data.playbackRate || 1), playingNow);
             updateNativeProgressUI(posSec, st.nativeDurationSec);
             return;
           }
           if (type === 'ended') {
             if (!st.nativeActive) return;
+            stopInterpLoop();
             if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
             if (AppState.sleepTimerEndOfTrack) {
               AppState.sleepTimerEndOfTrack = false;
@@ -33365,30 +33545,40 @@
       }
 
       function schedulePrefetchNextTwo() {
-        if (prefetchTimer) clearTimeout(prefetchTimer);
-        prefetchTimer = setTimeout(() => {
+        // v2.0.2 Anti-Stutter: batalkan timer lama & prefetch HANYA 1 lagu berikutnya setelah 4000ms playing stabil!
+        if (window.__sfPrefetchTimer) {
+          clearTimeout(window.__sfPrefetchTimer);
+          window.__sfPrefetchTimer = null;
+        }
+        if (prefetchTimer) {
+          clearTimeout(prefetchTimer);
           prefetchTimer = null;
+        }
+        const curTrackId = String(AppState?.currentTrack?.id || '');
+        window.__sfPrefetchTimer = setTimeout(() => {
+          window.__sfPrefetchTimer = null;
+          if (!AppState?.isPlaying) return;
+          if (String(AppState?.currentTrack?.id || '') !== curTrackId) return;
           const br = getBridge();
           if (!br) return;
           const queue = Array.isArray(AppState?.queue) ? AppState.queue : [];
-          const curIdx = Number(AppState?.queueIndex) || 0;
+          const nextIdx = (Number(AppState?.queueIndex) || 0) + 1;
+          const tr = queue[nextIdx];
+          if (!tr || tr.isLocal) return;
           const ds = Boolean(AppState?.dataSaver);
-          [curIdx + 1, curIdx + 2].forEach((idx) => {
-            const tr = queue[idx];
-            if (!tr || tr.isLocal) return;
-            const vid = typeof extractDirectTrackVideoId === 'function' ? (extractDirectTrackVideoId(tr) || '') : '';
-            const tid = String(tr.id || vid || `q_${idx}`);
-            const title = String(tr.title || '');
-            const artist = String(tr.artist?.name || '');
-            try {
-              if (typeof br.prefetchTrackMeta === 'function') {
-                br.prefetchTrackMeta(tid, vid, title, artist, ds);
-              } else if (vid && /^[a-zA-Z0-9_-]{11}$/.test(vid) && typeof br.prefetchTrack === 'function') {
-                br.prefetchTrack(vid, ds);
-              }
-            } catch {}
-          });
-        }, 600);
+          const vid = typeof extractDirectTrackVideoId === 'function' ? (extractDirectTrackVideoId(tr) || '') : '';
+          const tid = String(tr.id || vid || `q_${nextIdx}`);
+          const title = String(tr.title || '');
+          const artist = String(tr.artist?.name || '');
+          try {
+            if (typeof br.prefetchTrackMeta === 'function') {
+              br.prefetchTrackMeta(tid, vid, title, artist, ds);
+            } else if (vid && /^[a-zA-Z0-9_-]{11}$/.test(vid) && typeof br.prefetchTrack === 'function') {
+              br.prefetchTrack(vid, ds);
+            }
+          } catch {}
+        }, 4000);
+        prefetchTimer = window.__sfPrefetchTimer;
       }
 
       // -------------------------------------------------------------------
@@ -33407,10 +33597,7 @@
         ];
 
         let currentTriad = IDLE_TRIAD.map((c) => c.slice());
-        let targetTriad = IDLE_TRIAD.map((c) => c.slice());
-        let animStartTriad = IDLE_TRIAD.map((c) => c.slice());
-        let animStartTs = 0;
-        let animRafId = 0;
+        let meshDeferTimer = null;
         let lastCoverUrl = '';
         let currentStageTab = 'player';
         const triadCache = new Map();
@@ -33542,7 +33729,10 @@
             img.onload = () => {
               clearTimeout(timer);
               const triad = extractHarmoniousTriadFromImage(img);
-              if (triadCache.size > 40) triadCache.clear();
+              if (triadCache.size >= 50) {
+                const oldest = triadCache.keys().next().value;
+                if (oldest) triadCache.delete(oldest);
+              }
               triadCache.set(clean, triad);
               resolve(triad.map((c) => c.slice()));
             };
@@ -33605,44 +33795,29 @@
         }
 
         function stopMeshAnim() {
-          if (animRafId) {
-            cancelAnimationFrame(animRafId);
-            animRafId = 0;
+          if (meshDeferTimer) {
+            clearTimeout(meshDeferTimer);
+            meshDeferTimer = null;
           }
         }
 
-        function transitionToTriad(nextTriad) {
-          stopMeshAnim();
-          targetTriad = nextTriad.map((c) => c.slice());
-          applyTriadCssVars(targetTriad);
+        // v2.0.2 Anti-Lag: Render Statis 1 Kali ke canvas 128x128 TANPA loop requestAnimationFrame!
+        function drawStaticMeshOnce(nextTriad) {
+          currentTriad = nextTriad.map((c) => c.slice());
+          applyTriadCssVars(currentTriad);
           if (window.__sfIsAppBackgrounded || document.documentElement.getAttribute('data-sf-style') === 'editorial') {
-            currentTriad = targetTriad.map((c) => c.slice());
             return;
           }
-          animStartTriad = currentTriad.map((c) => c.slice());
-          animStartTs = performance.now();
-          const DURATION = 850;
-          function step(now) {
-            if (window.__sfIsAppBackgrounded || document.documentElement.getAttribute('data-sf-style') === 'editorial') {
-              currentTriad = targetTriad.map((c) => c.slice());
-              animRafId = 0;
-              return;
-            }
-            const t = Math.min(1, (now - animStartTs) / DURATION);
-            const ease = 1 - Math.pow(1 - t, 3);
-            for (let i = 0; i < 3; i++) {
-              for (let j = 0; j < 3; j++) {
-                currentTriad[i][j] = Math.round(animStartTriad[i][j] + (targetTriad[i][j] - animStartTriad[i][j]) * ease);
-              }
-            }
+          const canvas = document.getElementById('sf-ambient-mesh-canvas');
+          if (canvas) {
+            canvas.style.opacity = '0.82';
             drawMeshFrame(currentTriad);
-            if (t < 1) {
-              animRafId = requestAnimationFrame(step);
-            } else {
-              animRafId = 0; // 0% idle CPU/GPU once color lerp finishes!
-            }
+            requestAnimationFrame(() => {
+              if (document.documentElement.getAttribute('data-sf-style') !== 'editorial') {
+                canvas.style.opacity = '1';
+              }
+            });
           }
-          animRafId = requestAnimationFrame(step);
         }
 
         function syncMeshForCurrentTrack(force = false) {
@@ -33650,13 +33825,25 @@
           const url = track && typeof getCover === 'function' ? getCover(track, 'medium') : '';
           if (!force && url === lastCoverUrl && url) return;
           lastCoverUrl = url;
-          if (!url) {
-            transitionToTriad(IDLE_TRIAD);
-            return;
-          }
-          extractHarmoniousTriad(url).then((triad) => {
-            transitionToTriad(triad);
-          });
+          stopMeshAnim();
+          // Tunda 200ms agar klik Play detik ke-0 100% bebas jank & audio mulai duluan!
+          meshDeferTimer = setTimeout(() => {
+            meshDeferTimer = null;
+            if (!url) {
+              drawStaticMeshOnce(IDLE_TRIAD);
+              return;
+            }
+            const runExtract = () => {
+              extractHarmoniousTriad(url).then((triad) => {
+                if (url === lastCoverUrl) drawStaticMeshOnce(triad);
+              });
+            };
+            if (typeof requestIdleCallback === 'function') {
+              requestIdleCallback(runExtract, { timeout: 300 });
+            } else {
+              runExtract();
+            }
+          }, 200);
         }
 
         function syncStagePlayState() {
@@ -33708,7 +33895,7 @@
           const isEditorial = document.documentElement.getAttribute('data-sf-style') === 'editorial';
           const sheetBg = isEditorial
             ? 'background:#111114;border:1px solid rgba(255,255,255,0.14);border-radius:16px 16px 0 0;'
-            : 'background:linear-gradient(155deg,rgba(24,28,42,0.84),rgba(10,12,20,0.92));backdrop-filter:blur(26px) saturate(210%);-webkit-backdrop-filter:blur(26px) saturate(210%);border-top:1px solid rgba(255,255,255,0.28);border-radius:28px 28px 0 0;';
+            : 'background:linear-gradient(155deg,rgba(24,28,42,0.88),rgba(10,12,20,0.94));backdrop-filter:blur(12px) saturate(155%) brightness(1.04);-webkit-backdrop-filter:blur(12px) saturate(155%) brightness(1.04);border-top:1px solid rgba(255,255,255,0.28);border-radius:28px 28px 0 0;';
 
           const wrap = document.createElement('div');
           wrap.id = 'sf201-fx-sheet';
@@ -35325,6 +35512,2468 @@
         schedulePrefetchNextTwo,
         gui,
         posterStudio,
+      };
+    })();
+
+    /* =====================================================================
+       27. SPOTYFLOW v2.0.2 — AURALYS 4.3.5 3D DEPTH EFFECT POSTER STUDIO
+           (True 3D Perspective Mesh + ML Kit Offline AI Depth Cutout +
+            Direct Finger Drag + Full Sticker Studio + 5 Tabs)
+       ===================================================================== */
+    window.SF202 = (function createSpotyFlow202Module() {
+      const STICKERS_STORAGE_KEY = 'sf_custom_stickers_v1';
+
+      function esc(val) {
+        if (typeof escapeHtml === 'function') return escapeHtml(String(val ?? ''));
+        return String(val ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getBridge() {
+        return window.SpotyFlowMediaBridge || null;
+      }
+
+      // Async ML Kit Depth Mask callback registry
+      const pendingDepthReqs = new Map();
+      window.__sfOnDepthMaskReady = function (reqId, resultObj) {
+        try {
+          const cb = pendingDepthReqs.get(String(reqId || ''));
+          if (!cb) return;
+          pendingDepthReqs.delete(String(reqId || ''));
+          const data = typeof resultObj === 'string' ? JSON.parse(resultObj) : (resultObj || { ok: false });
+          cb(data);
+        } catch {}
+      };
+
+      function requestNativeDepthMask(base64DataUrl) {
+        const br = getBridge();
+        if (!br || typeof br.segmentPhotoDepthAsync !== 'function') {
+          return Promise.resolve({ ok: false, unsupported: true });
+        }
+        return new Promise((resolve) => {
+          const reqId = `depth_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+          const timer = setTimeout(() => {
+            if (pendingDepthReqs.has(reqId)) {
+              pendingDepthReqs.delete(reqId);
+              resolve({ ok: false, error: 'timeout' });
+            }
+          }, 8000);
+          pendingDepthReqs.set(reqId, (res) => {
+            clearTimeout(timer);
+            resolve(res || { ok: false });
+          });
+          try {
+            br.segmentPhotoDepthAsync(reqId, base64DataUrl);
+          } catch {
+            clearTimeout(timer);
+            pendingDepthReqs.delete(reqId);
+            resolve({ ok: false });
+          }
+        });
+      }
+
+      const poster3d = (function createPoster3DStudio() {
+        const RATIOS = {
+          '9:16': { w: 1080, h: 1920, label: '9:16 TikTok' },
+          '16:9': { w: 1920, h: 1080, label: '16:9 YouTube' },
+          '4:5':  { w: 1080, h: 1350, label: '4:5' },
+          '1:1':  { w: 1080, h: 1080, label: '1:1' },
+        };
+
+        const CARD_STYLES = [
+          { id: 'dark_glass',   name: 'Kaca Gelap',   desc: 'Kaca studio gelap berkilau', swatch: 'linear-gradient(135deg,#1C1F2B,#0C0E15)' },
+          { id: 'liquid_glass', name: 'Liquid Glass', desc: 'Kaca bening transparan iOS 26', swatch: 'linear-gradient(135deg,rgba(255,255,255,0.34),rgba(255,255,255,0.08))' },
+          { id: 'matte_black',  name: 'Hitam Pekat',  desc: 'Obsidian solid kontras tajam', swatch: '#0D0E12' },
+          { id: 'light_frost',  name: 'Kaca Terang',  desc: 'Putih frosted teks hitam', swatch: 'linear-gradient(135deg,#FFFFFF,#E5E7EB)' },
+          { id: 'cover_tint',   name: 'Warna Sampul', desc: 'Adaptif warna sampul lagu', swatch: 'linear-gradient(135deg,#4C1D95,#1E3A8A)' },
+          { id: 'neon_frame',   name: 'Bingkai Neon', desc: 'Kaca gelap + tepi cahaya neon', swatch: 'linear-gradient(135deg,#0F172A,#7C3AED)' },
+        ];
+
+        const BG_MODES = [
+          { id: 'burgundy',   name: 'Burgundy Gelap', c1: '#2A121C', c2: '#0F070B', c3: '#4A1D32' },
+          { id: 'auto_cover', name: 'Auto Sampul',    c1: '#1E40AF', c2: '#090910', c3: '#7C3AED' },
+          { id: 'obsidian',   name: 'Hitam Obsidian', c1: '#14151C', c2: '#07080B', c3: '#262836' },
+          { id: 'midnight',   name: 'Biru Malam',     c1: '#0C1E3E', c2: '#050B18', c3: '#1D4ED8' },
+          { id: 'velvet',     name: 'Ungu Velvet',    c1: '#2E1065', c2: '#0C051C', c3: '#7C3AED' },
+          { id: 'custom',     name: 'Warna Kustom',   c1: '#2A121C', c2: '#09090D', c3: '#2A121C' },
+        ];
+
+        const BG_SWATCHES = ['#2A121C', '#09090D', '#0C1E3E', '#2E1065', '#063B36', '#4A1818', '#1E293B', '#312E81'];
+
+        const BUILTIN_STICKERS = [
+          { id: 'bird',         name: 'Burung',       preview: '🕊️' },
+          { id: 'flare',        name: 'Kilau',        preview: '✦' },
+          { id: 'double_flare', name: 'Kilau Ganda',  preview: '✨' },
+          { id: 'star',         name: 'Bintang',      preview: '★' },
+          { id: 'butterfly',    name: 'Kupu-kupu',    preview: '🦋' },
+          { id: 'heart',        name: 'Hati',         preview: '♥' },
+          { id: 'cloud',        name: 'Awan',         preview: '☁' },
+          { id: 'ribbon',       name: 'Pita',         preview: '🎀' },
+          { id: 'music_note',   name: 'Not Musik',    preview: '♪' },
+          { id: 'sparkle_ring', name: 'Sparkle Ring', preview: '✧' },
+        ];
+
+        const CARD_FALLBACK_GRADS = [
+          ['#3B1D5E', '#1E3A8A'],
+          ['#7C2D12', '#4C1D95'],
+          ['#0F766E', '#1E293B'],
+          ['#831843', '#312E81'],
+          ['#1D4ED8', '#0F172A'],
+        ];
+
+        const imageCache = new Map();       // coverUrl -> { img, rgb } (max 40)
+        const flatCardCache = new Map();    // cacheKey -> offscreen 320x492 canvas (max 25)
+        const customStickerImgCache = new Map(); // dataUrl -> HTMLImageElement
+        let grainCanvas = null;
+        let state = null;
+        let previewRaf = 0;
+        let searchDebounce = null;
+        let searchAbort = null;
+        let pendingTrackPhotoIdx = -1;
+        let dragState = null;
+
+        // Cached Layer 3 foreground cutout so 60 FPS dragging doesn't re-composite every frame!
+        let fgCacheKey = '';
+        let fgCacheCanvas = null;
+
+        function cleanTitle(raw) {
+          return String(raw || '')
+            .replace(/\s*[\(\[]\s*(official\s*(music\s*)?video|official\s*audio|official\s*lyric\s*video|lyric\s*video|lyrics|mv|hd|4k|audio|visualizer|live\s*performance)[^\)\]]*[\)\]]/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim() || 'SpotyFlow Track';
+        }
+
+        function getTrackKey(tr) {
+          if (!tr) return '';
+          return String(tr.id || `${tr.title || ''}_${tr.artist?.name || ''}`);
+        }
+
+        function buildProxyUrl(rawUrl) {
+          const u = String(rawUrl || '').trim();
+          if (!u || u.startsWith('data:') || u.startsWith('blob:') || u.startsWith('/')) return u;
+          const base = typeof API_BASE === 'string' ? API_BASE : '';
+          return `${base}/api/proxy-image?url=${encodeURIComponent(u)}`;
+        }
+
+        function extractDominantRgb(img) {
+          try {
+            const c = document.createElement('canvas');
+            c.width = 24; c.height = 24;
+            const ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, 24, 24);
+            const d = ctx.getImageData(0, 0, 24, 24).data;
+            let r = 0, g = 0, b = 0, n = 0;
+            for (let i = 0; i < d.length; i += 16) {
+              if (d[i + 3] < 160) continue;
+              r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+            }
+            if (!n) return [124, 58, 237];
+            return [Math.round(r / n), Math.round(g / n), Math.round(b / n)];
+          } catch {
+            return [124, 58, 237];
+          }
+        }
+
+        function loadCoverCached(rawUrl) {
+          const clean = String(rawUrl || '').trim();
+          if (!clean || clean.includes('icon-192.png')) return Promise.resolve(null);
+          if (imageCache.has(clean)) return Promise.resolve(imageCache.get(clean));
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.decoding = 'async';
+            const tm = setTimeout(() => resolve(null), 5000);
+            img.onload = () => {
+              clearTimeout(tm);
+              const entry = { img, rgb: extractDominantRgb(img) };
+              if (imageCache.size >= 40) {
+                const firstKey = imageCache.keys().next().value;
+                if (firstKey) imageCache.delete(firstKey);
+              }
+              imageCache.set(clean, entry);
+              resolve(entry);
+            };
+            img.onerror = () => { clearTimeout(tm); resolve(null); };
+            img.src = buildProxyUrl(clean);
+          });
+        }
+
+        function downscaleLocalImageFile(file, maxDim = 1600, mime = 'image/jpeg', quality = 0.92) {
+          return new Promise((resolve) => {
+            if (!file) { resolve(null); return; }
+            const reader = new FileReader();
+            reader.onerror = () => resolve(null);
+            reader.onload = () => {
+              const rawImg = new Image();
+              rawImg.onerror = () => resolve(null);
+              rawImg.onload = () => {
+                const iw = rawImg.naturalWidth || 1;
+                const ih = rawImg.naturalHeight || 1;
+                const sc = Math.min(1, maxDim / Math.max(iw, ih));
+                const rw = Math.max(1, Math.round(iw * sc));
+                const rh = Math.max(1, Math.round(ih * sc));
+                const off = document.createElement('canvas');
+                off.width = rw; off.height = rh;
+                off.getContext('2d').drawImage(rawImg, 0, 0, rw, rh);
+                const dataUrl = mime === 'image/png' ? off.toDataURL('image/png') : off.toDataURL('image/jpeg', quality);
+                const safeImg = new Image();
+                safeImg.onerror = () => resolve(null);
+                safeImg.onload = () => resolve({ img: safeImg, dataUrl, rgb: extractDominantRgb(safeImg) });
+                safeImg.src = dataUrl;
+              };
+              rawImg.src = String(reader.result || '');
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        function loadCustomStickersFromStorage() {
+          try {
+            const raw = localStorage.getItem(STICKERS_STORAGE_KEY);
+            const arr = raw ? JSON.parse(raw) : [];
+            return Array.isArray(arr) ? arr.slice(0, 12) : [];
+          } catch {
+            return [];
+          }
+        }
+
+        function saveCustomStickersToStorage(arr) {
+          const clean = (Array.isArray(arr) ? arr : []).slice(0, 12);
+          try {
+            if (typeof safeStorageSet === 'function') {
+              safeStorageSet(STICKERS_STORAGE_KEY, JSON.stringify(clean));
+            } else {
+              localStorage.setItem(STICKERS_STORAGE_KEY, JSON.stringify(clean));
+            }
+          } catch {}
+        }
+
+        function getCustomStickerImage(dataUrl) {
+          if (!dataUrl) return null;
+          if (customStickerImgCache.has(dataUrl)) return customStickerImgCache.get(dataUrl);
+          const img = new Image();
+          img.onload = () => schedulePreviewRender();
+          img.src = dataUrl;
+          customStickerImgCache.set(dataUrl, img);
+          return img;
+        }
+
+        function getGrainCanvas() {
+          if (grainCanvas) return grainCanvas;
+          const gc = document.createElement('canvas');
+          gc.width = 128; gc.height = 128;
+          const gctx = gc.getContext('2d');
+          const id = gctx.createImageData(128, 128);
+          for (let i = 0; i < id.data.length; i += 4) {
+            const v = Math.floor(Math.random() * 255);
+            id.data[i] = v; id.data[i + 1] = v; id.data[i + 2] = v; id.data[i + 3] = 22;
+          }
+          gctx.putImageData(id, 0, 0);
+          grainCanvas = gc;
+          return gc;
+        }
+
+        function makeDefaultCardState(tr) {
+          return {
+            track: tr,
+            offsetX: 0,      // normalized canvas width (-0.5..+0.5)
+            offsetY: 0,      // normalized canvas height (-0.5..+0.5)
+            extraRotY: 0,    // per-card Y angle tweak
+            extraRotZ: 0,    // per-card Z angle tweak
+            extraScale: 1,   // per-card scale tweak (0.6..1.5)
+          };
+        }
+
+        function makeDefaultState(initialTrack) {
+          const seedTracks = [];
+          if (initialTrack) {
+            seedTracks.push(initialTrack);
+          } else if (AppState?.currentTrack) {
+            seedTracks.push(AppState.currentTrack);
+          }
+          return {
+            ratio: '9:16',
+            activeTab: 'foto',                 // 'foto' | 'kartu' | 'gaya_kartu' | 'efek' | 'stiker'
+            pickerOpen: !seedTracks.length,
+            pickTab: 'liked',
+            searchQuery: '',
+            searchResults: [],
+            searchLoading: false,
+
+            cards: seedTracks.map(makeDefaultCardState),
+            trackCovers: new Map(),
+            customTrackCovers: new Map(),
+            loadingCovers: false,
+
+            // Photo & ML Kit AI Depth Cutout
+            userPhotoImg: null,
+            userPhotoDataUrl: '',
+            photoZoom: 100,
+            photoPanX: 0,
+            photoPanY: 0,
+            depthEnabled: true,
+            depthScanning: false,
+            depthMaskImg: null,
+            depthHasSubject: false,
+            depthUnsupported: false,
+            bgDarkness: 15,
+            bgBlur: 0,
+            cardGlow: 40,
+
+            // Kartu 3D controls
+            layoutMode: 'depth_shoulders',     // 'depth_shoulders' | 'auralys' | 'fan_3d' | 'grid'
+            rotY: 22,                          // -45..+45 deg (auto-mirrored left/right!)
+            rotX: 6,                           // -30..+30 deg
+            tiltZ: 40,                         // 0..100%
+            cardSize: 100,                     // 70..130%
+            showControls: true,
+            showSeekHeart: true,
+            showArtist: true,
+            showWatermark: true,
+
+            // Gaya kartu
+            cardStyle: 'dark_glass',
+            thickness3D: 8,                    // 0..16
+            cardOpacity: 84,                   // 35..100%
+            cardRadius: 24,                    // 8..32px
+
+            // Efek & Latar
+            flareEnabled: true,
+            flareIntensity: 75,                // 0..100%
+            flareSeed: 1,
+            shadow3d: 65,                      // 0..100%
+            vignette: 30,                      // 0..100%
+            filmGrain: false,
+            bgMode: 'burgundy',
+            bgCustomColor: '#2A121C',
+
+            // Stiker (max 30 active on poster)
+            stickers: [],                      // { uid, kind:'builtin'|'custom', typeId, dataUrl, x, y, scale, rotation, opacity, behindSubject }
+            customStickers: loadCustomStickersFromStorage(),
+
+            // Selection for interactive finger drag
+            selected: null,                    // { type:'card'|'sticker', index:number } | null
+            lastHitBoxes: [],                  // populated on preview render for accurate touch hit-test
+          };
+        }
+
+        // ---------------- GEOMETRY & 2D HELPERS ----------------
+        function roundedRectPath(ctx, x, y, w, h, r) {
+          const rad = Math.max(0, Math.min(r, w / 2, h / 2));
+          ctx.beginPath();
+          ctx.moveTo(x + rad, y);
+          ctx.lineTo(x + w - rad, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+          ctx.lineTo(x + w, y + h - rad);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+          ctx.lineTo(x + rad, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+          ctx.lineTo(x, y + rad);
+          ctx.quadraticCurveTo(x, y, x + rad, y);
+          ctx.closePath();
+        }
+
+        function drawImageCover(ctx, img, x, y, w, h, zoom = 100, panX = 0, panY = 0, radius = 0, fallbackIdx = 0) {
+          const z = Math.max(100, Math.min(220, Number(zoom) || 100)) / 100;
+          const px = Math.max(-100, Math.min(100, Number(panX) || 0)) / 100;
+          const py = Math.max(-100, Math.min(100, Number(panY) || 0)) / 100;
+
+          ctx.save();
+          if (radius > 0) {
+            roundedRectPath(ctx, x, y, w, h, radius);
+            ctx.clip();
+          } else {
+            ctx.beginPath();
+            ctx.rect(x, y, w, h);
+            ctx.clip();
+          }
+
+          if (!img || !img.naturalWidth || !img.naturalHeight) {
+            const pair = CARD_FALLBACK_GRADS[fallbackIdx % CARD_FALLBACK_GRADS.length];
+            const g = ctx.createLinearGradient(x, y, x + w, y + h);
+            g.addColorStop(0, pair[0]);
+            g.addColorStop(1, pair[1]);
+            ctx.fillStyle = g;
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = 'rgba(255,255,255,0.45)';
+            ctx.font = `700 ${Math.round(Math.min(w, h) * 0.36)}px system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('♪', x + w / 2, y + h / 2);
+            ctx.restore();
+            return;
+          }
+
+          const iw = img.naturalWidth;
+          const ih = img.naturalHeight;
+          const sc = Math.max(w / iw, h / ih) * z;
+          const dw = iw * sc;
+          const dh = ih * sc;
+          const maxShiftX = Math.max(0, (dw - w) / 2);
+          const maxShiftY = Math.max(0, (dh - h) / 2);
+          const dx = x + (w - dw) / 2 + px * maxShiftX;
+          const dy = y + (h - dh) / 2 + py * maxShiftY;
+          ctx.drawImage(img, dx, dy, dw, dh);
+          ctx.restore();
+        }
+
+        function drawEllipsisText(ctx, text, x, y, maxWidth) {
+          const clean = String(text || '').trim();
+          if (!clean) return;
+          let out = clean;
+          if (ctx.measureText(out).width > maxWidth) {
+            while (out.length > 1 && ctx.measureText(out + '…').width > maxWidth) {
+              out = out.slice(0, -1);
+            }
+            out += '…';
+          }
+          ctx.fillText(out, x, y);
+        }
+
+        function drawBlurredPhotoBackground(ctx, img, W, H, zoom, panX, panY, blurPct) {
+          if (blurPct <= 1) {
+            drawImageCover(ctx, img, 0, 0, W, H, zoom, panX, panY, 0, 0);
+            return;
+          }
+          const factor = Math.max(2, Math.round(2 + (blurPct / 100) * 26));
+          const sw = Math.max(16, Math.round(W / factor));
+          const sh = Math.max(16, Math.round(H / factor));
+          const tmp1 = document.createElement('canvas');
+          tmp1.width = sw; tmp1.height = sh;
+          const tctx1 = tmp1.getContext('2d');
+          tctx1.imageSmoothingEnabled = true;
+          tctx1.imageSmoothingQuality = 'high';
+          drawImageCover(tctx1, img, 0, 0, sw, sh, zoom, panX, panY, 0, 0);
+
+          const tmp2 = document.createElement('canvas');
+          tmp2.width = Math.max(16, Math.round(sw * 0.72));
+          tmp2.height = Math.max(16, Math.round(sh * 0.72));
+          const tctx2 = tmp2.getContext('2d');
+          tctx2.imageSmoothingEnabled = true;
+          tctx2.imageSmoothingQuality = 'high';
+          tctx2.drawImage(tmp1, 0, 0, tmp2.width, tmp2.height);
+
+          ctx.save();
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(tmp2, -16, -16, W + 32, H + 32);
+          ctx.restore();
+        }
+
+        // Sharp Optical Lens Flare (tapered needle beams + soft warm halo + bright core)
+        function drawOpticalLensFlare(ctx, cx, cy, size, alpha) {
+          if (alpha <= 0.02 || size <= 1) return;
+          ctx.save();
+          ctx.translate(cx, cy);
+
+          // 1. Soft warm-white radial halo
+          const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 1.15);
+          halo.addColorStop(0, `rgba(255, 255, 255, ${Math.min(1, alpha * 0.95).toFixed(3)})`);
+          halo.addColorStop(0.22, `rgba(255, 248, 238, ${(alpha * 0.45).toFixed(3)})`);
+          halo.addColorStop(0.60, `rgba(215, 230, 255, ${(alpha * 0.14).toFixed(3)})`);
+          halo.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 1.15, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 2. Razor-sharp tapered horizontal & vertical beams via quadraticCurveTo
+          const drawBeam = (len, halfThick, rotRad, op) => {
+            ctx.save();
+            ctx.rotate(rotRad);
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, op).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.moveTo(-len, 0);
+            ctx.quadraticCurveTo(0, -halfThick, len, 0);
+            ctx.quadraticCurveTo(0, halfThick, -len, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          };
+
+          drawBeam(size * 1.45, Math.max(0.8, size * 0.055), 0, alpha * 0.95);
+          drawBeam(size * 1.45, Math.max(0.8, size * 0.055), Math.PI / 2, alpha * 0.95);
+          // Subtle diagonal secondary rays
+          drawBeam(size * 0.62, Math.max(0.6, size * 0.036), Math.PI / 4, alpha * 0.52);
+          drawBeam(size * 0.62, Math.max(0.6, size * 0.036), -Math.PI / 4, alpha * 0.52);
+
+          // 3. Intense white core pin-point
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, alpha * 1.15).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(0, 0, Math.max(1.4, size * 0.095), 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+
+        function drawVectorHeart(ctx, cx, cy, s, color) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(0, s * 0.35);
+          ctx.bezierCurveTo(-s * 0.55, -s * 0.15, -s * 0.95, -s * 0.55, -s * 0.42, -s * 0.85);
+          ctx.bezierCurveTo(-s * 0.12, -s * 1.0, 0, -s * 0.62, 0, -s * 0.52);
+          ctx.bezierCurveTo(0, -s * 0.62, s * 0.12, -s * 1.0, s * 0.42, -s * 0.85);
+          ctx.bezierCurveTo(s * 0.95, -s * 0.55, s * 0.55, -s * 0.15, 0, s * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Precision iOS / SF Symbols-style rounded mini transport icons
+        function drawSfSymbolControls(ctx, cx, cy, s, color) {
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.strokeStyle = color;
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+
+          // Center Pause (2 crisp rounded bars)
+          const bw = s * 0.27;
+          const bh = s * 0.98;
+          const gap = s * 0.26;
+          roundedRectPath(ctx, cx - gap / 2 - bw, cy - bh / 2, bw, bh, bw * 0.48);
+          ctx.fill();
+          roundedRectPath(ctx, cx + gap / 2, cy - bh / 2, bw, bh, bw * 0.48);
+          ctx.fill();
+
+          // Left Prev (|◀)
+          const px = cx - s * 2.25;
+          roundedRectPath(ctx, px - s * 0.48, cy - s * 0.38, s * 0.15, s * 0.76, s * 0.075);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(px - s * 0.25, cy);
+          ctx.lineTo(px + s * 0.36, cy - s * 0.36);
+          ctx.lineTo(px + s * 0.36, cy + s * 0.36);
+          ctx.closePath();
+          ctx.lineWidth = Math.max(1.2, s * 0.12);
+          ctx.stroke();
+          ctx.fill();
+
+          // Right Next (▶|)
+          const nx = cx + s * 2.25;
+          roundedRectPath(ctx, nx + s * 0.33, cy - s * 0.38, s * 0.15, s * 0.76, s * 0.075);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(nx + s * 0.25, cy);
+          ctx.lineTo(nx - s * 0.36, cy - s * 0.36);
+          ctx.lineTo(nx - s * 0.36, cy + s * 0.36);
+          ctx.closePath();
+          ctx.lineWidth = Math.max(1.2, s * 0.12);
+          ctx.stroke();
+          ctx.fill();
+
+          ctx.restore();
+        }
+
+        // ---------------- A. CACHED FLAT CARD RENDERER (320 x 492, 1 : 1.54) ----------------
+        function getFlatCardCanvas(track, idx) {
+          const k = getTrackKey(track);
+          const covEntry = state.customTrackCovers.get(k) || state.trackCovers.get(k) || null;
+          const covTag = covEntry?.img ? (covEntry.img.src?.slice(-20) || 'img') : 'none';
+          const cacheKey = `${k}|${covTag}|${state.cardStyle}|${state.cardOpacity}|${state.cardRadius}|${state.showControls ? 1 : 0}|${state.showSeekHeart ? 1 : 0}|${state.showArtist ? 1 : 0}|${state.flareSeed}`;
+          if (flatCardCache.has(cacheKey)) return flatCardCache.get(cacheKey);
+
+          const W = 320;
+          const H = 492;
+          const c = document.createElement('canvas');
+          c.width = W;
+          c.height = H;
+          const ctx = c.getContext('2d');
+
+          const rad = Math.max(8, Math.min(34, Number(state.cardRadius || 24)));
+          const op = Math.max(0.35, Math.min(1, Number(state.cardOpacity || 84) / 100));
+          const styleId = state.cardStyle || 'dark_glass';
+          const isLight = styleId === 'light_frost';
+          const rgb = covEntry?.rgb || [124, 58, 237];
+
+          ctx.save();
+          roundedRectPath(ctx, 1, 1, W - 2, H - 2, rad);
+          ctx.clip();
+
+          // Surface fill
+          if (styleId === 'liquid_glass') {
+            const g = ctx.createLinearGradient(0, 0, W, H);
+            g.addColorStop(0, `rgba(255, 255, 255, ${(0.24 * op).toFixed(3)})`);
+            g.addColorStop(0.5, `rgba(210, 225, 255, ${(0.10 * op).toFixed(3)})`);
+            g.addColorStop(1, `rgba(255, 255, 255, ${(0.07 * op).toFixed(3)})`);
+            ctx.fillStyle = g;
+          } else if (styleId === 'matte_black') {
+            ctx.fillStyle = `rgba(12, 13, 17, ${Math.max(0.84, op).toFixed(3)})`;
+          } else if (styleId === 'light_frost') {
+            ctx.fillStyle = `rgba(248, 250, 252, ${Math.max(0.76, op).toFixed(3)})`;
+          } else if (styleId === 'cover_tint') {
+            const dr = Math.round(rgb[0] * 0.34 + 12);
+            const dg = Math.round(rgb[1] * 0.34 + 12);
+            const db = Math.round(rgb[2] * 0.34 + 16);
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, `rgba(${dr + 14}, ${dg + 14}, ${db + 18}, ${op.toFixed(3)})`);
+            g.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, ${Math.min(0.96, op + 0.1).toFixed(3)})`);
+            ctx.fillStyle = g;
+          } else if (styleId === 'neon_frame') {
+            const g = ctx.createLinearGradient(0, 0, W, H);
+            g.addColorStop(0, `rgba(16, 18, 28, ${Math.max(0.78, op).toFixed(3)})`);
+            g.addColorStop(1, `rgba(10, 11, 18, ${Math.min(0.95, op + 0.1).toFixed(3)})`);
+            ctx.fillStyle = g;
+          } else {
+            // dark_glass (Default Auralys 4.3.5)
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, `rgba(30, 33, 44, ${op.toFixed(3)})`);
+            g.addColorStop(1, `rgba(13, 15, 22, ${Math.min(0.96, op + 0.08).toFixed(3)})`);
+            ctx.fillStyle = g;
+          }
+          ctx.fillRect(0, 0, W, H);
+
+          // 35° Diagonal Glass Sheen
+          const sheen = ctx.createLinearGradient(0, 0, W * 0.9, H * 0.7);
+          sheen.addColorStop(0, isLight ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.14)');
+          sheen.addColorStop(0.42, 'rgba(255,255,255,0)');
+          sheen.addColorStop(0.75, isLight ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)');
+          sheen.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = sheen;
+          ctx.fillRect(0, 0, W, H);
+
+          // Square Album Art (margin 7.5% -> x=24, y=24, size=272x272)
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.42)';
+          ctx.shadowBlur = 18;
+          ctx.shadowOffsetY = 8;
+          drawImageCover(ctx, covEntry?.img || null, 24, 24, 272, 272, 100, 0, 0, 16, idx);
+          ctx.restore();
+
+          // Info Row (Title, Artist, Heart)
+          const textPrimary = isLight ? '#0B0C10' : '#FFFFFF';
+          const textSecondary = isLight ? 'rgba(11,12,16,0.62)' : 'rgba(255,255,255,0.66)';
+          const trackBg = isLight ? 'rgba(11,12,16,0.16)' : 'rgba(255,255,255,0.22)';
+
+          let curY = 330;
+          const heartReserve = state.showSeekHeart ? 32 : 0;
+          ctx.fillStyle = textPrimary;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+          ctx.font = '800 17px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif';
+          drawEllipsisText(ctx, cleanTitle(track.title), 24, curY, 272 - heartReserve);
+
+          if (state.showSeekHeart) {
+            drawVectorHeart(ctx, 286, curY - 3, 12.5, textPrimary);
+          }
+
+          if (state.showArtist) {
+            curY += 22;
+            ctx.fillStyle = textSecondary;
+            ctx.font = '600 12.5px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif';
+            drawEllipsisText(ctx, String(track.artist?.name || 'SpotyFlow'), 24, curY, 272 - heartReserve * 0.5);
+          }
+
+          // Super-Thin 3px Seekbar
+          if (state.showSeekHeart) {
+            curY += 26;
+            const prog = 0.34 + ((idx * 19 + (state.flareSeed || 1) * 13) % 42) / 100;
+            ctx.fillStyle = trackBg;
+            roundedRectPath(ctx, 24, curY, 272, 3.2, 2);
+            ctx.fill();
+            ctx.fillStyle = textPrimary;
+            roundedRectPath(ctx, 24, curY, 272 * prog, 3.2, 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(24 + 272 * prog, curY + 1.6, 4.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // SF Symbols Rounded Transport Controls
+          if (state.showControls) {
+            drawSfSymbolControls(ctx, W / 2, H - 46, 20, textPrimary);
+          }
+
+          ctx.restore();
+
+          // Hairline Silver / Neon Gradient Border
+          ctx.save();
+          roundedRectPath(ctx, 1.2, 1.2, W - 2.4, H - 2.4, rad);
+          const rim = ctx.createLinearGradient(0, 0, 0, H);
+          if (styleId === 'neon_frame') {
+            rim.addColorStop(0, `rgba(${Math.min(255, rgb[0] + 90)}, ${Math.min(255, rgb[1] + 90)}, ${Math.min(255, rgb[2] + 90)}, 0.95)`);
+            rim.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.55)`);
+            ctx.lineWidth = 2.6;
+          } else if (isLight) {
+            rim.addColorStop(0, 'rgba(255,255,255,0.95)');
+            rim.addColorStop(1, 'rgba(0,0,0,0.14)');
+            ctx.lineWidth = 1.6;
+          } else {
+            rim.addColorStop(0, 'rgba(255,255,255,0.46)');
+            rim.addColorStop(1, 'rgba(255,255,255,0.10)');
+            ctx.lineWidth = 1.6;
+          }
+          ctx.strokeStyle = rim;
+          ctx.stroke();
+          ctx.restore();
+
+          if (flatCardCache.size >= 25) {
+            const first = flatCardCache.keys().next().value;
+            if (first) flatCardCache.delete(first);
+          }
+          flatCardCache.set(cacheKey, c);
+          return c;
+        }
+
+        // ---------------- B. TRUE 3D PERSPECTIVE MATRIX & SEAM-FREE MESH ----------------
+        function project3DPoint(u, v, zOffset, tr, focalLen) {
+          const lx = (u - 0.5) * tr.cardW;
+          const ly = (v - 0.5) * tr.cardH;
+          const lz = zOffset;
+
+          // Rotate Y -> Rotate X -> Rotate Z
+          const x1 = lx * tr.cosY + lz * tr.sinY;
+          const z1 = -lx * tr.sinY + lz * tr.cosY;
+          const y1 = ly;
+
+          const y2 = y1 * tr.cosX - z1 * tr.sinX;
+          const z2 = y1 * tr.sinX + z1 * tr.cosX;
+          const x2 = x1;
+
+          const x3 = x2 * tr.cosZ - y2 * tr.sinZ;
+          const y3 = x2 * tr.sinZ + y2 * tr.cosZ;
+          const z3 = z2;
+
+          const denom = Math.max(focalLen * 0.25, focalLen + z3);
+          const persp = focalLen / denom;
+          return {
+            x: tr.cx + x3 * persp,
+            y: tr.cy + y3 * persp,
+            z: z3,
+          };
+        }
+
+        function drawTexturedTriangle(ctx, img, u0, v0, u1, v1, u2, v2, x0, y0, x1, y1, x2, y2) {
+          const du1 = u1 - u0, dv1 = v1 - v0;
+          const du2 = u2 - u0, dv2 = v2 - v0;
+          const det = du1 * dv2 - du2 * dv1;
+          if (Math.abs(det) < 1e-5) return;
+
+          const a = ((x1 - x0) * dv2 - (x2 - x0) * dv1) / det;
+          const c = (du1 * (x2 - x0) - du2 * (x1 - x0)) / det;
+          const e = x0 - a * u0 - c * v0;
+          const b = ((y1 - y0) * dv2 - (y2 - y0) * dv1) / det;
+          const d = (du1 * (y2 - y0) - du2 * (y1 - y0)) / det;
+          const f = y0 - b * u0 - d * v0;
+
+          // Expand clip polygon 0.65px from centroid to eliminate ANY sub-pixel seam!
+          const mx = (x0 + x1 + x2) / 3;
+          const my = (y0 + y1 + y2) / 3;
+          const exp = (px, py) => {
+            const dx = px - mx, dy = py - my;
+            const len = Math.hypot(dx, dy) || 1;
+            return [px + (dx / len) * 0.65, py + (dy / len) * 0.65];
+          };
+          const p0 = exp(x0, y0), p1 = exp(x1, y1), p2 = exp(x2, y2);
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(p0[0], p0[1]);
+          ctx.lineTo(p1[0], p1[1]);
+          ctx.lineTo(p2[0], p2[1]);
+          ctx.closePath();
+          ctx.clip();
+          ctx.setTransform(a, b, c, d, e, f);
+          ctx.drawImage(img, 0, 0);
+          ctx.restore();
+        }
+
+        function buildRoundedPerimeterUV(radiusNormX, radiusNormY) {
+          const pts = [];
+          const rx = Math.min(0.22, radiusNormX);
+          const ry = Math.min(0.22, radiusNormY);
+          const corners = [
+            { cx: 1 - rx, cy: ry, a0: -Math.PI / 2, a1: 0 },
+            { cx: 1 - rx, cy: 1 - ry, a0: 0, a1: Math.PI / 2 },
+            { cx: rx, cy: 1 - ry, a0: Math.PI / 2, a1: Math.PI },
+            { cx: rx, cy: ry, a0: Math.PI, a1: Math.PI * 1.5 },
+          ];
+          for (const co of corners) {
+            for (let s = 0; s <= 4; s++) {
+              const ang = co.a0 + (co.a1 - co.a0) * (s / 4);
+              pts.push([co.cx + Math.cos(ang) * rx, co.cy + Math.sin(ang) * ry]);
+            }
+          }
+          return pts;
+        }
+
+        function drawPerspective3DCard(ctx, cardCanvas, tr, idx, rgb, S, isSelected, isExportHd) {
+          const focalLen = Math.max(tr.cardW, tr.cardH) * 2.85;
+          const perim = buildRoundedPerimeterUV((state.cardRadius || 24) / 320, (state.cardRadius || 24) / 492);
+
+          // 1. Backlight Glow (Cahaya kartu)
+          const glowPct = Number(state.cardGlow || 0) / 100;
+          if (glowPct > 0.02) {
+            ctx.save();
+            const gRad = Math.max(tr.cardW, tr.cardH) * (0.68 + glowPct * 0.25);
+            const g = ctx.createRadialGradient(tr.cx, tr.cy, gRad * 0.12, tr.cx, tr.cy, gRad);
+            const useCoverCol = state.cardStyle === 'cover_tint' || state.cardStyle === 'neon_frame';
+            const cr = useCoverCol ? rgb[0] : 255;
+            const cg = useCoverCol ? rgb[1] : 250;
+            const cb = useCoverCol ? rgb[2] : 255;
+            g.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${(0.42 * glowPct).toFixed(3)})`);
+            g.addColorStop(0.55, `rgba(${cr}, ${cg}, ${cb}, ${(0.14 * glowPct).toFixed(3)})`);
+            g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(tr.cx, tr.cy, gRad, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // 2. Projected 3D Wall Drop Shadow
+          const shPct = Number(state.shadow3d || 0) / 100;
+          if (shPct > 0.02) {
+            ctx.save();
+            const shOffX = 8 * S * shPct;
+            const shOffY = (14 + 16 * shPct) * S;
+            ctx.shadowColor = `rgba(0, 0, 0, ${(0.68 * shPct).toFixed(3)})`;
+            ctx.shadowBlur = (22 + 34 * shPct) * S;
+            ctx.fillStyle = `rgba(0, 0, 0, ${(0.34 * shPct).toFixed(3)})`;
+            ctx.beginPath();
+            perim.forEach(([u, v], i) => {
+              const p = project3DPoint(u, v, -12 * S, tr, focalLen);
+              if (i === 0) ctx.moveTo(p.x + shOffX, p.y + shOffY);
+              else ctx.lineTo(p.x + shOffX, p.y + shOffY);
+            });
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // 3. 3D Physical Extrusion / Slab Thickness (5 Z-layers behind card face)
+          const thickPx = Number(state.thickness3D || 0) * S * 1.45;
+          if (thickPx > 0.6) {
+            const slices = 5;
+            const isLight = state.cardStyle === 'light_frost';
+            for (let sl = slices; sl >= 1; sl--) {
+              const zOff = -(thickPx * (sl / slices));
+              ctx.save();
+              ctx.beginPath();
+              perim.forEach(([u, v], i) => {
+                const p = project3DPoint(u, v, zOff, tr, focalLen);
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+              });
+              ctx.closePath();
+              const shade = sl / slices;
+              ctx.fillStyle = isLight
+                ? `rgba(${Math.round(180 - shade * 45)}, ${Math.round(185 - shade * 45)}, ${Math.round(195 - shade * 45)}, 0.85)`
+                : `rgba(${Math.round(70 - shade * 36)}, ${Math.round(76 - shade * 38)}, ${Math.round(92 - shade * 44)}, 0.92)`;
+              ctx.fill();
+              if (sl === 1) {
+                ctx.strokeStyle = isLight ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.24)';
+                ctx.lineWidth = Math.max(1, 1.3 * S);
+                ctx.stroke();
+              }
+              ctx.restore();
+            }
+          }
+
+          // 4. Seam-Free 8 x 12 Subdivided Projective 3D Mesh
+          const COLS = 8;
+          const ROWS = 12;
+          const tw = cardCanvas.width;
+          const th = cardCanvas.height;
+          const grid = [];
+          for (let r = 0; r <= ROWS; r++) {
+            const row = [];
+            const v = r / ROWS;
+            for (let c = 0; c <= COLS; c++) {
+              const u = c / COLS;
+              row.push(project3DPoint(u, v, 0, tr, focalLen));
+            }
+            grid.push(row);
+          }
+
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          for (let r = 0; r <= ROWS; r++) {
+            for (let c = 0; c <= COLS; c++) {
+              const pt = grid[r][c];
+              if (pt.x < minX) minX = pt.x;
+              if (pt.y < minY) minY = pt.y;
+              if (pt.x > maxX) maxX = pt.x;
+              if (pt.y > maxY) maxY = pt.y;
+            }
+          }
+
+          for (let r = 0; r < ROWS; r++) {
+            const v0 = (r / ROWS) * th;
+            const v1 = ((r + 1) / ROWS) * th;
+            for (let c = 0; c < COLS; c++) {
+              const u0 = (c / COLS) * tw;
+              const u1 = ((c + 1) / COLS) * tw;
+              const p00 = grid[r][c];
+              const p10 = grid[r][c + 1];
+              const p01 = grid[r + 1][c];
+              const p11 = grid[r + 1][c + 1];
+              drawTexturedTriangle(ctx, cardCanvas, u0, v0, u1, v0, u1, v1, p00.x, p00.y, p10.x, p10.y, p11.x, p11.y);
+              drawTexturedTriangle(ctx, cardCanvas, u0, v0, u1, v1, u0, v1, p00.x, p00.y, p11.x, p11.y, p01.x, p01.y);
+            }
+          }
+
+          // 5. Sharp Optical Lens Flare on Projected 3D Corners
+          if (state.flareEnabled && state.flareIntensity > 0) {
+            const alpha = Math.max(0.18, Number(state.flareIntensity || 75) / 100);
+            const fSize = tr.cardW * (0.14 + alpha * 0.08);
+            const pat = (idx + (state.flareSeed || 1)) % 2;
+            const cTR = project3DPoint(0.96, 0.04, 2, tr, focalLen);
+            const cBL = project3DPoint(0.04, 0.96, 2, tr, focalLen);
+            const cTL = project3DPoint(0.04, 0.04, 2, tr, focalLen);
+            const cBR = project3DPoint(0.96, 0.96, 2, tr, focalLen);
+            if (pat === 0) {
+              drawOpticalLensFlare(ctx, cTR.x, cTR.y, fSize, alpha);
+              drawOpticalLensFlare(ctx, cBL.x, cBL.y, fSize * 0.68, alpha * 0.8);
+            } else {
+              drawOpticalLensFlare(ctx, cTL.x, cTL.y, fSize * 0.92, alpha);
+              drawOpticalLensFlare(ctx, cBR.x, cBR.y, fSize * 0.65, alpha * 0.78);
+            }
+          }
+
+          // 6. Preview-only selection outline (NEVER exported to PNG!)
+          if (isSelected && !isExportHd) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+            ctx.lineWidth = Math.max(2, 3 * S);
+            ctx.setLineDash([8 * S, 6 * S]);
+            ctx.beginPath();
+            perim.forEach(([u, v], i) => {
+              const p = project3DPoint(u, v, 3, tr, focalLen);
+              if (i === 0) ctx.moveTo(p.x, p.y);
+              else ctx.lineTo(p.x, p.y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          return { minX, minY, maxX, maxY };
+        }
+
+        // ---------------- C. BUILT-IN SHARP VECTOR STICKERS ----------------
+        function drawBuiltinStickerVector(ctx, typeId, size) {
+          const half = size / 2;
+          ctx.save();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          if (typeId === 'flare') {
+            drawOpticalLensFlare(ctx, 0, 0, half * 0.85, 0.96);
+          } else if (typeId === 'double_flare') {
+            drawOpticalLensFlare(ctx, -half * 0.22, -half * 0.16, half * 0.65, 0.96);
+            drawOpticalLensFlare(ctx, half * 0.34, half * 0.28, half * 0.42, 0.88);
+          } else if (typeId === 'bird') {
+            // Aesthetic flying bird silhouette flock (persis tab Burung Auralys!)
+            const drawBird = (bx, by, sc, rot) => {
+              ctx.save();
+              ctx.translate(bx, by);
+              ctx.rotate(rot);
+              ctx.scale(sc, sc);
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.quadraticCurveTo(-half * 0.32, -half * 0.46, -half * 0.85, -half * 0.12);
+              ctx.quadraticCurveTo(-half * 0.36, -half * 0.20, 0, half * 0.14);
+              ctx.quadraticCurveTo(half * 0.36, -half * 0.20, half * 0.85, -half * 0.12);
+              ctx.quadraticCurveTo(half * 0.32, -half * 0.46, 0, 0);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            };
+            ctx.shadowColor = 'rgba(0,0,0,0.45)';
+            ctx.shadowBlur = size * 0.08;
+            drawBird(-half * 0.14, -half * 0.06, 0.72, -0.18);
+            drawBird(half * 0.38, -half * 0.34, 0.42, 0.12);
+            drawBird(-half * 0.48, half * 0.34, 0.36, -0.06);
+          } else if (typeId === 'star') {
+            ctx.shadowColor = 'rgba(255,255,255,0.6)';
+            ctx.shadowBlur = size * 0.14;
+            ctx.beginPath();
+            for (let i = 0; i < 10; i++) {
+              const r = i % 2 === 0 ? half * 0.78 : half * 0.34;
+              const ang = -Math.PI / 2 + (i * Math.PI) / 5;
+              const px = Math.cos(ang) * r, py = Math.sin(ang) * r;
+              if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+          } else if (typeId === 'butterfly') {
+            ctx.shadowColor = 'rgba(255,255,255,0.45)';
+            ctx.shadowBlur = size * 0.12;
+            for (const dir of [-1, 1]) {
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.bezierCurveTo(dir * half * 0.4, -half * 0.82, dir * half * 0.96, -half * 0.46, dir * half * 0.62, half * 0.08);
+              ctx.bezierCurveTo(dir * half * 0.85, half * 0.46, dir * half * 0.36, half * 0.78, 0, half * 0.22);
+              ctx.closePath();
+              ctx.fill();
+            }
+          } else if (typeId === 'heart') {
+            ctx.shadowColor = 'rgba(255,140,180,0.55)';
+            ctx.shadowBlur = size * 0.16;
+            drawVectorHeart(ctx, 0, half * 0.12, half * 0.85, '#FFFFFF');
+          } else if (typeId === 'cloud') {
+            ctx.beginPath();
+            ctx.arc(-half * 0.34, half * 0.12, half * 0.28, 0, Math.PI * 2);
+            ctx.arc(0, -half * 0.06, half * 0.36, 0, Math.PI * 2);
+            ctx.arc(half * 0.36, half * 0.14, half * 0.26, 0, Math.PI * 2);
+            ctx.fill();
+            roundedRectPath(ctx, -half * 0.56, half * 0.06, size * 0.56, half * 0.34, half * 0.16);
+            ctx.fill();
+          } else if (typeId === 'ribbon') {
+            ctx.lineWidth = Math.max(2, size * 0.055);
+            for (const dir of [-1, 1]) {
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.bezierCurveTo(dir * half * 0.55, -half * 0.58, dir * half * 0.86, half * 0.14, 0, half * 0.08);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(0, half * 0.06);
+              ctx.quadraticCurveTo(dir * half * 0.24, half * 0.42, dir * half * 0.44, half * 0.72);
+              ctx.stroke();
+            }
+            ctx.beginPath();
+            ctx.arc(0, 0, half * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (typeId === 'music_note') {
+            ctx.shadowColor = 'rgba(255,255,255,0.45)';
+            ctx.shadowBlur = size * 0.12;
+            ctx.font = `800 ${Math.round(size * 0.78)}px system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('♫', 0, 0);
+          } else {
+            // sparkle_ring
+            ctx.lineWidth = Math.max(1.5, size * 0.025);
+            ctx.strokeStyle = 'rgba(255,255,255,0.62)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, half * 0.78, half * 0.34, -0.35, 0, Math.PI * 2);
+            ctx.stroke();
+            drawOpticalLensFlare(ctx, half * 0.58, -half * 0.22, half * 0.36, 0.95);
+            drawOpticalLensFlare(ctx, -half * 0.54, half * 0.20, half * 0.24, 0.85);
+          }
+          ctx.restore();
+        }
+
+        function drawStickerItem(ctx, st, W, H, S, isSelected, isExportHd) {
+          const sx = st.x * W;
+          const sy = st.y * H;
+          const baseSize = Math.min(W, H) * 0.20 * (st.scale || 1);
+          const rotRad = ((st.rotation || 0) * Math.PI) / 180;
+
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(rotRad);
+          ctx.globalAlpha = Math.max(0.15, Math.min(1, Number(st.opacity ?? 1)));
+
+          if (st.kind === 'custom' && st.dataUrl) {
+            const img = getCustomStickerImage(st.dataUrl);
+            if (img && img.naturalWidth > 0) {
+              const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
+              const dw = aspect >= 1 ? baseSize : baseSize * aspect;
+              const dh = aspect >= 1 ? baseSize / aspect : baseSize;
+              ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+            }
+          } else {
+            drawBuiltinStickerVector(ctx, st.typeId || 'flare', baseSize);
+          }
+
+          if (isSelected && !isExportHd) {
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.lineWidth = Math.max(1.8, 2.5 * S);
+            ctx.setLineDash([6 * S, 5 * S]);
+            roundedRectPath(ctx, -baseSize * 0.54, -baseSize * 0.54, baseSize * 1.08, baseSize * 1.08, 12 * S);
+            ctx.stroke();
+          }
+          ctx.restore();
+
+          const r = baseSize * 0.55;
+          return { minX: sx - r, minY: sy - r, maxX: sx + r, maxY: sy + r };
+        }
+
+        // ---------------- D. CALIBRATED 3D FORMATIONS (INCLUDING 15791.jpg DEPTH SHOULDERS!) ----------------
+        function compute3DFormations(count, ratio, layoutMode) {
+          const n = Math.max(1, Math.min(5, count));
+          const isLandscape = ratio === '16:9';
+
+          if (layoutMode === 'grid') {
+            if (isLandscape) {
+              const xs = n === 1 ? [0.5] : n === 2 ? [0.33, 0.67] : n === 3 ? [0.22, 0.5, 0.78] : n === 4 ? [0.17, 0.39, 0.61, 0.83] : [0.14, 0.32, 0.5, 0.68, 0.86];
+              return xs.map((x) => ({ cx: x, cy: 0.50, ySign: 0, zDeg: 0, sc: n === 5 ? 0.80 : 0.96 }));
+            }
+            if (n === 1) return [{ cx: 0.50, cy: 0.46, ySign: 0, zDeg: 0, sc: 1.18 }];
+            if (n === 2) return [{ cx: 0.28, cy: 0.36, ySign: 1, zDeg: 0, sc: 0.92 }, { cx: 0.72, cy: 0.36, ySign: -1, zDeg: 0, sc: 0.92 }];
+            if (n === 3) return [{ cx: 0.28, cy: 0.30, ySign: 1, zDeg: 0, sc: 0.88 }, { cx: 0.72, cy: 0.30, ySign: -1, zDeg: 0, sc: 0.88 }, { cx: 0.50, cy: 0.66, ySign: 0, zDeg: 0, sc: 0.88 }];
+            if (n === 4) return [
+              { cx: 0.28, cy: 0.29, ySign: 1, zDeg: 0, sc: 0.86 },
+              { cx: 0.72, cy: 0.29, ySign: -1, zDeg: 0, sc: 0.86 },
+              { cx: 0.28, cy: 0.68, ySign: 1, zDeg: 0, sc: 0.86 },
+              { cx: 0.72, cy: 0.68, ySign: -1, zDeg: 0, sc: 0.86 },
+            ];
+            return [
+              { cx: 0.26, cy: 0.25, ySign: 1, zDeg: 0, sc: 0.78 },
+              { cx: 0.74, cy: 0.25, ySign: -1, zDeg: 0, sc: 0.78 },
+              { cx: 0.26, cy: 0.73, ySign: 1, zDeg: 0, sc: 0.78 },
+              { cx: 0.74, cy: 0.73, ySign: -1, zDeg: 0, sc: 0.78 },
+              { cx: 0.50, cy: 0.49, ySign: 0, zDeg: 0, sc: 0.86 },
+            ];
+          }
+
+          if (layoutMode === 'fan_3d') {
+            const out = [];
+            for (let i = 0; i < n; i++) {
+              const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
+              out.push({
+                cx: 0.50 + t * (isLandscape ? 0.35 : 0.29),
+                cy: (isLandscape ? 0.50 : 0.42) + Math.abs(t) * 0.12,
+                ySign: -t,
+                zDeg: t * 14,
+                sc: n >= 4 ? (0.90 - Math.abs(t) * 0.06) : 1.0,
+              });
+            }
+            return out;
+          }
+
+          if (layoutMode === 'auralys') {
+            if (isLandscape) {
+              if (n === 1) return [{ cx: 0.50, cy: 0.50, ySign: 0.8, zDeg: -4, sc: 1.15 }];
+              if (n === 2) return [{ cx: 0.32, cy: 0.48, ySign: 1, zDeg: -7, sc: 1.04 }, { cx: 0.68, cy: 0.52, ySign: -1, zDeg: 7, sc: 1.04 }];
+              if (n === 3) return [{ cx: 0.22, cy: 0.52, ySign: 1, zDeg: -8, sc: 0.96 }, { cx: 0.50, cy: 0.46, ySign: 0, zDeg: 2, sc: 1.02 }, { cx: 0.78, cy: 0.52, ySign: -1, zDeg: 8, sc: 0.96 }];
+              if (n === 4) return [{ cx: 0.17, cy: 0.52, ySign: 1, zDeg: -7, sc: 0.90 }, { cx: 0.39, cy: 0.46, ySign: 0.5, zDeg: 5, sc: 0.90 }, { cx: 0.61, cy: 0.54, ySign: -0.5, zDeg: -5, sc: 0.90 }, { cx: 0.83, cy: 0.48, ySign: -1, zDeg: 7, sc: 0.90 }];
+              return [{ cx: 0.15, cy: 0.44, ySign: 1, zDeg: -8, sc: 0.80 }, { cx: 0.33, cy: 0.57, ySign: 0.6, zDeg: 5, sc: 0.80 }, { cx: 0.50, cy: 0.44, ySign: 0, zDeg: -2, sc: 0.88 }, { cx: 0.67, cy: 0.57, ySign: -0.6, zDeg: -5, sc: 0.80 }, { cx: 0.85, cy: 0.44, ySign: -1, zDeg: 8, sc: 0.80 }];
+            }
+            if (n === 1) return [{ cx: 0.50, cy: 0.48, ySign: 0.7, zDeg: -4, sc: 1.22 }];
+            if (n === 2) return [{ cx: 0.34, cy: 0.34, ySign: 1, zDeg: -7, sc: 1.00 }, { cx: 0.66, cy: 0.64, ySign: -1, zDeg: 6, sc: 1.00 }];
+            if (n === 3) return [{ cx: 0.32, cy: 0.28, ySign: 1, zDeg: -7, sc: 0.92 }, { cx: 0.68, cy: 0.48, ySign: -1, zDeg: 6, sc: 0.92 }, { cx: 0.34, cy: 0.70, ySign: 0.8, zDeg: -5, sc: 0.92 }];
+            if (n === 4) return [
+              { cx: 0.30, cy: 0.30, ySign: 1, zDeg: -6, sc: 0.90 },
+              { cx: 0.70, cy: 0.29, ySign: -1, zDeg: 7, sc: 0.90 },
+              { cx: 0.30, cy: 0.67, ySign: 1, zDeg: 5, sc: 0.90 },
+              { cx: 0.70, cy: 0.68, ySign: -1, zDeg: -6, sc: 0.90 },
+            ];
+            return [
+              { cx: 0.28, cy: 0.24, ySign: 1, zDeg: -7, sc: 0.82 },
+              { cx: 0.72, cy: 0.24, ySign: -1, zDeg: 7, sc: 0.82 },
+              { cx: 0.28, cy: 0.74, ySign: 1, zDeg: 6, sc: 0.82 },
+              { cx: 0.72, cy: 0.74, ySign: -1, zDeg: -6, sc: 0.82 },
+              { cx: 0.50, cy: 0.49, ySign: 0.3, zDeg: -2, sc: 0.92 },
+            ];
+          }
+
+          // DEFAULT: 'depth_shoulders' — Ikonik Auralys 4.3.5 (15791.jpg): Melayang 3D di Bahu Kiri & Kanan Subjek!
+          if (isLandscape) {
+            if (n === 1) return [{ cx: 0.26, cy: 0.44, ySign: 1, zDeg: -8, sc: 1.06 }];
+            if (n === 2) return [
+              { cx: 0.22, cy: 0.44, ySign: 1, zDeg: -9, sc: 1.02 },
+              { cx: 0.78, cy: 0.46, ySign: -1, zDeg: 9, sc: 1.02 },
+            ];
+            if (n === 3) return [
+              { cx: 0.20, cy: 0.40, ySign: 1, zDeg: -9, sc: 0.95 },
+              { cx: 0.80, cy: 0.40, ySign: -1, zDeg: 9, sc: 0.95 },
+              { cx: 0.50, cy: 0.28, ySign: 0, zDeg: -2, sc: 0.90 },
+            ];
+            if (n === 4) return [
+              { cx: 0.18, cy: 0.32, ySign: 1, zDeg: -9, sc: 0.86 },
+              { cx: 0.82, cy: 0.32, ySign: -1, zDeg: 9, sc: 0.86 },
+              { cx: 0.24, cy: 0.70, ySign: 0.9, zDeg: 7, sc: 0.84 },
+              { cx: 0.76, cy: 0.70, ySign: -0.9, zDeg: -7, sc: 0.84 },
+            ];
+            return [
+              { cx: 0.16, cy: 0.30, ySign: 1, zDeg: -9, sc: 0.80 },
+              { cx: 0.84, cy: 0.30, ySign: -1, zDeg: 9, sc: 0.80 },
+              { cx: 0.22, cy: 0.70, ySign: 0.9, zDeg: 7, sc: 0.78 },
+              { cx: 0.78, cy: 0.70, ySign: -0.9, zDeg: -7, sc: 0.78 },
+              { cx: 0.50, cy: 0.24, ySign: 0, zDeg: -2, sc: 0.80 },
+            ];
+          }
+
+          if (n === 1) return [{ cx: 0.28, cy: 0.34, ySign: 1, zDeg: -9, sc: 1.02 }];
+          if (n === 2) return [
+            { cx: 0.25, cy: 0.32, ySign: 1, zDeg: -10, sc: 0.96 },
+            { cx: 0.75, cy: 0.34, ySign: -1, zDeg: 10, sc: 0.96 },
+          ];
+          if (n === 3) return [
+            { cx: 0.24, cy: 0.30, ySign: 1, zDeg: -10, sc: 0.90 },
+            { cx: 0.76, cy: 0.31, ySign: -1, zDeg: 10, sc: 0.90 },
+            { cx: 0.26, cy: 0.66, ySign: 0.9, zDeg: 7, sc: 0.86 },
+          ];
+          if (n === 4) return [
+            { cx: 0.24, cy: 0.29, ySign: 1, zDeg: -10, sc: 0.88 },
+            { cx: 0.76, cy: 0.30, ySign: -1, zDeg: 10, sc: 0.88 },
+            { cx: 0.24, cy: 0.66, ySign: 0.9, zDeg: 8, sc: 0.86 },
+            { cx: 0.76, cy: 0.67, ySign: -0.9, zDeg: -8, sc: 0.86 },
+          ];
+          return [
+            { cx: 0.23, cy: 0.26, ySign: 1, zDeg: -10, sc: 0.82 },
+            { cx: 0.77, cy: 0.26, ySign: -1, zDeg: 10, sc: 0.82 },
+            { cx: 0.23, cy: 0.64, ySign: 0.9, zDeg: 8, sc: 0.80 },
+            { cx: 0.77, cy: 0.64, ySign: -0.9, zDeg: -8, sc: 0.80 },
+            { cx: 0.50, cy: 0.18, ySign: 0, zDeg: -2, sc: 0.78 },
+          ];
+        }
+
+        // ---------------- E. FULL-HD FOREGROUND CUTOUT COMPOSITOR (LAYER 3) ----------------
+        function getForegroundCutoutCanvas(W, H) {
+          if (!state || !state.depthEnabled || !state.userPhotoImg || !state.depthMaskImg) return null;
+          const key = `${W}x${H}|${state.userPhotoDataUrl.slice(-24)}|${state.photoZoom}|${state.photoPanX}|${state.photoPanY}`;
+          if (fgCacheCanvas && fgCacheKey === key) return fgCacheCanvas;
+
+          const off = document.createElement('canvas');
+          off.width = W;
+          off.height = H;
+          const fctx = off.getContext('2d');
+          // 1. Draw Full-HD user photo at exact cover coordinates
+          drawImageCover(fctx, state.userPhotoImg, 0, 0, W, H, state.photoZoom, state.photoPanX, state.photoPanY, 0, 0);
+          // 2. Mask with feathered ML Kit alpha mask using destination-in at exact same cover coordinates!
+          fctx.globalCompositeOperation = 'destination-in';
+          drawImageCover(fctx, state.depthMaskImg, 0, 0, W, H, state.photoZoom, state.photoPanX, state.photoPanY, 0, 0);
+          fctx.globalCompositeOperation = 'source-over';
+
+          fgCacheKey = key;
+          fgCacheCanvas = off;
+          return off;
+        }
+
+        // ---------------- F. 4-LAYER DEPTH COMPOSITING PIPELINE ----------------
+        function renderPoster3D(canvas, isExportHd = false) {
+          if (!canvas || !state) return;
+          const spec = RATIOS[state.ratio] || RATIOS['9:16'];
+          const W = isExportHd ? spec.w : Math.round(spec.w * 0.5);
+          const H = isExportHd ? spec.h : Math.round(spec.h * 0.5);
+          const S = Math.min(W, H) / 1080;
+
+          if (canvas.width !== W || canvas.height !== H) {
+            canvas.width = W;
+            canvas.height = H;
+          }
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, W, H);
+
+          const hitBoxes = [];
+
+          // === LAYER 1: FULL BACKGROUND ===
+          if (state.userPhotoImg) {
+            drawBlurredPhotoBackground(ctx, state.userPhotoImg, W, H, state.photoZoom, state.photoPanX, state.photoPanY, state.bgBlur);
+          } else {
+            const bgDef = BG_MODES.find((b) => b.id === state.bgMode) || BG_MODES[0];
+            if (state.bgMode === 'auto_cover') {
+              const c0 = state.cards[0]?.track;
+              const cov = c0 ? (state.customTrackCovers.get(getTrackKey(c0)) || state.trackCovers.get(getTrackKey(c0))) : null;
+              const rgb = cov?.rgb || [124, 58, 237];
+              ctx.fillStyle = '#08090F';
+              ctx.fillRect(0, 0, W, H);
+              const g1 = ctx.createRadialGradient(W * 0.5, H * 0.36, 10 * S, W * 0.5, H * 0.36, Math.max(W, H) * 0.72);
+              g1.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.72)`);
+              g1.addColorStop(1, 'rgba(8,9,15,0)');
+              ctx.fillStyle = g1;
+              ctx.fillRect(0, 0, W, H);
+            } else if (state.bgMode === 'custom') {
+              const g = ctx.createLinearGradient(0, 0, 0, H);
+              g.addColorStop(0, state.bgCustomColor || '#2A121C');
+              g.addColorStop(1, '#08090D');
+              ctx.fillStyle = g;
+              ctx.fillRect(0, 0, W, H);
+            } else {
+              const g = ctx.createLinearGradient(0, 0, W * 0.35, H);
+              g.addColorStop(0, bgDef.c1);
+              g.addColorStop(1, bgDef.c2);
+              ctx.fillStyle = g;
+              ctx.fillRect(0, 0, W, H);
+              // Studio spotlight center glow
+              const spot = ctx.createRadialGradient(W * 0.5, H * 0.36, 12 * S, W * 0.5, H * 0.36, Math.max(W, H) * 0.62);
+              spot.addColorStop(0, bgDef.c3);
+              spot.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx.save();
+              ctx.globalAlpha = 0.45;
+              ctx.fillStyle = spot;
+              ctx.fillRect(0, 0, W, H);
+              ctx.restore();
+            }
+          }
+
+          // Background dimmer (Gelap)
+          const darkAlpha = Math.max(0, Math.min(0.92, Number(state.bgDarkness || 0) / 100));
+          if (darkAlpha > 0.005) {
+            ctx.fillStyle = `rgba(4, 5, 10, ${darkAlpha.toFixed(3)})`;
+            ctx.fillRect(0, 0, W, H);
+          }
+
+          // Radial Vignette
+          const vigPct = Math.max(0, Math.min(1, Number(state.vignette || 0) / 100));
+          if (vigPct > 0.01) {
+            const vig = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.74);
+            vig.addColorStop(0, 'rgba(0,0,0,0)');
+            vig.addColorStop(1, `rgba(0,0,0,${(vigPct * 0.78).toFixed(3)})`);
+            ctx.fillStyle = vig;
+            ctx.fillRect(0, 0, W, H);
+          }
+
+          // === LAYER 2: 1..5 TRUE 3D PERSPECTIVE SONG CARDS (+ behindSubject stickers) ===
+          const activeCards = state.cards.length ? state.cards.slice(0, 5) : [makeDefaultCardState({
+            id: 'placeholder_3d',
+            title: 'Pilih 1–5 Lagu',
+            artist: { name: 'Ketuk "🎵 Lagu" di bawah' },
+          })];
+          const formations = compute3DFormations(activeCards.length, state.ratio, state.layoutMode);
+          const sizeMult = Math.max(0.7, Math.min(1.3, Number(state.cardSize || 100) / 100));
+          const tiltMult = Math.max(0, Math.min(2.5, Number(state.tiltZ ?? 40) / 40));
+          const baseCardW = (state.ratio === '16:9' ? 350 : (state.ratio === '1:1' ? 350 : 390)) * S;
+          const cardAspect = 492 / 320;
+
+          activeCards.forEach((cardObj, idx) => {
+            const fm = formations[idx] || formations[0];
+            const sc = (fm.sc || 1) * sizeMult * (cardObj.extraScale || 1);
+            const cardW = baseCardW * sc;
+            const cardH = cardW * cardAspect;
+            const cx = (fm.cx + (cardObj.offsetX || 0)) * W;
+            const cy = (fm.cy + (cardObj.offsetY || 0)) * H;
+
+            const rotYDeg = (fm.ySign * Number(state.rotY || 0)) + Number(cardObj.extraRotY || 0);
+            const rotXDeg = Number(state.rotX || 0);
+            const rotZDeg = ((fm.zDeg || 0) * tiltMult) + Number(cardObj.extraRotZ || 0);
+
+            const rx = (rotXDeg * Math.PI) / 180;
+            const ry = (rotYDeg * Math.PI) / 180;
+            const rz = (rotZDeg * Math.PI) / 180;
+
+            const flatCanvas = getFlatCardCanvas(cardObj.track, idx);
+            const covEntry = state.customTrackCovers.get(getTrackKey(cardObj.track)) || state.trackCovers.get(getTrackKey(cardObj.track)) || null;
+            const rgb = covEntry?.rgb || [160, 130, 240];
+            const isSel = Boolean(state.selected && state.selected.type === 'card' && state.selected.index === idx);
+
+            const box = drawPerspective3DCard(ctx, flatCanvas, {
+              cx, cy, cardW, cardH,
+              cosX: Math.cos(rx), sinX: Math.sin(rx),
+              cosY: Math.cos(ry), sinY: Math.sin(ry),
+              cosZ: Math.cos(rz), sinZ: Math.sin(rz),
+            }, idx, rgb, S, isSel, isExportHd);
+
+            if (!isExportHd && state.cards.length) {
+              hitBoxes.push({ type: 'card', index: idx, ...box });
+            }
+          });
+
+          // Stickers placed behind subject
+          state.stickers.forEach((st, idx) => {
+            if (!st.behindSubject) return;
+            const isSel = Boolean(state.selected && state.selected.type === 'sticker' && state.selected.index === idx);
+            const box = drawStickerItem(ctx, st, W, H, S, isSel, isExportHd);
+            if (!isExportHd) hitBoxes.push({ type: 'sticker', index: idx, ...box });
+          });
+
+          // === LAYER 3: AI DEPTH FOREGROUND CUTOUT (HEAD / SHOULDERS / HANDS / PHONE IN FRONT OF 3D CARDS!) ===
+          const fgCutout = getForegroundCutoutCanvas(W, H);
+          if (fgCutout) {
+            ctx.drawImage(fgCutout, 0, 0, W, H);
+          }
+
+          // === LAYER 4: FOREGROUND STICKERS + MINIMALIST WATERMARK ===
+          state.stickers.forEach((st, idx) => {
+            if (st.behindSubject) return;
+            const isSel = Boolean(state.selected && state.selected.type === 'sticker' && state.selected.index === idx);
+            const box = drawStickerItem(ctx, st, W, H, S, isSel, isExportHd);
+            if (!isExportHd) hitBoxes.push({ type: 'sticker', index: idx, ...box });
+          });
+
+          if (state.showWatermark) {
+            ctx.save();
+            const wmY = H - 40 * S;
+            ctx.font = `700 ${Math.round(22 * S)}px "Plus Jakarta Sans", system-ui, sans-serif`;
+            const txt = '● SpotyFlow';
+            const tw = ctx.measureText(txt).width;
+            const pillW = tw + 34 * S;
+            const pillH = 40 * S;
+            ctx.fillStyle = 'rgba(10, 12, 18, 0.54)';
+            roundedRectPath(ctx, (W - pillW) / 2, wmY - pillH / 2, pillW, pillH, pillH / 2);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+            ctx.lineWidth = 1.5 * S;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(255,255,255,0.88)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(txt, W / 2, wmY + 1 * S);
+            ctx.restore();
+          }
+
+          if (state.filmGrain) {
+            ctx.save();
+            ctx.globalAlpha = 0.22;
+            const pat = ctx.createPattern(getGrainCanvas(), 'repeat');
+            if (pat) {
+              ctx.fillStyle = pat;
+              ctx.fillRect(0, 0, W, H);
+            }
+            ctx.restore();
+          }
+
+          if (!isExportHd) {
+            state.lastHitBoxes = hitBoxes;
+          }
+        }
+
+        function schedulePreviewRender() {
+          if (previewRaf) return;
+          previewRaf = requestAnimationFrame(() => {
+            previewRaf = 0;
+            const canvas = document.getElementById('sf-poster-3d-canvas');
+            if (canvas && state) {
+              renderPoster3D(canvas, false);
+            }
+          });
+        }
+
+        async function hydrateCardCovers() {
+          if (!state) return;
+          const missing = state.cards
+            .map((c) => c.track)
+            .filter((tr) => {
+              const k = getTrackKey(tr);
+              return !state.customTrackCovers.has(k) && !state.trackCovers.has(k);
+            });
+          if (!missing.length) {
+            schedulePreviewRender();
+            return;
+          }
+          state.loadingCovers = true;
+          updatePreviewBadge();
+          await Promise.all(missing.map(async (tr) => {
+            const k = getTrackKey(tr);
+            const url = typeof getCover === 'function' ? getCover(tr, 'big') : '';
+            const loaded = await loadCoverCached(url);
+            if (state && loaded) {
+              state.trackCovers.set(k, loaded);
+            }
+          }));
+          if (state) {
+            state.loadingCovers = false;
+            flatCardCache.clear();
+            updatePreviewBadge();
+            schedulePreviewRender();
+          }
+        }
+
+        function updatePreviewBadge() {
+          const el = document.getElementById('sf-p3d-status-badge');
+          if (!el || !state) return;
+          if (state.depthScanning) {
+            el.textContent = '✨ Memisahkan latar...';
+            el.classList.remove('hidden');
+          } else if (state.loadingCovers) {
+            el.textContent = 'Memuat sampul...';
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+
+        // ---------------- POINTER FINGER DRAG INTERACTION ----------------
+        function bindCanvasPointerEvents() {
+          const canvas = document.getElementById('sf-poster-3d-canvas');
+          if (!canvas || canvas.__sfP3dBound) return;
+          canvas.__sfP3dBound = true;
+
+          const getCanvasXY = (ev) => {
+            const rect = canvas.getBoundingClientRect();
+            const sx = canvas.width / Math.max(1, rect.width);
+            const sy = canvas.height / Math.max(1, rect.height);
+            return { x: (ev.clientX - rect.left) * sx, y: (ev.clientY - rect.top) * sy };
+          };
+
+          canvas.addEventListener('pointerdown', (ev) => {
+            if (!state) return;
+            const pt = getCanvasXY(ev);
+            // Reverse iterate so topmost drawn element (stickers, then upper cards) wins hit-test!
+            let hit = null;
+            for (let i = state.lastHitBoxes.length - 1; i >= 0; i--) {
+              const b = state.lastHitBoxes[i];
+              if (pt.x >= b.minX && pt.x <= b.maxX && pt.y >= b.minY && pt.y <= b.maxY) {
+                hit = { type: b.type, index: b.index };
+                break;
+              }
+            }
+            state.selected = hit;
+            renderContextualBar();
+            schedulePreviewRender();
+            if (!hit) return;
+            try { canvas.setPointerCapture(ev.pointerId); } catch {}
+            const obj = hit.type === 'sticker' ? state.stickers[hit.index] : state.cards[hit.index];
+            if (!obj) return;
+            dragState = {
+              pointerId: ev.pointerId,
+              hit,
+              startX: pt.x,
+              startY: pt.y,
+              origX: hit.type === 'sticker' ? obj.x : (obj.offsetX || 0),
+              origY: hit.type === 'sticker' ? obj.y : (obj.offsetY || 0),
+            };
+          });
+
+          canvas.addEventListener('pointermove', (ev) => {
+            if (!dragState || !state || ev.pointerId !== dragState.pointerId) return;
+            const pt = getCanvasXY(ev);
+            const dx = (pt.x - dragState.startX) / Math.max(1, canvas.width);
+            const dy = (pt.y - dragState.startY) / Math.max(1, canvas.height);
+            if (dragState.hit.type === 'sticker') {
+              const st = state.stickers[dragState.hit.index];
+              if (st) {
+                st.x = Math.max(0.03, Math.min(0.97, dragState.origX + dx));
+                st.y = Math.max(0.03, Math.min(0.97, dragState.origY + dy));
+                schedulePreviewRender();
+              }
+            } else {
+              const c = state.cards[dragState.hit.index];
+              if (c) {
+                c.offsetX = Math.max(-0.48, Math.min(0.48, dragState.origX + dx));
+                c.offsetY = Math.max(-0.48, Math.min(0.48, dragState.origY + dy));
+                schedulePreviewRender();
+              }
+            }
+          });
+
+          const endDrag = (ev) => {
+            if (dragState && ev.pointerId === dragState.pointerId) {
+              try { canvas.releasePointerCapture(ev.pointerId); } catch {}
+              dragState = null;
+            }
+          };
+          canvas.addEventListener('pointerup', endDrag);
+          canvas.addEventListener('pointercancel', endDrag);
+        }
+
+        // ---------------- UI RENDERERS ----------------
+        function sliderHtml(key, label, min, max, val, suffix = '%') {
+          const pct = Math.max(0, Math.min(100, ((Number(val) - min) / (max - min)) * 100));
+          const lblId = `sf-p3d-val-${key}`;
+          return `
+            <div class="sf-p3d-slider-row">
+              <div class="sf-p3d-slider-head">
+                <span>${label}</span>
+                <span id="${lblId}" class="sf-p3d-slider-val">${val}${suffix}</span>
+              </div>
+              <input type="range" min="${min}" max="${max}" value="${val}" style="--val-pct:${pct.toFixed(1)}%;" class="sf-p3d-slider"
+                oninput="window.SF202.poster3d._onSlider('${key}', this, ${min}, ${max}, '${lblId}', '${suffix}')" />
+            </div>
+          `;
+        }
+
+        function renderContextualBar() {
+          const bar = document.getElementById('sf-p3d-context-bar');
+          if (!bar || !state) return;
+          const sel = state.selected;
+          if (!sel) {
+            bar.classList.add('hidden');
+            bar.innerHTML = '';
+            return;
+          }
+          bar.classList.remove('hidden');
+
+          if (sel.type === 'card') {
+            const c = state.cards[sel.index];
+            if (!c) { bar.classList.add('hidden'); return; }
+            bar.innerHTML = `
+              <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1.5 px-3 bg-[#151722] border-b border-white/10">
+                <span class="font-mono text-[10px] font-bold text-white/75 shrink-0">Kartu #${sel.index + 1}</span>
+                <label class="inline-flex items-center gap-1.5 text-[10.5px] text-white/80 shrink-0">3D Y
+                  <input type="range" min="-45" max="45" value="${Math.round(c.extraRotY || 0)}" oninput="window.SF202.poster3d._setCardTweak('extraRotY', this.value)" class="w-16 accent-white" />
+                </label>
+                <label class="inline-flex items-center gap-1.5 text-[10.5px] text-white/80 shrink-0">Miring Z
+                  <input type="range" min="-35" max="35" value="${Math.round(c.extraRotZ || 0)}" oninput="window.SF202.poster3d._setCardTweak('extraRotZ', this.value)" class="w-16 accent-white" />
+                </label>
+                <label class="inline-flex items-center gap-1.5 text-[10.5px] text-white/80 shrink-0">Ukuran
+                  <input type="range" min="65" max="145" value="${Math.round((c.extraScale || 1) * 100)}" oninput="window.SF202.poster3d._setCardTweak('extraScale', this.value / 100)" class="w-16 accent-white" />
+                </label>
+                <button type="button" onclick="window.SF202.poster3d._resetSelectedCard()" class="px-2.5 py-1 rounded-full bg-white/12 text-[10.5px] font-bold text-white shrink-0">Reset Posisi</button>
+                <button type="button" onclick="window.SF202.poster3d._clearSelection()" class="px-2 py-1 rounded-full bg-white/10 text-[10.5px] text-white/75 shrink-0">✕</button>
+              </div>
+            `;
+            return;
+          }
+
+          const st = state.stickers[sel.index];
+          if (!st) { bar.classList.add('hidden'); return; }
+          bar.innerHTML = `
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1.5 px-3 bg-[#151722] border-b border-white/10">
+              <span class="font-mono text-[10px] font-bold text-white/75 shrink-0">Stiker</span>
+              <label class="inline-flex items-center gap-1.5 text-[10.5px] text-white/80 shrink-0">Ukuran
+                <input type="range" min="35" max="240" value="${Math.round((st.scale || 1) * 100)}" oninput="window.SF202.poster3d._setStickerTweak('scale', this.value / 100)" class="w-16 accent-white" />
+              </label>
+              <label class="inline-flex items-center gap-1.5 text-[10.5px] text-white/80 shrink-0">Putar
+                <input type="range" min="-180" max="180" value="${Math.round(st.rotation || 0)}" oninput="window.SF202.poster3d._setStickerTweak('rotation', this.value)" class="w-16 accent-white" />
+              </label>
+              <button type="button" onclick="window.SF202.poster3d._toggleStickerBehind()" class="px-2.5 py-1 rounded-full text-[10.5px] font-bold shrink-0 ${st.behindSubject ? 'bg-white text-black' : 'bg-white/12 text-white'}">Di Belakang Orang</button>
+              <button type="button" onclick="window.SF202.poster3d._duplicateSelectedSticker()" class="px-2.5 py-1 rounded-full bg-white/12 text-[10.5px] font-bold text-white shrink-0">Duplikat</button>
+              <button type="button" onclick="window.SF202.poster3d._deleteSelectedSticker()" class="px-2.5 py-1 rounded-full bg-rose-500/25 text-[10.5px] font-bold text-rose-200 shrink-0">Hapus</button>
+            </div>
+          `;
+        }
+
+        function renderQuickBar() {
+          const bar = document.getElementById('sf-p3d-quick-bar');
+          if (!bar || !state) return;
+          bar.innerHTML = `
+            <button type="button" onclick="window.SF202.poster3d._openPicker(true)" class="sf-p3d-pill sf-p3d-active">🎵 Lagu (${state.cards.length}/5)</button>
+            ${Object.entries(RATIOS).map(([k, r]) => `
+              <button type="button" onclick="window.SF202.poster3d._setRatio('${k}')" class="sf-p3d-pill ${state.ratio === k ? 'sf-p3d-active' : ''}">${r.label}</button>
+            `).join('')}
+            <button type="button" onclick="window.SF202.poster3d._randomize()" class="sf-p3d-pill">🔀 Acak desain</button>
+          `;
+        }
+
+        function renderTabBody() {
+          const panel = document.getElementById('sf-p3d-tab-panel');
+          if (!panel || !state) return;
+
+          document.querySelectorAll('[data-p3d-tab]').forEach((b) => {
+            b.classList.toggle('sf-p3d-active', b.getAttribute('data-p3d-tab') === state.activeTab);
+          });
+
+          if (state.activeTab === 'foto') {
+            const hasPhoto = Boolean(state.userPhotoImg);
+            const hasNativeDepth = Boolean(getBridge()?.hasDepthEngine?.() || getBridge()?.segmentPhotoDepthAsync);
+            panel.innerHTML = `
+              <div class="space-y-4">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <button type="button" onclick="document.getElementById('sf-p3d-photo-input')?.click()" class="sf-p3d-pill sf-p3d-active">
+                    <span>🖼️</span><span>${hasPhoto ? 'Ganti foto' : 'Pilih foto'}</span>
+                  </button>
+                  ${hasPhoto ? `
+                    <button type="button" onclick="window.SF202.poster3d._clearPhoto()" class="sf-p3d-pill text-rose-300 border-rose-400/30">Hapus foto</button>
+                  ` : `<span class="text-[11px] text-white/50">Upload selfie/potret untuk Efek Kedalaman 3D</span>`}
+                </div>
+                <input id="sf-p3d-photo-input" type="file" accept="image/*" class="hidden" onchange="window.SF202.poster3d._onUserPhotoFile(this)" />
+
+                <!-- AI Depth Toggle -->
+                <div class="flex items-center justify-between gap-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/12">
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-white">✨ Efek Kedalaman (Kartu di Belakang Orang)</p>
+                    <p class="text-[10.5px] text-white/55 mt-0.5">${
+                      state.depthScanning ? 'Memindai subjek foto dengan ML Kit...' :
+                      !hasNativeDepth ? 'Efek Kedalaman otomatis aktif penuh di APK Android' :
+                      !hasPhoto ? 'Unggah foto dulu untuk mengaktifkan otomatis' :
+                      state.depthHasSubject ? '✓ Subjek terdeteksi! Geser kartu ke belakang bahu' :
+                      'Tidak ada subjek manusia terdeteksi di foto ini'
+                    }</p>
+                  </div>
+                  <button type="button" onclick="window.SF202.poster3d._toggleDepth()" class="px-3.5 py-1.5 rounded-full text-[11px] font-extrabold shrink-0 ${state.depthEnabled && hasPhoto && state.depthMaskImg ? 'bg-white text-black' : 'bg-white/12 text-white/70'}">${state.depthEnabled ? 'ON' : 'OFF'}</button>
+                </div>
+
+                ${hasPhoto ? `
+                  <div class="space-y-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10">
+                    ${sliderHtml('photoZoom', 'Zoom Foto', 100, 200, state.photoZoom, '%')}
+                    ${sliderHtml('photoPanY', 'Posisi Vertikal (Y)', -50, 50, state.photoPanY, '%')}
+                  </div>
+                ` : ''}
+
+                <div class="space-y-3.5">
+                  ${sliderHtml('bgDarkness', 'Gelap', 0, 90, state.bgDarkness, '%')}
+                  ${sliderHtml('bgBlur', 'Kabur', 0, 100, state.bgBlur, '%')}
+                  ${sliderHtml('cardGlow', 'Cahaya kartu', 0, 100, state.cardGlow, '%')}
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          if (state.activeTab === 'kartu') {
+            const layoutBtn = (id, icon, label) => `
+              <button type="button" onclick="window.SF202.poster3d._set('layoutMode','${id}')" class="sf-p3d-opt-card ${state.layoutMode === id ? 'sf-p3d-opt-active' : ''}">
+                <p class="text-xs font-extrabold">${icon} ${label}</p>
+              </button>
+            `;
+            const togPill = (key, label) => `
+              <button type="button" onclick="window.SF202.poster3d._toggle('${key}')" class="sf-p3d-pill ${state[key] ? 'sf-p3d-active' : ''}">${state[key] ? '✓ ' : ''}${label}</button>
+            `;
+            panel.innerHTML = `
+              <div class="space-y-4">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button type="button" onclick="window.SF202.poster3d._openPicker(true)" class="sf-p3d-pill sf-p3d-active">🎵 Pilih 1–5 Lagu (${state.cards.length}/5)</button>
+                  <button type="button" onclick="window.SF202.poster3d._resetAllDrags()" class="sf-p3d-pill">↺ Reset Geser Jari</button>
+                </div>
+                <div class="space-y-2">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">Formasi 3D</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    ${layoutBtn('depth_shoulders', '🧍', 'Bahu Kiri-Kanan')}
+                    ${layoutBtn('auralys', '✨', 'Kolase Auralys')}
+                    ${layoutBtn('fan_3d', '🂡', 'Kipas 3D')}
+                    ${layoutBtn('grid', '▦', 'Grid Rapi')}
+                  </div>
+                </div>
+                <div class="space-y-3.5">
+                  ${sliderHtml('rotY', 'Sudut 3D (Putar Y)', -45, 45, state.rotY, '°')}
+                  ${sliderHtml('rotX', 'Dongak 3D (Putar X)', -30, 30, state.rotX, '°')}
+                  ${sliderHtml('tiltZ', 'Kemiringan (Z)', 0, 100, state.tiltZ, '%')}
+                  ${sliderHtml('cardSize', 'Ukuran kartu', 70, 130, state.cardSize, '%')}
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  ${togPill('showControls', 'Kontrol Play/Pause')}
+                  ${togPill('showSeekHeart', 'Seekbar & Hati')}
+                  ${togPill('showArtist', 'Nama Artis')}
+                  ${togPill('showWatermark', 'Watermark')}
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          if (state.activeTab === 'gaya_kartu') {
+            panel.innerHTML = `
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                  ${CARD_STYLES.map((cs) => {
+                    const act = state.cardStyle === cs.id;
+                    return `
+                      <button type="button" onclick="window.SF202.poster3d._setCardStyle('${cs.id}')" class="sf-p3d-opt-card flex items-center gap-2.5 ${act ? 'sf-p3d-opt-active' : ''}">
+                        <span class="w-8 h-8 rounded-xl border border-white/25 shrink-0" style="background:${cs.swatch};"></span>
+                        <div class="min-w-0">
+                          <p class="text-xs font-extrabold truncate">${esc(cs.name)}</p>
+                          <p class="text-[10px] ${act ? 'text-black/65' : 'text-white/55'} truncate">${esc(cs.desc)}</p>
+                        </div>
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+                <div class="space-y-3.5">
+                  ${sliderHtml('thickness3D', 'Ketebalan 3D', 0, 16, state.thickness3D, 'px')}
+                  ${sliderHtml('cardOpacity', 'Transparansi', 35, 100, state.cardOpacity, '%')}
+                  ${sliderHtml('cardRadius', 'Sudut kartu', 8, 32, state.cardRadius, 'px')}
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          if (state.activeTab === 'efek') {
+            panel.innerHTML = `
+              <div class="space-y-4">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button type="button" onclick="window.SF202.poster3d._toggle('flareEnabled')" class="sf-p3d-pill ${state.flareEnabled ? 'sf-p3d-active' : ''}">✦ Kilau Sudut Kartu ${state.flareEnabled ? 'ON' : 'OFF'}</button>
+                  <button type="button" onclick="window.SF202.poster3d._toggle('filmGrain')" class="sf-p3d-pill ${state.filmGrain ? 'sf-p3d-active' : ''}">🎞️ Film Grain ${state.filmGrain ? 'ON' : 'OFF'}</button>
+                </div>
+                <div class="space-y-3.5">
+                  ${state.flareEnabled ? sliderHtml('flareIntensity', 'Kilau Sudut Kartu (✦)', 10, 100, state.flareIntensity, '%') : ''}
+                  ${sliderHtml('shadow3d', 'Bayangan 3D', 0, 100, state.shadow3d, '%')}
+                  ${sliderHtml('vignette', 'Vignette', 0, 100, state.vignette, '%')}
+                </div>
+                <div class="space-y-2 pt-1">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">Warna Latar (Tanpa Foto)</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    ${BG_MODES.map((bm) => {
+                      const act = !state.userPhotoImg && state.bgMode === bm.id;
+                      return `
+                        <button type="button" onclick="window.SF202.poster3d._setBgMode('${bm.id}')" class="sf-p3d-opt-card flex items-center gap-2 ${act ? 'sf-p3d-opt-active' : ''}">
+                          <span class="w-6 h-6 rounded-full border border-white/25 shrink-0" style="background:linear-gradient(135deg,${bm.c1},${bm.c3});"></span>
+                          <span class="text-xs font-bold truncate">${esc(bm.name)}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap pt-1">
+                    <input type="color" value="${esc(state.bgCustomColor)}" oninput="window.SF202.poster3d._setCustomBg(this.value)" aria-label="Pilih warna latar" class="w-8 h-8 rounded-full bg-transparent border border-white/25 cursor-pointer" />
+                    ${BG_SWATCHES.map((hex) => `
+                      <button type="button" onclick="window.SF202.poster3d._setCustomBg('${hex}')" class="w-7 h-7 rounded-full border-2 ${(!state.userPhotoImg && state.bgMode === 'custom' && state.bgCustomColor === hex) ? 'border-white scale-110' : 'border-white/25'}" style="background:${hex};"></button>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          // TAB 5: 'stiker' (PERSIS 15791.jpg!)
+          panel.innerHTML = `
+            <div class="space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <button type="button" onclick="document.getElementById('sf-p3d-sticker-input')?.click()" class="sf-p3d-pill sf-p3d-active">
+                  <span>+</span><span>Tambah stiker</span>
+                </button>
+                <span class="font-mono text-xs font-bold text-white/60">${state.stickers.length} dari 30</span>
+              </div>
+              <input id="sf-p3d-sticker-input" type="file" accept="image/*" class="hidden" onchange="window.SF202.poster3d._onCustomStickerFile(this)" />
+
+              <div class="grid grid-cols-5 gap-2">
+                ${BUILTIN_STICKERS.map((s) => `
+                  <button type="button" onclick="window.SF202.poster3d._addBuiltinSticker('${s.id}')" class="sf-p3d-opt-card flex flex-col items-center justify-center gap-1 py-2.5 px-1 text-center">
+                    <span class="text-xl leading-none">${s.preview}</span>
+                    <span class="text-[9.5px] font-semibold text-white/75 truncate w-full">${esc(s.name)}</span>
+                  </button>
+                `).join('')}
+              </div>
+
+              <div class="space-y-2 pt-1">
+                <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">Stiker saya (${state.customStickers.length}/12)</p>
+                ${state.customStickers.length ? `
+                  <div class="grid grid-cols-4 gap-2">
+                    ${state.customStickers.map((cs, i) => `
+                      <div class="relative rounded-2xl bg-white/[0.06] border border-white/12 p-2 flex items-center justify-center aspect-square">
+                        <button type="button" onclick="window.SF202.poster3d._addCustomStickerIdx(${i})" class="w-full h-full flex items-center justify-center">
+                          <img src="${esc(cs.dataUrl)}" alt="" class="max-w-full max-h-full object-contain" />
+                        </button>
+                        <button type="button" aria-label="Hapus stiker" onclick="window.SF202.poster3d._deleteCustomStickerCollection(${i})" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow">×</button>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `<p class="text-[11px] text-white/45">Belum ada stiker pribadi. Ketuk "+ Tambah stiker" untuk mengunggah gambar PNG dari galeri.</p>`}
+              </div>
+            </div>
+          `;
+        }
+
+        // ---------------- MULTI-SONG PICKER SHEET (1..5 SONGS) ----------------
+        function getPickSourceTracks() {
+          if (!state) return [];
+          if (state.pickTab === 'liked') return Array.isArray(AppState?.likedTracks) ? AppState.likedTracks.slice(0, 60) : [];
+          if (state.pickTab === 'recent') return Array.isArray(AppState?.recentTracks) ? AppState.recentTracks.slice(0, 60) : [];
+          if (state.pickTab === 'current') {
+            const out = [], seen = new Set();
+            const add = (t) => { if (t && !seen.has(getTrackKey(t))) { seen.add(getTrackKey(t)); out.push(t); } };
+            add(AppState?.currentTrack);
+            (Array.isArray(AppState?.queue) ? AppState.queue : []).forEach(add);
+            return out.slice(0, 40);
+          }
+          return Array.isArray(state.searchResults) ? state.searchResults : [];
+        }
+
+        function renderPickerList() {
+          const slot = document.getElementById('sf-p3d-picker-list');
+          if (!slot || !state) return;
+          if (state.pickTab === 'search' && state.searchLoading) {
+            slot.innerHTML = `<p class="text-xs text-white/55 text-center py-6">Mencari lagu...</p>`;
+            return;
+          }
+          const list = getPickSourceTracks();
+          if (!list.length) {
+            slot.innerHTML = `<p class="text-xs text-white/45 text-center py-6">${state.pickTab === 'search' ? 'Ketik judul lagu atau nama artis di atas (tidak memutus musik aktif).' : 'Belum ada lagu di daftar ini.'}</p>`;
+            return;
+          }
+          window.__sf202PickList = list;
+          slot.innerHTML = list.map((tr, i) => {
+            const k = getTrackKey(tr);
+            const pos = state.cards.findIndex((c) => getTrackKey(c.track) === k);
+            const isSel = pos >= 0;
+            const cov = typeof getCover === 'function' ? getCover(tr, 'small') : '/icon-192.png';
+            return `
+              <button type="button" onclick="window.SF202.poster3d._togglePickTrack(${i})" class="w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-white/15 border-white/45' : 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08]'}">
+                <img src="${esc(cov)}" onerror="this.src='/icon-192.png'" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 bg-black/40" referrerpolicy="no-referrer" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-bold text-white truncate">${esc(tr.title || 'Tanpa Judul')}</p>
+                  <p class="text-[11px] text-white/55 truncate">${esc(tr.artist?.name || 'SpotyFlow')}</p>
+                </div>
+                <span class="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-extrabold shrink-0 border ${isSel ? 'bg-white text-black border-white' : 'bg-white/[0.06] text-white/45 border-white/20'}">${isSel ? (pos + 1) : '+'}</span>
+              </button>
+            `;
+          }).join('');
+        }
+
+        function renderPickerOverlay() {
+          const wrap = document.getElementById('sf-p3d-picker-sheet');
+          if (!wrap || !state) return;
+          if (!state.pickerOpen) {
+            wrap.classList.add('hidden');
+            wrap.innerHTML = '';
+            return;
+          }
+          wrap.classList.remove('hidden');
+          const subBtn = (id, label) => `<button type="button" onclick="window.SF202.poster3d._setPickTab('${id}')" class="sf-p3d-pill ${state.pickTab === id ? 'sf-p3d-active' : ''}">${label}</button>`;
+          wrap.innerHTML = `
+            <div onclick="window.SF202.poster3d._openPicker(false)" class="absolute inset-0 bg-black/70"></div>
+            <div class="relative z-10 w-full max-w-xl mx-auto h-[82dvh] bg-[#10121B] border-t border-white/15 rounded-t-3xl flex flex-col overflow-hidden shadow-2xl">
+              <div class="shrink-0 p-3.5 border-b border-white/10 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-display font-bold text-sm text-white">Pilih 1–5 Lagu (${state.cards.length}/5)</span>
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="window.SF202.poster3d._fillFiveFav()" class="px-3 py-1.5 rounded-full bg-white/10 text-[11px] font-bold text-white">🎲 Isi 5 Favorit</button>
+                    <button type="button" onclick="window.SF202.poster3d._openPicker(false)" class="px-3.5 py-1.5 rounded-full bg-white text-black text-[11px] font-extrabold">Selesai</button>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+                  ${state.cards.length ? state.cards.map((c, i) => {
+                    const k = getTrackKey(c.track);
+                    const custom = state.customTrackCovers.get(k);
+                    const thumb = custom ? custom.dataUrl : (typeof getCover === 'function' ? getCover(c.track, 'small') : '/icon-192.png');
+                    return `
+                      <div class="shrink-0 flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-2xl bg-white/[0.09] border border-white/18">
+                        <img src="${esc(thumb)}" onerror="this.src='/icon-192.png'" alt="" class="w-7 h-7 rounded-lg object-cover shrink-0" referrerpolicy="no-referrer" />
+                        <span class="text-[10.5px] font-bold text-white truncate max-w-[74px]">${esc(cleanTitle(c.track.title))}</span>
+                        <button type="button" title="Ganti sampul kartu ini" onclick="window.SF202.poster3d._pickCardCover(${i})" class="w-6 h-6 rounded-full bg-white/12 text-[10.5px] flex items-center justify-center">📷</button>
+                        <button type="button" onclick="window.SF202.poster3d._removeCardIdx(${i})" class="w-5 h-5 rounded-full bg-rose-500/25 text-rose-200 text-xs font-bold flex items-center justify-center">×</button>
+                      </div>
+                    `;
+                  }).join('') : `<p class="text-[11px] text-white/45">Ketuk lagu di bawah atau "🎲 Isi 5 Favorit".</p>`}
+                </div>
+                <input id="sf-p3d-card-cover-input" type="file" accept="image/*" class="hidden" onchange="window.SF202.poster3d._onCardCoverFile(this)" />
+                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  ${subBtn('liked', 'Lagu Disukai')}
+                  ${subBtn('current', 'Sedang Diputar')}
+                  ${subBtn('recent', 'Riwayat')}
+                  ${subBtn('search', '🔍 Cari Lagu')}
+                </div>
+                ${state.pickTab === 'search' ? `
+                  <input type="search" value="${esc(state.searchQuery)}" oninput="window.SF202.poster3d._onSearch(this.value)" placeholder="Cari lagu apa saja..." class="w-full h-10 px-3.5 rounded-xl bg-white/[0.08] border border-white/15 focus:border-white/45 text-xs text-white placeholder-white/40 outline-none" />
+                ` : ''}
+              </div>
+              <div id="sf-p3d-picker-list" class="flex-1 min-h-0 overflow-y-auto studio-scroll p-3.5 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] space-y-1.5"></div>
+            </div>
+          `;
+          renderPickerList();
+        }
+
+        // ---------------- EXPORT HD & NATIVE GALLERY SAVE ----------------
+        function exportHdCanvas() {
+          const out = document.createElement('canvas');
+          renderPoster3D(out, true);
+          return out;
+        }
+
+        function savePoster() {
+          if (!state) return;
+          const fileName = `SpotyFlow-3D-Poster-${Date.now()}.png`;
+          try {
+            const hd = exportHdCanvas();
+            const br = getBridge();
+            if (br && typeof br.savePosterToGallery === 'function') {
+              const rawRes = br.savePosterToGallery(hd.toDataURL('image/png'), fileName);
+              let parsed = { ok: false };
+              try { parsed = JSON.parse(rawRes); } catch {}
+              if (parsed.ok) {
+                if (typeof showToast === 'function') showToast('✅ Poster 3D HD tersimpan di Galeri (Pictures/SpotyFlow)!', 'sparkles');
+                return;
+              }
+            }
+            hd.toBlob((blob) => {
+              if (!blob) return;
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              setTimeout(() => URL.revokeObjectURL(url), 2500);
+              if (typeof showToast === 'function') showToast('✅ Poster 3D HD berhasil diunduh!', 'sparkles');
+            }, 'image/png');
+          } catch {
+            if (typeof showToast === 'function') showToast('Gagal menyimpan poster 3D. Coba lagi.', 'error');
+          }
+        }
+
+        async function sharePoster() {
+          if (!state) return;
+          const fileName = `SpotyFlow-3D-Poster-${Date.now()}.png`;
+          try {
+            const hd = exportHdCanvas();
+            const br = getBridge();
+            if (br && typeof br.sharePosterImage === 'function') {
+              if (br.sharePosterImage(hd.toDataURL('image/png'), fileName)) return;
+            }
+            const blob = await new Promise((res) => hd.toBlob(res, 'image/png'));
+            if (blob && navigator.share && navigator.canShare) {
+              const file = new File([blob], fileName, { type: 'image/png' });
+              if (navigator.canShare({ files: [file] })) {
+                await navigator.share({ title: 'Poster 3D SpotyFlow', files: [file] });
+                return;
+              }
+            }
+            savePoster();
+          } catch {
+            savePoster();
+          }
+        }
+
+        function close() {
+          if (searchAbort) { try { searchAbort.abort(); } catch {} }
+          const el = document.getElementById('sf-poster-3d-modal');
+          if (el) el.remove();
+          state = null;
+          dragState = null;
+          fgCacheKey = '';
+          fgCacheCanvas = null;
+        }
+
+        function open(optionalTrack) {
+          close();
+          state = makeDefaultState(optionalTrack || null);
+
+          const root = document.createElement('div');
+          root.id = 'sf-poster-3d-modal';
+          root.setAttribute('role', 'dialog');
+          root.setAttribute('aria-modal', 'true');
+          root.className = 'fixed inset-0 z-[9999] flex flex-col bg-[#08090D] text-white overflow-hidden';
+          root.innerHTML = `
+            <!-- Header persis Auralys 4.3.5: < Poster lagu  |  ↺  📤  Simpan -->
+            <div class="shrink-0 flex items-center justify-between gap-2 px-3.5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2.5 border-b border-white/10 bg-[#0B0C12]">
+              <button type="button" onclick="window.SF202.poster3d.close()" class="sf-tap inline-flex items-center gap-1.5 text-white font-display font-bold text-base pr-2">
+                <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-lg leading-none">‹</span>
+                <span>Poster lagu</span>
+              </button>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="window.SF202.poster3d._resetAll()" title="Reset semua" aria-label="Reset poster" class="sf-tap w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/12 flex items-center justify-center text-base">↺</button>
+                <button type="button" onclick="window.SF202.poster3d.sharePoster()" title="Bagikan" aria-label="Bagikan poster" class="sf-tap w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/12 flex items-center justify-center text-sm">📤</button>
+                <button type="button" onclick="window.SF202.poster3d.savePoster()" class="sf-tap h-9 px-4 rounded-full bg-white hover:bg-white/90 text-black text-xs font-extrabold shadow">Simpan</button>
+              </div>
+            </div>
+
+            <!-- Interactive Live 3D Preview (~45% height, finger drag enabled!) -->
+            <div class="relative flex-[0_0_45%] min-h-[215px] flex items-center justify-center p-2.5 bg-[#06070A] overflow-hidden">
+              <canvas id="sf-poster-3d-canvas" class="max-h-full max-w-full w-auto h-auto rounded-2xl shadow-[0_22px_58px_rgba(0,0,0,0.85)] ring-1 ring-white/14"></canvas>
+              <div id="sf-p3d-status-badge" class="hidden absolute top-3 left-3 px-3 py-1 rounded-full bg-black/75 border border-white/20 text-[10.5px] font-semibold text-white/90">✨ Memisahkan latar...</div>
+            </div>
+
+            <!-- Contextual Mini Bar when Card or Sticker Selected -->
+            <div id="sf-p3d-context-bar" class="hidden shrink-0"></div>
+
+            <!-- Bottom Controls Panel (Quick Row + 5 Tabs Persis Auralys 4.3.5) -->
+            <div class="flex-1 min-h-0 flex flex-col bg-[#101219] border-t border-white/10 rounded-t-3xl overflow-hidden">
+              <div id="sf-p3d-quick-bar" class="shrink-0 flex items-center gap-2 px-3.5 pt-3 pb-2 overflow-x-auto no-scrollbar"></div>
+              <div class="shrink-0 flex items-center gap-1.5 px-3.5 pb-2.5 border-b border-white/[0.08] overflow-x-auto no-scrollbar">
+                <button type="button" data-p3d-tab="foto" onclick="window.SF202.poster3d._setTab('foto')" class="sf-p3d-pill">Foto</button>
+                <button type="button" data-p3d-tab="kartu" onclick="window.SF202.poster3d._setTab('kartu')" class="sf-p3d-pill">Kartu</button>
+                <button type="button" data-p3d-tab="gaya_kartu" onclick="window.SF202.poster3d._setTab('gaya_kartu')" class="sf-p3d-pill">Gaya kartu</button>
+                <button type="button" data-p3d-tab="efek" onclick="window.SF202.poster3d._setTab('efek')" class="sf-p3d-pill">Efek</button>
+                <button type="button" data-p3d-tab="stiker" onclick="window.SF202.poster3d._setTab('stiker')" class="sf-p3d-pill">Stiker</button>
+              </div>
+              <div id="sf-p3d-tab-panel" class="flex-1 min-h-0 overflow-y-auto studio-scroll px-4 pt-3 pb-[calc(1.6rem+env(safe-area-inset-bottom,0px))]"></div>
+            </div>
+
+            <!-- 1-5 Song Multi-Picker Bottom Sheet -->
+            <div id="sf-p3d-picker-sheet" class="hidden fixed inset-0 z-30 flex flex-col justify-end"></div>
+          `;
+          document.body.appendChild(root);
+          bindCanvasPointerEvents();
+          renderQuickBar();
+          renderTabBody();
+          renderPickerOverlay();
+          hydrateCardCovers();
+        }
+
+        // Route ALL legacy Poster Studio callers (SF200 & SF201) seamlessly to SF202.poster3d!
+        setTimeout(() => {
+          if (window.SF201?.posterStudio) {
+            window.SF201.posterStudio.open = (tr) => open(tr);
+          }
+          if (window.SF200?.poster) {
+            window.SF200.poster.openModal = (tr) => open(tr);
+          }
+        }, 90);
+
+        return {
+          open,
+          close,
+          savePoster,
+          sharePoster,
+          _setTab(tab) { if (!state) return; state.activeTab = tab; renderTabBody(); },
+          _setRatio(r) {
+            if (!state || !RATIOS[r]) return;
+            state.ratio = r;
+            fgCacheKey = '';
+            renderQuickBar();
+            schedulePreviewRender();
+          },
+          _set(key, val) {
+            if (!state) return;
+            state[key] = val;
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _setCardStyle(val) {
+            if (!state) return;
+            state.cardStyle = val;
+            flatCardCache.clear();
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _toggle(key) {
+            if (!state) return;
+            state[key] = !state[key];
+            if (key === 'showControls' || key === 'showSeekHeart' || key === 'showArtist') flatCardCache.clear();
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _toggleDepth() {
+            if (!state) return;
+            state.depthEnabled = !state.depthEnabled;
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _onSlider(key, el, min, max, lblId, suffix) {
+            if (!state) return;
+            const val = Number(el.value);
+            state[key] = val;
+            const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+            el.style.setProperty('--val-pct', `${pct.toFixed(1)}%`);
+            const lbl = document.getElementById(lblId);
+            if (lbl) lbl.textContent = `${val}${suffix || ''}`;
+            if (key === 'cardOpacity' || key === 'cardRadius') flatCardCache.clear();
+            if (key === 'photoZoom' || key === 'photoPanY') fgCacheKey = '';
+            schedulePreviewRender();
+          },
+          async _onUserPhotoFile(inputEl) {
+            const file = inputEl?.files?.[0];
+            if (!file || !state) return;
+            const res = await downscaleLocalImageFile(file, 1600, 'image/jpeg', 0.92);
+            inputEl.value = '';
+            if (!res || !state) return;
+            state.userPhotoImg = res.img;
+            state.userPhotoDataUrl = res.dataUrl;
+            state.photoZoom = 100;
+            state.photoPanX = 0;
+            state.photoPanY = 0;
+            state.depthMaskImg = null;
+            state.depthHasSubject = false;
+            fgCacheKey = '';
+            fgCacheCanvas = null;
+            renderTabBody();
+            schedulePreviewRender();
+
+            // Automatically run Offline ML Kit AI Depth Cutout if running in APK!
+            const br = getBridge();
+            if (br && typeof br.segmentPhotoDepthAsync === 'function') {
+              state.depthScanning = true;
+              updatePreviewBadge();
+              renderTabBody();
+              const depthRes = await requestNativeDepthMask(res.dataUrl);
+              if (!state || state.userPhotoDataUrl !== res.dataUrl) return;
+              state.depthScanning = false;
+              updatePreviewBadge();
+              if (depthRes && depthRes.ok && depthRes.maskDataUrl) {
+                const mImg = new Image();
+                mImg.onload = () => {
+                  if (!state || state.userPhotoDataUrl !== res.dataUrl) return;
+                  state.depthMaskImg = mImg;
+                  state.depthHasSubject = Boolean(depthRes.hasSubject);
+                  state.depthEnabled = Boolean(depthRes.hasSubject);
+                  fgCacheKey = '';
+                  renderTabBody();
+                  schedulePreviewRender();
+                  if (depthRes.hasSubject && typeof showToast === 'function') {
+                    showToast('✨ Efek Kedalaman 3D aktif! Geser kartu ke belakang bahu.', 'sparkles');
+                  }
+                };
+                mImg.src = depthRes.maskDataUrl;
+              } else {
+                renderTabBody();
+              }
+            }
+          },
+          _clearPhoto() {
+            if (!state) return;
+            state.userPhotoImg = null;
+            state.userPhotoDataUrl = '';
+            state.depthMaskImg = null;
+            state.depthHasSubject = false;
+            fgCacheKey = '';
+            fgCacheCanvas = null;
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _setBgMode(mode) {
+            if (!state) return;
+            state.userPhotoImg = null;
+            state.userPhotoDataUrl = '';
+            state.depthMaskImg = null;
+            fgCacheKey = '';
+            state.bgMode = mode;
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _setCustomBg(hex) {
+            if (!state) return;
+            state.userPhotoImg = null;
+            state.userPhotoDataUrl = '';
+            state.depthMaskImg = null;
+            fgCacheKey = '';
+            state.bgMode = 'custom';
+            state.bgCustomColor = hex;
+            renderTabBody();
+            schedulePreviewRender();
+          },
+          _setCardTweak(prop, val) {
+            if (!state || !state.selected || state.selected.type !== 'card') return;
+            const c = state.cards[state.selected.index];
+            if (c) { c[prop] = Number(val); schedulePreviewRender(); }
+          },
+          _resetSelectedCard() {
+            if (!state || !state.selected || state.selected.type !== 'card') return;
+            const c = state.cards[state.selected.index];
+            if (c) {
+              c.offsetX = 0; c.offsetY = 0; c.extraRotY = 0; c.extraRotZ = 0; c.extraScale = 1;
+              renderContextualBar();
+              schedulePreviewRender();
+            }
+          },
+          _resetAllDrags() {
+            if (!state) return;
+            state.cards.forEach((c) => { c.offsetX = 0; c.offsetY = 0; c.extraRotY = 0; c.extraRotZ = 0; c.extraScale = 1; });
+            state.selected = null;
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          _clearSelection() {
+            if (!state) return;
+            state.selected = null;
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          _addBuiltinSticker(typeId) {
+            if (!state) return;
+            if (state.stickers.length >= 30) {
+              if (typeof showToast === 'function') showToast('Maksimal 30 stiker per poster!', 'info');
+              return;
+            }
+            const idx = state.stickers.length;
+            state.stickers.push({
+              uid: `st_${Date.now()}_${idx}`,
+              kind: 'builtin',
+              typeId,
+              dataUrl: '',
+              x: 0.35 + ((idx * 13) % 30) / 100,
+              y: 0.25 + ((idx * 17) % 40) / 100,
+              scale: 1,
+              rotation: 0,
+              opacity: 1,
+              behindSubject: false,
+            });
+            state.selected = { type: 'sticker', index: idx };
+            renderTabBody();
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          async _onCustomStickerFile(inputEl) {
+            const file = inputEl?.files?.[0];
+            if (!file || !state) return;
+            const res = await downscaleLocalImageFile(file, 512, 'image/png', 1);
+            inputEl.value = '';
+            if (!res || !state) return;
+            state.customStickers.unshift({ id: `cs_${Date.now()}`, dataUrl: res.dataUrl });
+            state.customStickers = state.customStickers.slice(0, 12);
+            saveCustomStickersToStorage(state.customStickers);
+            this._addCustomStickerIdx(0);
+          },
+          _addCustomStickerIdx(colIdx) {
+            if (!state) return;
+            const item = state.customStickers[colIdx];
+            if (!item) return;
+            if (state.stickers.length >= 30) {
+              if (typeof showToast === 'function') showToast('Maksimal 30 stiker per poster!', 'info');
+              return;
+            }
+            const idx = state.stickers.length;
+            state.stickers.push({
+              uid: `st_${Date.now()}_${idx}`,
+              kind: 'custom',
+              typeId: 'custom',
+              dataUrl: item.dataUrl,
+              x: 0.5,
+              y: 0.42,
+              scale: 1,
+              rotation: 0,
+              opacity: 1,
+              behindSubject: false,
+            });
+            state.selected = { type: 'sticker', index: idx };
+            renderTabBody();
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          _deleteCustomStickerCollection(colIdx) {
+            if (!state) return;
+            state.customStickers.splice(colIdx, 1);
+            saveCustomStickersToStorage(state.customStickers);
+            renderTabBody();
+          },
+          _setStickerTweak(prop, val) {
+            if (!state || !state.selected || state.selected.type !== 'sticker') return;
+            const st = state.stickers[state.selected.index];
+            if (st) { st[prop] = Number(val); schedulePreviewRender(); }
+          },
+          _toggleStickerBehind() {
+            if (!state || !state.selected || state.selected.type !== 'sticker') return;
+            const st = state.stickers[state.selected.index];
+            if (st) {
+              st.behindSubject = !st.behindSubject;
+              renderContextualBar();
+              schedulePreviewRender();
+            }
+          },
+          _duplicateSelectedSticker() {
+            if (!state || !state.selected || state.selected.type !== 'sticker') return;
+            if (state.stickers.length >= 30) {
+              if (typeof showToast === 'function') showToast('Maksimal 30 stiker per poster!', 'info');
+              return;
+            }
+            const src = state.stickers[state.selected.index];
+            if (!src) return;
+            const copy = { ...src, uid: `st_${Date.now()}`, x: Math.min(0.92, src.x + 0.06), y: Math.min(0.92, src.y + 0.06) };
+            state.stickers.push(copy);
+            state.selected = { type: 'sticker', index: state.stickers.length - 1 };
+            renderTabBody();
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          _deleteSelectedSticker() {
+            if (!state || !state.selected || state.selected.type !== 'sticker') return;
+            state.stickers.splice(state.selected.index, 1);
+            state.selected = null;
+            renderTabBody();
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          _openPicker(flag) {
+            if (!state) return;
+            state.pickerOpen = Boolean(flag);
+            renderPickerOverlay();
+            if (!state.pickerOpen) {
+              renderQuickBar();
+              renderTabBody();
+              hydrateCardCovers();
+            }
+          },
+          _setPickTab(tab) { if (!state) return; state.pickTab = tab; renderPickerOverlay(); },
+          _onSearch(q) {
+            if (!state) return;
+            state.searchQuery = String(q || '');
+            if (searchDebounce) clearTimeout(searchDebounce);
+            const trimmed = state.searchQuery.trim();
+            if (trimmed.length < 2) { state.searchResults = []; state.searchLoading = false; renderPickerList(); return; }
+            state.searchLoading = true;
+            renderPickerList();
+            searchDebounce = setTimeout(async () => {
+              if (searchAbort) { try { searchAbort.abort(); } catch {} }
+              searchAbort = new AbortController();
+              try {
+                const base = typeof API_BASE === 'string' ? API_BASE : '';
+                const resp = await fetch(`${base}/api/search/all?q=${encodeURIComponent(trimmed)}&limit=18`, { signal: searchAbort.signal });
+                const data = await resp.json();
+                const list = Array.isArray(data?.tracks) ? data.tracks : (Array.isArray(data?.data) ? data.data : []);
+                if (state) { state.searchResults = list.slice(0, 18); state.searchLoading = false; renderPickerList(); }
+              } catch {
+                if (state) { state.searchLoading = false; renderPickerList(); }
+              }
+            }, 350);
+          },
+          _togglePickTrack(idx) {
+            if (!state) return;
+            const tr = window.__sf202PickList?.[idx];
+            if (!tr) return;
+            const k = getTrackKey(tr);
+            const pos = state.cards.findIndex((c) => getTrackKey(c.track) === k);
+            if (pos >= 0) {
+              state.cards.splice(pos, 1);
+            } else {
+              if (state.cards.length >= 5) {
+                if (typeof showToast === 'function') showToast('Maksimal 5 lagu — hapus 1 lagu dulu', 'info');
+                return;
+              }
+              state.cards.push(makeDefaultCardState(tr));
+            }
+            renderPickerOverlay();
+            renderQuickBar();
+            hydrateCardCovers();
+          },
+          _removeCardIdx(idx) {
+            if (!state) return;
+            state.cards.splice(idx, 1);
+            state.selected = null;
+            renderPickerOverlay();
+            renderQuickBar();
+            renderContextualBar();
+            schedulePreviewRender();
+          },
+          _fillFiveFav() {
+            if (!state) return;
+            const pool = [], seen = new Set();
+            const push = (arr) => {
+              if (!Array.isArray(arr)) return;
+              for (const tr of arr) {
+                if (!tr || !tr.title) continue;
+                const k = getTrackKey(tr);
+                if (seen.has(k)) continue;
+                seen.add(k);
+                pool.push(tr);
+                if (pool.length >= 5) return;
+              }
+            };
+            push(AppState?.likedTracks);
+            if (AppState?.currentTrack) push([AppState.currentTrack]);
+            push(AppState?.recentTracks);
+            push(AppState?.queue);
+            if (!pool.length) {
+              if (typeof showToast === 'function') showToast('Belum ada lagu di Disukai/Riwayat. Pakai Cari Lagu!', 'info');
+              return;
+            }
+            state.cards = pool.slice(0, 5).map(makeDefaultCardState);
+            renderPickerOverlay();
+            renderQuickBar();
+            hydrateCardCovers();
+          },
+          _pickCardCover(idx) {
+            pendingTrackPhotoIdx = idx;
+            document.getElementById('sf-p3d-card-cover-input')?.click();
+          },
+          async _onCardCoverFile(inputEl) {
+            const file = inputEl?.files?.[0];
+            if (!file || !state || pendingTrackPhotoIdx < 0) return;
+            const cardObj = state.cards[pendingTrackPhotoIdx];
+            if (!cardObj) return;
+            const res = await downscaleLocalImageFile(file, 1024, 'image/jpeg', 0.92);
+            inputEl.value = '';
+            if (res && state) {
+              state.customTrackCovers.set(getTrackKey(cardObj.track), res);
+              flatCardCache.clear();
+              renderPickerOverlay();
+              schedulePreviewRender();
+            }
+          },
+          _randomize() {
+            if (!state) return;
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            state.cardStyle = pick(CARD_STYLES).id;
+            state.layoutMode = pick(['depth_shoulders', 'auralys', 'fan_3d', 'grid']);
+            state.rotY = 12 + Math.floor(Math.random() * 24);
+            state.rotX = Math.floor(Math.random() * 14) - 4;
+            state.tiltZ = 20 + Math.floor(Math.random() * 55);
+            state.cardGlow = 25 + Math.floor(Math.random() * 55);
+            state.flareEnabled = true;
+            state.flareSeed = (state.flareSeed || 1) + 1;
+            if (!state.userPhotoImg) {
+              state.bgMode = pick(['burgundy', 'auto_cover', 'obsidian', 'midnight', 'velvet']);
+            }
+            flatCardCache.clear();
+            renderTabBody();
+            schedulePreviewRender();
+            if (typeof showToast === 'function') showToast('Desain 3D diacak! 🔀', 'sparkles');
+          },
+          _resetAll() {
+            if (!state) return;
+            const savedTracks = state.cards.map((c) => c.track);
+            const curTab = state.activeTab;
+            state = makeDefaultState(null);
+            state.cards = savedTracks.map(makeDefaultCardState);
+            state.pickerOpen = false;
+            state.activeTab = curTab;
+            flatCardCache.clear();
+            fgCacheKey = '';
+            fgCacheCanvas = null;
+            renderQuickBar();
+            renderTabBody();
+            renderContextualBar();
+            hydrateCardCovers();
+            if (typeof showToast === 'function') showToast('Poster 3D di-reset ke setelan awal ↺', 'info');
+          },
+        };
+      })();
+
+      return {
+        poster3d,
+        requestNativeDepthMask,
       };
     })();
   </script>

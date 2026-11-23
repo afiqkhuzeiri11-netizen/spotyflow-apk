@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '2.0.1';
-const NATIVE_APK_VERSION_CODE = 201;
+const VERSION = '2.0.2';
+const NATIVE_APK_VERSION_CODE = 202;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -2017,7 +2017,7 @@ app.get(['/api/app-version', '/api/app/version'], (_req, res) => {
     apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
     otaEnabled: true,
     releaseNotes: [
-      'SpotyFlow v2.0.1 — Ultra-Fast Playback (< 0.7s) & True Liquid Glass Edition',
+      'SpotyFlow v2.0.2 — Zero-Stutter 4G Audio + 3D Depth Effect Poster Studio (ML Kit)',
       'Jalur Play Instan < 0.7 Detik via Direct InnerTube ANDROID_VR + Native videoId Search tanpa muter Vercel + Auto-Retry 2-Lapis ke NewPipeExtractor',
       'Rombak Total GUI: Living Multi-Orb Mesh Liquid Glass (iOS 26 / Auralys) & True Editorial Serif Matte (60–120 FPS)',
       'Poster Maker Studio 4 Tab Layar Penuh: Pilih Lagu Dulu, Upload Foto Galeri Sendiri, 5 Template HD & Simpan Langsung ke Galeri HP (Pictures/SpotyFlow)',

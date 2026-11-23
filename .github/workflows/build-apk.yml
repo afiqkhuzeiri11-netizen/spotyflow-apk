@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (v2.0.1 Ultra-Fast Auralys Release · InnerTube + NewPipe + ExoPlayer · SDK 34)
+name: Build SpotyFlow Android APK (v2.0.2 Zero-Stutter + ML Kit 3D Depth Poster · SDK 34)
 
 on:
   workflow_dispatch:
@@ -46,10 +46,10 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Patch SpotyFlow v2.0.1 (FastResolver + NewPipeExtractor + Media3 ExoPlayer + Native Gallery + 3 Widgets)
+      - name: Patch SpotyFlow v2.0.2 (4G Zero-Stutter + ML Kit Depth Engine + FastResolver + NewPipe + Media3 ExoPlayer)
         run: node scripts/patch-android-apk.js
 
-      - name: Verify Patched SpotyFlow v2.0.1 Native Files
+      - name: Verify Patched SpotyFlow v2.0.2 Native Files
         run: |
           APP_ID=$(node -p "require('./capacitor.config.json').appId")
           PKG_PATH=$(echo "$APP_ID" | tr '.' '/')
@@ -57,6 +57,7 @@ jobs:
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWebView.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowFastResolver.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowNewPipeEngine.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowDepthEngine.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowPlaybackService.java"
           test -f "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWidgetProvider.java"
@@ -80,13 +81,14 @@ jobs:
           grep -q "jitpack.io" android/build.gradle
           grep -q "compileSdkVersion = 34" android/variables.gradle
           grep -q "targetSdkVersion = 34" android/variables.gradle
-          grep -q "versionCode 201" android/app/build.gradle
-          grep -q 'versionName "2.0.1"' android/app/build.gradle
+          grep -q "versionCode 202" android/app/build.gradle
+          grep -q 'versionName "2.0.2"' android/app/build.gradle
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
           grep -q "coreLibraryDesugaringEnabled true" android/app/build.gradle
           grep -q "desugar_jdk_libs_nio:2.0.4" android/app/build.gradle
           grep -q "NewPipeExtractor:v0.27.1" android/app/build.gradle
+          grep -q "com.google.mlkit:segmentation-selfie:16.0.0-beta6" android/app/build.gradle
           grep -q "androidx.media3:media3-common:1.4.1" android/app/build.gradle
           grep -q "androidx.media3:media3-session:1.4.1" android/app/build.gradle
           grep -q "androidx.media3:media3-exoplayer:1.4.1" android/app/build.gradle
@@ -99,6 +101,8 @@ jobs:
           grep -q "prefetchTrackMeta" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "savePosterToGallery" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "sharePosterImage" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "segmentPhotoDepthAsync" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "hasDepthEngine" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "updateLyricLine" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "downloadOfflineTrack" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "SpotyFlowWidgetProvider" android/app/src/main/AndroidManifest.xml
@@ -117,7 +121,7 @@ jobs:
           chmod +x gradlew
           GRADLE_OPTS="-Xmx4096m" ./gradlew assembleRelease --no-daemon
 
-      - name: Export SpotyFlow.apk (Release v2.0.1) & Show Size
+      - name: Export SpotyFlow.apk (Release v2.0.2) & Show Size
         run: |
           test -f android/app/build/outputs/apk/release/app-release.apk
           cp android/app/build/outputs/apk/release/app-release.apk SpotyFlow.apk
@@ -126,7 +130,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-v2.0.1-Release
+          name: SpotyFlow-APK-v2.0.2-Release
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -134,12 +138,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow v2.0.1
+          name: SpotyFlow v2.0.2
           body: |
-            ### SpotyFlow v2.0.1 — Ultra-Fast Playback & True Liquid Glass Edition
-            - **Play Instan < 0.7 Detik (Fix A)**: Direct InnerTube `ANDROID_VR` resolver (`SpotyFlowFastResolver`), Native `videoId` Search langsung dari HP tanpa muter Vercel, buffer `250ms` di ExoPlayer, Auto-Retry 2-Lapis ke `NewPipeExtractor v0.27.1` anti-403, Smart Prefetch 2 lagu berikutnya, & Indikator Kecepatan Audio opsional.
-            - **True Liquid Glass & True Editorial (Fix B)**: Living Multi-Orb Mesh Canvas 3 warna harmonis HSL (0% abu kusam & bebas tabrakan hijau neon), Optical Specular Glass Dock & Mini-Player, Fullscreen Player super bersih ala Apple Music/Auralys dengan laci bottom-sheet Audio & FX, serta Mode Editorial Serif Matte 120 FPS.
-            - **Poster Maker Studio 4 Tab Ala Auralys (Fix C)**: Pilih lagu dulu dari Sedang Diputar / Disukai / Riwayat / Cari Lagu tanpa memutus audio, Upload Foto Sendiri dari galeri (anti-gepeng & auto-resize anti-OOM), 5 Template HD proporsional, setingan lengkap (rasio, blur, dimmer, radius, film grain, font, warna, lirik), & **Simpan Langsung ke Galeri HP (`Pictures/SpotyFlow`)** via native Android `MediaStore`!
+            ### SpotyFlow v2.0.2 — Zero-Stutter 4G Audio + 3D Depth Effect Poster Studio (Auralys 4.3.5 Standard)
+            - **Sembuh Total Lag/Patah-Patah Saat Play**: Buffer 4G stabil (`900ms`/`1800ms`, `25s–60s`), sync IPC 2000ms + interpolasi lokal 60 FPS, `updateLyricsWidgetsOnly` tanpa spam Bitmap widget, blur GPU ringan `12px`, render mesh statis 1x tanpa loop rAF, dan single delayed prefetch `4 detik`.
+            - **Mesin Native AI Depth Cutout 100% Offline (`Google ML Kit Selfie Segmentation`)**: Memisahkan tubuh, kepala, rambut, tangan, & HP subjek foto galeri secara offline (< 200ms) dengan tepi feathered smoothstep halus.
+            - **Poster Lagu 3D Perspektif Nyata + Efek Kedalaman + Tab Stiker**: Proyeksi 3D sejati (`Rotate X/Y/Z` + ketebalan 3D + optical lens flare `✦`), kartu otomatis melayang di **BELAKANG subjek foto**, drag bebas pakai jari, formasi *Bahu Kiri-Kanan*, dan Tab **Stiker** lengkap (`Burung`, `Kilau`, `Stiker saya`, `+ Tambah stiker`, `X dari 30`) + simpan HD langsung ke Galeri (`Pictures/SpotyFlow`)!
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true
