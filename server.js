@@ -39,8 +39,8 @@ function loadEnvIfLocal(filePath) {
 
 loadEnvIfLocal(path.join(__dirname, '.env'));
 
-const VERSION = '2.0.0';
-const NATIVE_APK_VERSION_CODE = 200;
+const VERSION = '2.0.1';
+const NATIVE_APK_VERSION_CODE = 201;
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -2017,12 +2017,11 @@ app.get(['/api/app-version', '/api/app/version'], (_req, res) => {
     apkUrl: 'https://spotyflow.vercel.app/api/download-apk',
     otaEnabled: true,
     releaseNotes: [
-      'SpotyFlow v2.0.0 — Auralys-Class Edition',
-      'Mesin Audio Instan (< 1 Detik) NewPipeExtractor v0.27.1 + Native Media3 ExoPlayer + SimpleCache + Pre-Fetch',
-      'Lirik Real-Time di Dynamic Island / Origin Island & Layar Kunci',
-      '3 Varian Widget Layar Utama Android (4×1 Mini Glass, 4×2 Adaptive Card, & 4×2 Live Lyrics)',
-      'Sakelar 1-Klik Gaya Liquid Glass ↔ Editorial + Floating Glass Dock + Apple Music Synced Lyrics + Optimistic UI 0ms',
-      'Poster Maker Studio (5 Template HD 1080×1920 & 1080×1350) + Offline Download Penuh 1-Klik',
+      'SpotyFlow v2.0.1 — Ultra-Fast Playback (< 0.7s) & True Liquid Glass Edition',
+      'Jalur Play Instan < 0.7 Detik via Direct InnerTube ANDROID_VR + Native videoId Search tanpa muter Vercel + Auto-Retry 2-Lapis ke NewPipeExtractor',
+      'Rombak Total GUI: Living Multi-Orb Mesh Liquid Glass (iOS 26 / Auralys) & True Editorial Serif Matte (60–120 FPS)',
+      'Poster Maker Studio 4 Tab Layar Penuh: Pilih Lagu Dulu, Upload Foto Galeri Sendiri, 5 Template HD & Simpan Langsung ke Galeri HP (Pictures/SpotyFlow)',
+      'Prefetch Cerdas 2 Lagu Berikutnya + Indikator Kecepatan Audio Opsional + Lirik Live Dynamic Island & 3 Widget Android',
     ],
     updatedAt: new Date().toISOString(),
   });

@@ -1,4 +1,4 @@
-name: Build SpotyFlow Android APK (v2.0.0 Auralys-Class Release · NewPipe + ExoPlayer · SDK 34)
+name: Build SpotyFlow Android APK (v2.0.1 Ultra-Fast Auralys Release · InnerTube + NewPipe + ExoPlayer · SDK 34)
 
 on:
   workflow_dispatch:
@@ -46,15 +46,16 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Patch SpotyFlow v2.0.0 (NewPipeExtractor + Media3 ExoPlayer + Live Island Lyrics + 3 Auralys Widgets)
+      - name: Patch SpotyFlow v2.0.1 (FastResolver + NewPipeExtractor + Media3 ExoPlayer + Native Gallery + 3 Widgets)
         run: node scripts/patch-android-apk.js
 
-      - name: Verify Patched SpotyFlow v2.0.0 Native Files
+      - name: Verify Patched SpotyFlow v2.0.1 Native Files
         run: |
           APP_ID=$(node -p "require('./capacitor.config.json').appId")
           PKG_PATH=$(echo "$APP_ID" | tr '.' '/')
           echo "Verifying dynamic appId=$APP_ID (path=$PKG_PATH)"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowWebView.java"
+          test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowFastResolver.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowNewPipeEngine.java"
           test -f "android/app/src/main/java/${PKG_PATH}/SpotyFlowPlaybackService.java"
           test -f "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
@@ -79,8 +80,8 @@ jobs:
           grep -q "jitpack.io" android/build.gradle
           grep -q "compileSdkVersion = 34" android/variables.gradle
           grep -q "targetSdkVersion = 34" android/variables.gradle
-          grep -q "versionCode 200" android/app/build.gradle
-          grep -q 'versionName "2.0.0"' android/app/build.gradle
+          grep -q "versionCode 201" android/app/build.gradle
+          grep -q 'versionName "2.0.1"' android/app/build.gradle
           grep -q "namespace \"${APP_ID}\"" android/app/build.gradle
           grep -q "applicationId \"${APP_ID}\"" android/app/build.gradle
           grep -q "coreLibraryDesugaringEnabled true" android/app/build.gradle
@@ -95,6 +96,9 @@ jobs:
           grep -q "signingConfig signingConfigs.debug" android/app/build.gradle
           ! grep -q "LAYER_TYPE_HARDWARE" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "playNativeTrack" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "prefetchTrackMeta" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "savePosterToGallery" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
+          grep -q "sharePosterImage" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "updateLyricLine" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "downloadOfflineTrack" "android/app/src/main/java/${PKG_PATH}/MainActivity.java"
           grep -q "SpotyFlowWidgetProvider" android/app/src/main/AndroidManifest.xml
@@ -113,7 +117,7 @@ jobs:
           chmod +x gradlew
           GRADLE_OPTS="-Xmx4096m" ./gradlew assembleRelease --no-daemon
 
-      - name: Export SpotyFlow.apk (Release v2.0.0) & Show Size
+      - name: Export SpotyFlow.apk (Release v2.0.1) & Show Size
         run: |
           test -f android/app/build/outputs/apk/release/app-release.apk
           cp android/app/build/outputs/apk/release/app-release.apk SpotyFlow.apk
@@ -122,7 +126,7 @@ jobs:
       - name: Upload SpotyFlow APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SpotyFlow-APK-v2.0.0-Release
+          name: SpotyFlow-APK-v2.0.1-Release
           path: SpotyFlow.apk
           retention-days: 30
 
@@ -130,15 +134,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: SpotyFlow v2.0.0
+          name: SpotyFlow v2.0.1
           body: |
-            ### SpotyFlow v2.0.0 — Auralys-Class Edition
-            - **Mesin Audio Instan (< 1 Detik)**: `NewPipeExtractor v0.27.1` + Native `Media3 ExoPlayer` + `SimpleCache` (180 MB) + Smart Pre-Fetch lagu berikutnya + `C.WAKE_MODE_NETWORK` (layar mati 100% stabil, `SFYtFull` sebagai fallback & Mode Video MV).
-            - **Lirik Real-Time di Dynamic Island / Origin Island & Layar Kunci**: Baris lirik aktif mengalir otomatis di kapsul media HP, smartwatch & Bluetooth mobil.
-            - **3 Varian Widget Layar Utama Ala Auralys**: Mini Glass `4×1`, Adaptive Album Card `4×2` (warna dominan otomatis), dan Live Lyrics Widget `4×2` (lirik real-time).
-            - **Dual UI 1-Klik (`Liquid Glass` ↔ `Editorial`)**: Floating Glass Bottom Dock & Mini-Player, Material You Ambient Glow, Apple Music Synced Lyrics, dan Optimistic UI `0ms` dengan Haptic Feedback.
-            - **Poster Maker Studio (5 Template HD `1080×1920` & `1080×1350`)**: Editorial, Liquid Glass Card, Vinyl Sleeve Retro, Lyric Quote, & Polaroid (anti tainted canvas).
-            - **Offline Download Penuh 1-Klik**: Unduh audio `.m4a` langsung ke perangkat & putar `0ms` tanpa kuota internet.
+            ### SpotyFlow v2.0.1 — Ultra-Fast Playback & True Liquid Glass Edition
+            - **Play Instan < 0.7 Detik (Fix A)**: Direct InnerTube `ANDROID_VR` resolver (`SpotyFlowFastResolver`), Native `videoId` Search langsung dari HP tanpa muter Vercel, buffer `250ms` di ExoPlayer, Auto-Retry 2-Lapis ke `NewPipeExtractor v0.27.1` anti-403, Smart Prefetch 2 lagu berikutnya, & Indikator Kecepatan Audio opsional.
+            - **True Liquid Glass & True Editorial (Fix B)**: Living Multi-Orb Mesh Canvas 3 warna harmonis HSL (0% abu kusam & bebas tabrakan hijau neon), Optical Specular Glass Dock & Mini-Player, Fullscreen Player super bersih ala Apple Music/Auralys dengan laci bottom-sheet Audio & FX, serta Mode Editorial Serif Matte 120 FPS.
+            - **Poster Maker Studio 4 Tab Ala Auralys (Fix C)**: Pilih lagu dulu dari Sedang Diputar / Disukai / Riwayat / Cari Lagu tanpa memutus audio, Upload Foto Sendiri dari galeri (anti-gepeng & auto-resize anti-OOM), 5 Template HD proporsional, setingan lengkap (rasio, blur, dimmer, radius, film grain, font, warna, lirik), & **Simpan Langsung ke Galeri HP (`Pictures/SpotyFlow`)** via native Android `MediaStore`!
           files: SpotyFlow.apk
           make_latest: true
           overwrite_files: true

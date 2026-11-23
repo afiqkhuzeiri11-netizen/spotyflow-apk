@@ -1289,8 +1289,430 @@
       box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.65), 0 0 18px rgba(30, 215, 96, 0.35) !important;
     }
   </style>
+
+  <!-- =====================================================================
+       SPOTYFLOW v2.0.1 — TRUE LIQUID GLASS (iOS 26 / AURALYS) & TRUE EDITORIAL
+       Dedicated overhaul layer: ZERO old IDs removed, ZERO blur in scroll lists!
+       ===================================================================== -->
+  <style id="sf-liquid-overhaul-css">
+    :root {
+      --sf-mesh-rgb: 109, 40, 217;
+      --sf-orb1: rgb(30, 64, 175);
+      --sf-orb2: rgb(124, 58, 237);
+      --sf-orb3: rgb(14, 116, 144);
+    }
+
+    /* Living Multi-Orb Ambient Mesh Canvas (160x160 GPU-upscaled, 0% idle CPU) */
+    #sf-ambient-mesh-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 450ms ease;
+      transform: translateZ(0);
+    }
+    #sf-ambient-mesh-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 0%, rgba(6, 8, 14, 0.28) 0%, rgba(6, 8, 14, 0.46) 65%, rgba(5, 7, 12, 0.62) 100%);
+      opacity: 0;
+      transition: opacity 450ms ease;
+    }
+
+    /* ============ MODE #1: TRUE LIQUID GLASS (iOS 26 / AURALYS) ============ */
+    html[data-sf-style="liquid"] {
+      --sf-accent: #FFFFFF;
+      background-color: #06080F !important;
+    }
+    html[data-sf-style="liquid"] #sf-ambient-mesh-canvas,
+    html[data-sf-style="liquid"] #sf-ambient-mesh-scrim {
+      opacity: 1;
+    }
+    html[data-sf-style="liquid"] body {
+      background: transparent !important;
+    }
+    html[data-sf-style="liquid"] body > header,
+    html[data-sf-style="liquid"] body > div.flex.flex-1,
+    html[data-sf-style="liquid"] body > footer {
+      position: relative;
+    }
+    html[data-sf-style="liquid"] body > div.flex.flex-1 {
+      z-index: 1;
+      background: transparent !important;
+    }
+    html[data-sf-style="liquid"] main,
+    html[data-sf-style="liquid"] #main-scroll,
+    html[data-sf-style="liquid"] #ambient-wash {
+      background: transparent !important;
+      background-image: none !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      box-shadow: none !important;
+    }
+
+    /* Optical Specular Glass — STRICTLY on static floating chrome ONLY */
+    html[data-sf-style="liquid"] body > header {
+      padding-top: 8px;
+      padding-bottom: 8px;
+      background: linear-gradient(180deg, rgba(10, 12, 20, 0.56) 0%, rgba(10, 12, 20, 0.24) 100%) !important;
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+    }
+    html[data-sf-style="liquid"] #sf-style-pill-switch {
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      border-top-color: rgba(255, 255, 255, 0.38) !important;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
+    }
+    html[data-sf-style="liquid"] #sf-style-pill-switch .sf-style-thumb {
+      background: rgba(255, 255, 255, 0.24) !important;
+      border: 1px solid rgba(255, 255, 255, 0.38) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-sf-style="liquid"] #header-quick-menu-btn,
+    html[data-sf-style="liquid"] #header-profile-btn,
+    html[data-sf-style="liquid"] #btn-ai-copilot-header,
+    html[data-sf-style="liquid"] #btn-cmd-palette-header {
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.20) !important;
+      border-top-color: rgba(255, 255, 255, 0.34) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    }
+    html[data-sf-style="liquid"] #global-search-input {
+      background: rgba(255, 255, 255, 0.09) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      border-top-color: rgba(255, 255, 255, 0.30) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+    }
+    html[data-sf-style="liquid"] #left-sidebar,
+    html[data-sf-style="liquid"] #right-panel {
+      background: rgba(12, 15, 26, 0.56) !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-top-color: rgba(255, 255, 255, 0.24) !important;
+    }
+    html[data-sf-style="liquid"] body > footer {
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.12) 0%, rgba(12, 15, 24, 0.72) 100%) !important;
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.22) !important;
+    }
+
+    /* Crystal White Accent Override (Zero Spotify Neon Green Clashes in Liquid Mode) */
+    html[data-sf-style="liquid"] #header-profile-avatar,
+    html[data-sf-style="liquid"] #sticky-play-btn,
+    html[data-sf-style="liquid"] header [aria-label="Beranda SpotyFlow"] > div:first-child {
+      background: #FFFFFF !important;
+      color: #05070D !important;
+      box-shadow: 0 6px 20px rgba(var(--sf-mesh-rgb, 124, 58, 237), 0.45), 0 0 0 1px rgba(255, 255, 255, 0.4) !important;
+    }
+    html[data-sf-style="liquid"] #sf-style-pill-switch [data-style-opt="liquid"] svg,
+    html[data-sf-style="liquid"] #btn-cmd-palette-header svg {
+      color: #FFFFFF !important;
+    }
+    html[data-sf-style="liquid"] #mobile-progress-bar {
+      background: #FFFFFF !important;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.85), 0 0 16px rgba(var(--sf-mesh-rgb, 124, 58, 237), 0.55) !important;
+    }
+    html[data-sf-style="liquid"] #mobile-progress-bar.sf-buffering-shimmer {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), #FFFFFF, rgba(var(--sf-mesh-rgb, 124, 58, 237), 0.9), #FFFFFF, rgba(255, 255, 255, 0.15)) !important;
+      background-size: 200% 100% !important;
+    }
+    html[data-sf-style="liquid"] button.sf-btn-buffering {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 22px rgba(var(--sf-mesh-rgb, 124, 58, 237), 0.65) !important;
+    }
+
+    /* Floating Glass Bottom Dock (Mobile) */
+    html[data-sf-style="liquid"] .mobile-bottom-nav {
+      left: 14px !important;
+      right: 14px !important;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+      height: 58px !important;
+      padding: 6px !important;
+      border-radius: 30px !important;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      border-top-color: rgba(255, 255, 255, 0.38) !important;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 rgba(255, 255, 255, 0.06) !important;
+    }
+    html[data-sf-style="liquid"] .mobile-bottom-nav .nav-btn {
+      color: rgba(255, 255, 255, 0.58) !important;
+      border-radius: 24px !important;
+      transition: background-color 220ms ease, color 220ms ease, transform 180ms ease;
+    }
+    html[data-sf-style="liquid"] .mobile-bottom-nav .nav-btn.nav-active {
+      background: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.22) !important;
+      border-radius: 24px !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Floating Glass Mini-Player (8px above Floating Dock) */
+    html[data-sf-style="liquid"] #mobile-mini-player {
+      left: 14px !important;
+      right: 14px !important;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 76px) !important;
+      border-radius: 24px !important;
+      padding: 8px 12px !important;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.16) 0%, rgba(var(--sf-mesh-rgb, 30, 41, 59), 0.34) 100%) !important;
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      border-top-color: rgba(255, 255, 255, 0.38) !important;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 rgba(255, 255, 255, 0.06) !important;
+    }
+    html[data-sf-style="liquid"] #mobile-mini-player #mobile-artist {
+      color: rgba(255, 255, 255, 0.68) !important;
+    }
+    html[data-sf-style="liquid"] #mobile-mini-player #mobile-play-btn {
+      background: #FFFFFF !important;
+      color: #05070D !important;
+      box-shadow: 0 6px 18px rgba(255, 255, 255, 0.28) !important;
+    }
+    html[data-sf-style="liquid"] #mobile-mini-player > div:last-child {
+      height: 2.5px !important;
+      left: 14px !important;
+      right: 14px !important;
+      background: rgba(255, 255, 255, 0.16) !important;
+    }
+
+    /* Scrollable Cards & Track Rows — Tinted Glass Surface, ZERO backdrop-filter (60-120 FPS!) */
+    html[data-sf-style="liquid"] #page-content .sp-card,
+    html[data-sf-style="liquid"] #page-content .sf-bento-card,
+    html[data-sf-style="liquid"] #page-content section[class*="bg-[#181818]"],
+    html[data-sf-style="liquid"] #page-content button[class*="bg-[#181818]"],
+    html[data-sf-style="liquid"] #page-content div[class*="bg-[#181818]"] {
+      background: rgba(255, 255, 255, 0.068) !important;
+      border: 1px solid rgba(255, 255, 255, 0.10) !important;
+      border-top-color: rgba(255, 255, 255, 0.18) !important;
+      border-radius: 20px !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    html[data-sf-style="liquid"] #page-content .track-row {
+      border-radius: 16px !important;
+      padding: 10px 12px !important;
+      border: 1px solid transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      transition: background-color 180ms ease, border-color 180ms ease;
+    }
+    html[data-sf-style="liquid"] #page-content .track-row:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+    html[data-sf-style="liquid"] #page-content .track-row.track-active,
+    html[data-sf-style="liquid"] #page-content .track-row[data-playing="true"] {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      border-top-color: rgba(255, 255, 255, 0.34) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+    }
+    html[data-sf-style="liquid"] #page-content .track-row .track-title.text-\[\#1ED760\] {
+      color: #FFFFFF !important;
+      text-shadow: 0 0 16px rgba(var(--sf-mesh-rgb, 124, 58, 237), 0.7);
+    }
+
+    /* Fullscreen Player (#fullscreen-stage) — True Liquid Glass / Apple Music / Auralys */
+    html[data-sf-style="liquid"] #fullscreen-stage {
+      background:
+        radial-gradient(circle at 18% 18%, var(--sf-orb1) 0%, transparent 56%),
+        radial-gradient(circle at 84% 44%, var(--sf-orb2) 0%, transparent 58%),
+        radial-gradient(circle at 24% 88%, var(--sf-orb3) 0%, transparent 56%),
+        linear-gradient(180deg, rgba(6, 8, 16, 0.36) 0%, rgba(5, 7, 14, 0.62) 60%, rgba(4, 5, 10, 0.88) 100%) !important;
+    }
+    html[data-sf-style="liquid"] #fullscreen-stage .sf-smoked-glass {
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      border-top-color: rgba(255, 255, 255, 0.38) !important;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
+    }
+    html[data-sf-style="liquid"] #stage-vinyl-frame {
+      border-radius: 24px !important;
+      box-shadow: 0 28px 64px -12px rgba(var(--sf-mesh-rgb, 124, 58, 237), 0.72), 0 12px 28px rgba(0, 0, 0, 0.55) !important;
+      transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 500ms ease !important;
+      will-change: transform;
+    }
+    #fullscreen-stage.sf-stage-paused #stage-vinyl-frame {
+      transform: scale(0.92);
+    }
+    #fullscreen-stage.sf-stage-playing #stage-vinyl-frame {
+      transform: scale(1);
+    }
+    html[data-sf-style="liquid"] #stage-title {
+      font-size: clamp(22px, 5.5vw, 28px) !important;
+      letter-spacing: -0.025em !important;
+      color: #FFFFFF !important;
+    }
+    html[data-sf-style="liquid"] #stage-artist {
+      color: rgba(255, 255, 255, 0.70) !important;
+    }
+    /* Apple Music Glass Seekbar */
+    html[data-sf-style="liquid"] #stage-seek-slider {
+      height: 6px !important;
+      border-radius: 9999px !important;
+      background: linear-gradient(to right, #FFFFFF 0%, #FFFFFF var(--slider-pct, 0%), rgba(255, 255, 255, 0.22) var(--slider-pct, 0%), rgba(255, 255, 255, 0.22) 100%) !important;
+      transition: height 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html[data-sf-style="liquid"] #stage-seek-slider:active,
+    html[data-sf-style="liquid"] #stage-seek-slider:focus-visible {
+      height: 9px !important;
+    }
+    html[data-sf-style="liquid"] #stage-seek-slider::-webkit-slider-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 9999px;
+      background: #FFFFFF !important;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.75) !important;
+    }
+    html[data-sf-style="liquid"] #stage-play-pause {
+      width: 68px !important;
+      height: 68px !important;
+      background: #FFFFFF !important;
+      color: #05070D !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.48), 0 0 28px rgba(255, 255, 255, 0.30) !important;
+    }
+    /* Hide noisy quick-FX bar visually in Liquid Glass (ALL IDs kept intact in DOM!) */
+    html[data-sf-style="liquid"] #stage-quick-fx-bar {
+      display: none !important;
+    }
+    /* Hide redundant top mobile tab bar in Liquid Glass because bottom 3 glass pills handle Lirik / Audio & FX / Antrean cleanly */
+    html[data-sf-style="liquid"] #stage-mobile-tab-bar {
+      display: none !important;
+    }
+    /* Bottom 3 Minimalist Glass Pills */
+    #sf201-stage-bottom-pills {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    #sf201-stage-bottom-pills button {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9999px;
+      font-size: 11.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255, 255, 255, 0.85);
+      transition: transform 160ms ease, background-color 200ms ease, color 200ms ease;
+    }
+    #sf201-stage-bottom-pills button.sf201-pill-active {
+      background: rgba(255, 255, 255, 0.24) !important;
+      color: #FFFFFF !important;
+      border-color: rgba(255, 255, 255, 0.48) !important;
+    }
+    /* Apple Music Synced Lyrics Typography Upgrade */
+    html[data-sf-style="liquid"] #stage-lyrics-body .synced-lyric-line {
+      font-size: clamp(22px, 5.2vw, 28px) !important;
+      line-height: 1.32 !important;
+      letter-spacing: -0.02em;
+    }
+    html[data-sf-style="liquid"] #stage-lyrics-body .synced-lyric-line.lyric-passed,
+    html[data-sf-style="liquid"] #stage-lyrics-body .synced-lyric-line.lyric-upcoming-near,
+    html[data-sf-style="liquid"] #stage-lyrics-body .synced-lyric-line.lyric-upcoming-far {
+      opacity: 0.32 !important;
+    }
+
+    /* ============ MODE #2: TRUE EDITORIAL (PRINT MAGAZINE MATTE — 0% BLUR) ============ */
+    html[data-sf-style="editorial"] {
+      background-color: #09090B !important;
+    }
+    html[data-sf-style="editorial"] #sf-ambient-mesh-canvas,
+    html[data-sf-style="editorial"] #sf-ambient-mesh-scrim {
+      display: none !important;
+      opacity: 0 !important;
+    }
+    html[data-sf-style="editorial"] *,
+    html[data-sf-style="editorial"] *::before,
+    html[data-sf-style="editorial"] *::after {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    html[data-sf-style="editorial"] body,
+    html[data-sf-style="editorial"] body > div.flex.flex-1,
+    html[data-sf-style="editorial"] main,
+    html[data-sf-style="editorial"] #main-scroll,
+    html[data-sf-style="editorial"] body > header,
+    html[data-sf-style="editorial"] body > footer {
+      background: #09090B !important;
+      background-image: none !important;
+    }
+    html[data-sf-style="editorial"] #ambient-wash {
+      opacity: 0 !important;
+    }
+    html[data-sf-style="editorial"] h1,
+    html[data-sf-style="editorial"] h2,
+    html[data-sf-style="editorial"] #stage-title {
+      font-family: Georgia, 'Times New Roman', serif !important;
+      letter-spacing: -0.02em !important;
+      font-weight: 700 !important;
+    }
+    html[data-sf-style="editorial"] #page-content .font-mono[class*="uppercase"],
+    html[data-sf-style="editorial"] #fullscreen-stage .uppercase {
+      font-size: 10px !important;
+      letter-spacing: 0.16em !important;
+      text-transform: uppercase !important;
+      color: rgba(255, 255, 255, 0.48) !important;
+    }
+    html[data-sf-style="editorial"] #page-content .sp-card,
+    html[data-sf-style="editorial"] #page-content .sf-bento-card,
+    html[data-sf-style="editorial"] #page-content section[class*="bg-[#181818]"],
+    html[data-sf-style="editorial"] #page-content button[class*="bg-[#181818]"],
+    html[data-sf-style="editorial"] #left-sidebar,
+    html[data-sf-style="editorial"] #right-panel {
+      background: #111114 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 10px !important;
+    }
+    html[data-sf-style="editorial"] .mobile-bottom-nav,
+    html[data-sf-style="editorial"] #mobile-mini-player {
+      background: #111114 !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.72) !important;
+    }
+    html[data-sf-style="editorial"] #stage-play-pause,
+    html[data-sf-style="editorial"] #mobile-play-btn,
+    html[data-sf-style="editorial"] #sticky-play-btn {
+      background: #FFFFFF !important;
+      color: #09090B !important;
+    }
+    html[data-sf-style="editorial"] #sf201-stage-bottom-pills button {
+      background: #111114 !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-radius: 10px !important;
+    }
+    html[data-sf-style="editorial"] #sf201-stage-bottom-pills button.sf201-pill-active {
+      background: #FFFFFF !important;
+      color: #09090B !important;
+      border-color: #FFFFFF !important;
+    }
+
+    @media (max-width: 767px) {
+      #page-content {
+        padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
+  <!-- Living Multi-Orb Ambient Mesh Canvas (SpotyFlow v2.0.1 True Liquid Glass) -->
+  <canvas id="sf-ambient-mesh-canvas" width="160" height="160" aria-hidden="true"></canvas>
+  <div id="sf-ambient-mesh-scrim" aria-hidden="true"></div>
 
   <!-- =====================================================================
        WAJIB LOGIN - AUTH GATE LAYAR PENUH (WHATSAPP OTP + GOOGLE OAUTH)
@@ -1549,7 +1971,7 @@
               <i data-lucide="settings" aria-hidden="true" class="w-4 h-4 text-[#1ED760] shrink-0"></i>
               <span class="truncate">Pengaturan</span>
             </span>
-            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v2.0.0</span>
+            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v2.0.1</span>
           </button>
           <button type="button" role="menuitem" onclick="closeHeaderQuickMenu(); openAiMoodDjModal()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/[0.08] text-xs font-bold text-[#E5C99B] text-left transition-colors">
             <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
@@ -1999,7 +2421,7 @@
             <div class="flex items-center justify-between pt-1.5 gap-2">
               <span class="text-[11px] text-[#B3B3B3] shrink-0">Auto-Update OTA</span>
               <button type="button" id="console-app-version" onclick="SFAutoUpdate.checkNow(true)" class="font-mono text-[11px] font-bold text-white hover:text-[#1ED760] text-right truncate transition-colors">
-                v2.0.0 • Cek Update
+                v2.0.1 • Cek Update
               </button>
             </div>
           </div>
@@ -2550,8 +2972,9 @@
         <button type="button" id="sf-av-btn-video" role="tab" aria-selected="false" onclick="window.SF153?.setStageVideoMode(true)" class="px-3 py-1 rounded-full text-[11px] font-semibold text-white/70 hover:text-white transition-colors">Video</button>
       </div>
 
-      <!-- Right: Strictly 2 Clean Controls (Mode Canvas + Studio ⋯) -->
+      <!-- Right: Strictly 2 Clean Controls (Mode Canvas + Studio ⋯) + Optional Speed HUD -->
       <div class="flex items-center gap-2 shrink-0 relative">
+        <span id="sf201-perf-hud" class="hidden px-2 py-0.5 rounded-full sf-smoked-glass font-mono text-[9.5px] font-bold tracking-wider text-white/90 whitespace-nowrap" title="Diagnostik Kecepatan Mesin Audio">⚡ READY</span>
         <!-- 1. Mode Canvas (Cinematic Ken Burns ON / Standard Spotify Gradient OFF) -->
         <button type="button" id="btn-stage-canvas-toggle" onclick="toggleCanvasMotionMode()" aria-pressed="true" aria-label="Mode Canvas Sinematik Spotify" title="Mode Canvas (Sinematik / Gradien Standar)" class="sf-tap relative w-9 h-9 rounded-full sf-smoked-glass sf-champagne-active flex items-center justify-center transition-colors shrink-0">
           <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4 stroke-[1.75]"></i>
@@ -2632,7 +3055,7 @@
             <i data-lucide="radio" aria-hidden="true" class="w-4 h-4 stroke-[1.6] text-[#1ED760] shrink-0"></i>
             <span class="truncate">Mulai Radio Lagu Ini</span>
           </button>
-          <button type="button" onclick="closeStageStudioSheet(); window.SF200?.poster?.openModal(AppState.currentTrack)" class="sf-tap min-h-[48px] px-3.5 py-2.5 rounded-2xl sf-smoked-glass text-xs font-medium text-[#F5F5F7] flex items-center gap-2.5 text-left">
+          <button type="button" onclick="closeStageStudioSheet(); (window.SF201?.posterStudio?.open ? window.SF201.posterStudio.open(AppState.currentTrack) : window.SF200?.poster?.openModal(AppState.currentTrack))" class="sf-tap min-h-[48px] px-3.5 py-2.5 rounded-2xl sf-smoked-glass text-xs font-medium text-[#F5F5F7] flex items-center gap-2.5 text-left">
             <i data-lucide="palette" aria-hidden="true" class="w-4 h-4 stroke-[1.6] text-[#E5C99B] shrink-0"></i>
             <span class="truncate">🎨 Buat Poster HD</span>
           </button>
@@ -2704,7 +3127,7 @@
             <button type="button" id="stage-offline-dl-btn" onclick="window.SF200?.offline?.downloadOrToggle(AppState.currentTrack)" aria-label="Unduh offline" title="Unduh Offline 1-Klik" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#1ED760] shrink-0 transition-colors font-mono text-[10px] font-bold">
               <i data-lucide="download" aria-hidden="true" class="w-4 h-4 stroke-[1.8]"></i>
             </button>
-            <button type="button" id="stage-poster-studio-btn" onclick="window.SF200?.poster?.openModal(AppState.currentTrack)" aria-label="Buat poster lagu HD" title="🎨 Buat Poster Lagu HD" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#E5C99B] shrink-0 transition-colors">
+            <button type="button" id="stage-poster-studio-btn" onclick="window.SF201?.posterStudio?.open ? window.SF201.posterStudio.open(AppState.currentTrack) : window.SF200?.poster?.openModal(AppState.currentTrack)" aria-label="Buat poster lagu HD" title="🎨 Buat Poster Lagu HD" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#E5C99B] shrink-0 transition-colors">
               <i data-lucide="palette" aria-hidden="true" class="w-4 h-4 stroke-[1.8]"></i>
             </button>
             <button type="button" id="stage-pin-moment-btn" onclick="window.SF153?.openPinMomentModal()" aria-label="Pin momen favorit" title="Pin Momen / Reff Favorit" class="sf-tap w-9 h-9 rounded-full sf-smoked-glass flex items-center justify-center text-white/70 hover:text-[#1ED760] shrink-0 transition-colors">
@@ -2842,6 +3265,22 @@
             A-B
           </button>
         </div>
+      </div>
+
+      <!-- SpotyFlow v2.0.1: 3 Minimalist Glass Bottom Pills (Lirik | Audio & FX | Antrean) -->
+      <div id="sf201-stage-bottom-pills" aria-label="Navigasi Cepat Layar Penuh">
+        <button type="button" id="sf201-pill-lyrics" onclick="window.SF201?.gui?.toggleStageTab('lyrics')" class="sf-tap sf-smoked-glass">
+          <span>💬</span>
+          <span>Lirik</span>
+        </button>
+        <button type="button" id="sf201-pill-fx" onclick="window.SF201?.gui?.openFxSheet()" class="sf-tap sf-smoked-glass">
+          <span>🎛️</span>
+          <span>Audio &amp; FX</span>
+        </button>
+        <button type="button" id="sf201-pill-queue" onclick="window.SF201?.gui?.toggleStageTab('queue')" class="sf-tap sf-smoked-glass">
+          <span>≡</span>
+          <span>Antrean</span>
+        </button>
       </div>
     </div>
   </div>
@@ -3059,7 +3498,7 @@
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
-    const APP_VERSION = '2.0.0';
+    const APP_VERSION = '2.0.1';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -8570,20 +9009,16 @@
         }
       }
 
-      // Priority 0.5 (NATIVE APK OFFLINE 0ms): Jika sudah tersimpan di filesDir/offline_audio HP -> putar 0ms tanpa internet!
-      if (window.SF200 && window.SF200.hasNativeOfflineTrack(track.id) && window.SF200.canUseNativeAudio(track)) {
-        const offlineOk = await window.SF200.playNativeTrack(track, extractDirectTrackVideoId(track) || '', sessionId, pendingResumeSec);
-        if (sessionId !== AppState.playSessionId) return;
-        if (offlineOk) return;
-      }
-
-      // Priority 3 (FAST PATH YOUTUBE PENUH): Jika track sudah punya videoId valid, putar via Native NewPipe+ExoPlayer (<1s di APK) atau SFYtFull
+      // Priority 0.5 (SPOTYFLOW v2.0.1 ZERO-VERCEL INSTANT NATIVE PLAY < 0.7s):
+      // Di APK Native, langsung tembak SpotyFlowFastResolver + ExoPlayer di detik ke-0
+      // BAHKAN ketika track belum punya videoId (dicari langsung via Native InnerTube Search di HP!)
       const directYtVid = extractDirectTrackVideoId(track);
-      if (directYtVid && window.SF200 && window.SF200.canUseNativeAudio(track)) {
-        const nativeOk = await window.SF200.playNativeTrack(track, directYtVid, sessionId, pendingResumeSec);
+      if (window.SF200 && window.SF200.canUseNativeAudio(track)) {
+        const nativeOk = await window.SF200.playNativeTrack(track, directYtVid || '', sessionId, pendingResumeSec);
         if (sessionId !== AppState.playSessionId) return;
         if (nativeOk) return;
       }
+      // Priority 3 (WEB / FALLBACK YOUTUBE PENUH): Jika track sudah punya videoId valid, putar via SFYtFull
       if (directYtVid && typeof SFYtFull !== 'undefined') {
         setLoadingBanner(true, `Memutar YouTube penuh "${track.title}"...`);
         setSignalBadge('MENGHUBUNGKAN...', false);
@@ -11232,7 +11667,7 @@
         <button type="button" onclick="closeTrackContextMenu(); (window.SF200?.offline ? window.SF200.offline.downloadOrToggle(window.__trackContexts['${safeKey}'][${idx}]) : toggleTrackOffline(window.__trackContexts['${safeKey}'][${idx}]))" class="${itemCls}">
           <i data-lucide="${(window.SF200?.offline?.isTrackOffline?.(track.id) || isTrackOfflineCached(track.id)) ? 'hard-drive' : 'download'}" aria-hidden="true" class="w-4 h-4 text-[#1ED760]"></i><span>${(window.SF200?.offline?.isTrackOffline?.(track.id) || isTrackOfflineCached(track.id)) ? 'Hapus dari Unduhan Offline' : 'Unduh Offline (Full Audio)'}</span>
         </button>
-        <button type="button" onclick="closeTrackContextMenu(); window.SF200?.poster?.openModal(window.__trackContexts['${safeKey}'][${idx}])" class="${itemCls}">
+        <button type="button" onclick="closeTrackContextMenu(); (window.SF201?.posterStudio?.open ? window.SF201.posterStudio.open(window.__trackContexts['${safeKey}'][${idx}]) : window.SF200?.poster?.openModal(window.__trackContexts['${safeKey}'][${idx}]))" class="${itemCls}">
           <i data-lucide="palette" aria-hidden="true" class="w-4 h-4 text-[#E5C99B]"></i><span>🎨 Buat Poster HD</span>
         </button>
         <button type="button" onclick="closeTrackContextMenu(); toggleHideTrack(window.__trackContexts['${safeKey}'][${idx}])" class="${itemCls}">
@@ -11745,7 +12180,7 @@
             <div class="space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
                 <div>
-                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v2.0.0</p>
+                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v2.0.1</p>
                   <h1 class="font-display font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-tight text-white mt-0.5">${greetingText}</h1>
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
@@ -14530,7 +14965,15 @@
           </div>
 
           ${typeof renderWeeklyMiniWrappedCardHtml === 'function' ? renderWeeklyMiniWrappedCardHtml() : ''}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button type="button" onclick="window.SF201?.posterStudio?.open(AppState.currentTrack)" class="sf-tap text-left rounded-2xl p-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/18 to-[#18181B] border border-purple-400/35 hover:border-purple-300/70 transition-all flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <span class="font-mono text-[9.5px] font-extrabold uppercase tracking-widest text-purple-300">STUDIO 4 TAB</span>
+                <p class="font-display font-extrabold text-sm sm:text-base text-white mt-0.5">🎨 Poster Maker Studio</p>
+                <p class="text-[11px] text-white/65 truncate">Pilih lagu, upload foto sendiri, 5 gaya HD &amp; simpan Galeri</p>
+              </div>
+              <i data-lucide="palette" aria-hidden="true" class="w-5 h-5 text-purple-300 shrink-0"></i>
+            </button>
             <button type="button" onclick="window.SF153?.openPromptToPlaylistModal()" class="sf-tap text-left rounded-2xl p-4 bg-gradient-to-r from-[#E5C99B]/18 via-purple-500/15 to-[#18181B] border border-[#E5C99B]/35 hover:border-[#E5C99B]/70 transition-all flex items-center justify-between gap-3">
               <div class="min-w-0">
                 <span class="font-mono text-[9.5px] font-extrabold uppercase tracking-widest text-[#E5C99B]">AI CURATOR</span>
@@ -29513,7 +29956,9 @@
       'sf_island_lyrics_v1',
       'sf_visual_style_v2',
       'sf_offline_meta_v2',
+      'sf_perf_hud_v1',
       'sf_seen_whats_new_2_0_0',
+      'sf_seen_whats_new_2_0_1',
       'sf_liked_tracks',
       'sf_user_playlists',
       'sf_playlist_folders',
@@ -29822,10 +30267,17 @@
             </div>
           </section>
 
-          <!-- GRUP 4: SISTEM & PEMBARUAN (v1.5.2) -->
+          <!-- GRUP 4: SISTEM & PEMBARUAN (v2.0.1) -->
           <section class="rounded-2xl bg-white/[0.04] border border-white/10 p-3.5 space-y-2.5">
             <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-[#1ED760]">4. Sistem &amp; Pembaruan (v${APP_VERSION})</p>
             ${isApk ? `<div id="settings-apk-assistant-card" class="rounded-xl bg-white/[0.04] border border-white/10 p-3 space-y-2">${renderApkSystemAssistantInnerHtml()}</div>` : ''}
+            <div class="flex items-center justify-between gap-2 rounded-xl bg-black/25 border border-white/[0.06] px-3 py-2">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white">Tampilkan Indikator Kecepatan Audio</p>
+                <p class="text-[10.5px] text-zinc-400">Pill kecil di layar penuh (mis. ⚡ EXO-FAST • 420ms)</p>
+              </div>
+              <button type="button" onclick="window.SF201?.togglePerfHud?.(); openSettingsModal();" class="px-3 py-1 rounded-full text-[11px] font-bold ${(localStorage.getItem('sf_perf_hud_v1') === '1') ? 'bg-[#1ED760] text-black' : 'bg-white/10 text-zinc-300'} shrink-0">${(localStorage.getItem('sf_perf_hud_v1') === '1') ? 'Aktif' : 'Nonaktif'}</button>
+            </div>
             <div class="grid grid-cols-2 gap-2">
               <button type="button" onclick="SFAutoUpdate.checkNow(true)" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white inline-flex items-center justify-center gap-1.5">
                 <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5 text-[#1ED760]"></i>
@@ -29842,8 +30294,8 @@
       `);
     }
 
-    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v2.0.0" (AUTO 1X) ---
-    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_2_0_0';
+    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v2.0.1" (AUTO 1X) ---
+    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_2_0_1';
 
     function dismissWhatsNewV152Modal() {
       safeStorageSet(SF_SEEN_WHATS_NEW_KEY, '1');
@@ -29856,7 +30308,7 @@
         <div class="space-y-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#E5C99B]/20 text-[#1ED760] border border-[#1ED760]/40">v2.0.0 • AURALYS-CLASS EDITION</span>
+              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#E5C99B]/20 text-[#1ED760] border border-[#1ED760]/40">v2.0.1 • ULTRA-FAST + TRUE LIQUID GLASS</span>
               <h3 class="font-display font-extrabold text-xl text-white mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
             </div>
             <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80 shrink-0">
@@ -29864,11 +30316,10 @@
             </button>
           </div>
           <ul class="space-y-2.5 text-xs text-zinc-200 leading-relaxed">
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">⚡</span><span><strong>Mesin Audio Instan (&lt; 1 Detik)</strong> — <code>NewPipeExtractor</code> + Native <code>ExoPlayer</code> + Pre-Fetch + Layar Mati 100% Stabil.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#38BDF8] font-bold">🫧</span><span><strong>Gaya Liquid Glass ↔ Editorial</strong> — Sakelar 1-klik di pojok atas + Floating Glass Dock + Apple Music Synced Lyrics.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-[#E5C99B] font-bold">🏝️</span><span><strong>Lirik Real-Time di Dynamic Island</strong> — Baris lirik mengalir langsung di kapsul HP, layar kunci &amp; Bluetooth mobil.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-pink-400 font-bold">🎨</span><span><strong>Poster Maker Studio</strong> — 5 Template Poster Lagu &amp; Album HD (<code>1080×1920</code> &amp; <code>1080×1350</code>) siap share IG Story.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-purple-400 font-bold">🧩</span><span><strong>3 Varian Widget Layar Utama</strong> — Mini Glass 4×1, Adaptive Album Card 4×2, &amp; Live Lyrics Widget 4×2.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">⚡</span><span><strong>Play Instan &lt; 0.7 Detik</strong> — Direct InnerTube <code>ANDROID_VR</code> + Native <code>videoId</code> Search + Auto-Retry 2-Lapis &amp; Prefetch 2 lagu berikutnya!</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#38BDF8] font-bold">🫧</span><span><strong>True Liquid Glass &amp; True Editorial</strong> — Living Multi-Orb Mesh Canvas anti-kusam, kaca specular iOS 26, dan layar penuh super bersih.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-pink-400 font-bold">🎨</span><span><strong>Poster Maker Studio 4 Tab Ala Auralys</strong> — Pilih lagu apa saja, upload foto sendiri dari galeri, 5 gaya HD &amp; simpan langsung ke Galeri HP (<code>Pictures/SpotyFlow</code>)!</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-[#E5C99B] font-bold">🏝️</span><span><strong>Dynamic Island Lyrics + 3 Widget Android</strong> — Lirik live real-time, sakelar <code>Lagu | Video</code>, &amp; unduhan offline 0ms.</span></li>
           </ul>
           <button type="button" onclick="dismissWhatsNewV152Modal()" class="w-full py-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-sm font-extrabold transition-colors shadow-lg">
             Mulai Mendengarkan
@@ -31591,8 +32042,11 @@
         const br = getBridge();
         if (!br || typeof br.playNativeTrack !== 'function') return Promise.resolve(false);
         const isOffline = hasNativeOfflineTrack(track?.id);
-        const cleanVid = String(videoId || '').trim();
-        if (!isOffline && !/^[a-zA-Z0-9_-]{11}$/.test(cleanVid)) {
+        const rawVid = String(videoId || '').trim();
+        const cleanVid = /^[a-zA-Z0-9_-]{11}$/.test(rawVid) ? rawVid : '';
+        const hasQueryMeta = Boolean(String(track?.title || '').trim());
+        // v2.0.1: Izinkan videoId kosong jika ada judul lagu -> SpotyFlowFastResolver mencari videoId langsung di HP (0 Vercel!)
+        if (!isOffline && !cleanVid && !hasQueryMeta) {
           return Promise.resolve(false);
         }
 
@@ -31606,6 +32060,7 @@
         st.lastSentLyricIdx = -999;
         st.lastSentLyricText = '';
         st.returnedFromNativeVideoId = cleanVid;
+        st.nativePlayStartedAt = performance.now();
 
         if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(true);
         if (typeof setLoadingBanner === 'function') {
@@ -31693,6 +32148,15 @@
             if (window.SF200?.ui?.setBufferingState) window.SF200.ui.setBufferingState(false);
             const durSec = Number(data.durationMs || 0) / 1000;
             const posSec = Number(data.positionMs || 0) / 1000;
+            const resolvedVid = String(data.resolvedVideoId || '').trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(resolvedVid)) {
+              st.nativeVideoId = resolvedVid;
+              st.returnedFromNativeVideoId = resolvedVid;
+              if (AppState.currentTrack) {
+                AppState.currentTrack.videoId = resolvedVid;
+                AppState.currentTrack.youtubeVideoId = resolvedVid;
+              }
+            }
             if (durSec > 1) {
               st.nativeDurationSec = durSec;
               if (AppState.currentTrack) AppState.currentTrack.duration = durSec;
@@ -31702,11 +32166,18 @@
             AppState.isPlaying = true;
             if (typeof setLoadingBanner === 'function') setLoadingBanner(false);
             const isOff = hasNativeOfflineTrack(AppState.currentTrack?.id);
+            const engineTag = String(data.engine || (isOff ? 'OFFLINE' : 'EXO-FAST'));
+            const elapsedMs = Number(data.elapsedMs) > 0
+              ? Math.round(Number(data.elapsedMs))
+              : Math.max(1, Math.round(performance.now() - (st.nativePlayStartedAt || performance.now())));
+            if (window.SF201?.updatePerfHud) {
+              window.SF201.updatePerfHud(engineTag, elapsedMs);
+            }
             if (typeof setSignalBadge === 'function') {
-              setSignalBadge(`${isOff ? 'OFFLINE NATIVE' : 'EXO HI-FI'} • ${formatTime(st.nativeDurationSec)}`, true);
+              setSignalBadge(`${isOff ? 'OFFLINE NATIVE' : engineTag} • ${formatTime(st.nativeDurationSec)}`, true);
             }
             const srcLbl = document.getElementById('stage-source-label');
-            if (srcLbl) srcLbl.textContent = `${isOff ? 'Offline Perangkat' : 'Native ExoPlayer'} • Hi-Fi (${formatTime(st.nativeDurationSec)})`;
+            if (srcLbl) srcLbl.textContent = `${isOff ? 'Offline Perangkat' : engineTag} • Hi-Fi (${formatTime(st.nativeDurationSec)})`;
             if (typeof updatePlayPauseIcons === 'function') updatePlayPauseIcons();
             if (typeof highlightPlayingTrackRows === 'function') highlightPlayingTrackRows();
             if (st.pendingResolve) {
@@ -31714,7 +32185,11 @@
               const r = st.pendingResolve;
               st.pendingResolve = null;
               r(true);
-              prefetchNextNativeTrack();
+              if (window.SF201?.schedulePrefetchNextTwo) {
+                window.SF201.schedulePrefetchNextTwo();
+              } else {
+                prefetchNextNativeTrack();
+              }
             }
             return;
           }
@@ -32719,6 +33194,1903 @@
         ui,
         poster,
         offline,
+      };
+    })();
+
+    /* =====================================================================
+       26. SPOTYFLOW v2.0.1 — ULTRA-FAST PREFETCH + TRUE LIQUID GLASS GUI
+           + 4-TAB AURALYS POSTER MAKER STUDIO (window.SF201)
+       ===================================================================== */
+    window.SF201 = (function createSpotyFlow201Module() {
+      const PERF_HUD_KEY = 'sf_perf_hud_v1';
+      let prefetchTimer = null;
+
+      function esc(val) {
+        if (typeof escapeHtml === 'function') return escapeHtml(String(val ?? ''));
+        return String(val ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getBridge() {
+        return window.SpotyFlowMediaBridge || null;
+      }
+
+      // -------------------------------------------------------------------
+      // A. FIX A — SPEED DIAGNOSTIC HUD & SMART 2-TRACK PREFETCH
+      // -------------------------------------------------------------------
+      function isPerfHudEnabled() {
+        try { return localStorage.getItem(PERF_HUD_KEY) === '1'; } catch { return false; }
+      }
+
+      function syncPerfHudVisibility() {
+        const el = document.getElementById('sf201-perf-hud');
+        if (!el) return;
+        el.classList.toggle('hidden', !isPerfHudEnabled());
+      }
+
+      function togglePerfHud() {
+        const next = !isPerfHudEnabled();
+        try { localStorage.setItem(PERF_HUD_KEY, next ? '1' : '0'); } catch {}
+        syncPerfHudVisibility();
+        if (typeof showToast === 'function') {
+          showToast(next ? 'Indikator Kecepatan Audio aktif ⚡' : 'Indikator Kecepatan Audio dimatikan', 'info');
+        }
+        return next;
+      }
+
+      function updatePerfHud(engineTag, elapsedMs) {
+        const el = document.getElementById('sf201-perf-hud');
+        if (!el) return;
+        const ms = Math.max(1, Math.round(Number(elapsedMs) || 0));
+        const timeStr = ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+        const tag = String(engineTag || 'EXO-FAST').toUpperCase();
+        el.textContent = `⚡ ${tag} • ${timeStr}`;
+        syncPerfHudVisibility();
+      }
+
+      function schedulePrefetchNextTwo() {
+        if (prefetchTimer) clearTimeout(prefetchTimer);
+        prefetchTimer = setTimeout(() => {
+          prefetchTimer = null;
+          const br = getBridge();
+          if (!br) return;
+          const queue = Array.isArray(AppState?.queue) ? AppState.queue : [];
+          const curIdx = Number(AppState?.queueIndex) || 0;
+          const ds = Boolean(AppState?.dataSaver);
+          [curIdx + 1, curIdx + 2].forEach((idx) => {
+            const tr = queue[idx];
+            if (!tr || tr.isLocal) return;
+            const vid = typeof extractDirectTrackVideoId === 'function' ? (extractDirectTrackVideoId(tr) || '') : '';
+            const tid = String(tr.id || vid || `q_${idx}`);
+            const title = String(tr.title || '');
+            const artist = String(tr.artist?.name || '');
+            try {
+              if (typeof br.prefetchTrackMeta === 'function') {
+                br.prefetchTrackMeta(tid, vid, title, artist, ds);
+              } else if (vid && /^[a-zA-Z0-9_-]{11}$/.test(vid) && typeof br.prefetchTrack === 'function') {
+                br.prefetchTrack(vid, ds);
+              }
+            } catch {}
+          });
+        }, 600);
+      }
+
+      // -------------------------------------------------------------------
+      // B. FIX B — TRUE LIQUID GLASS LIVING MULTI-ORB MESH & CLEAN STAGE GUI
+      // -------------------------------------------------------------------
+      const gui = (function createSF201Gui() {
+        const IDLE_TRIAD = [
+          [30, 64, 175],   // Deep Sapphire (#1E40AF)
+          [124, 58, 237],  // Twilight Violet (#7C3AED)
+          [14, 116, 144],  // Midnight Cyan (#0E7490)
+        ];
+        const MONO_TRIAD = [
+          [29, 78, 216],   // Deep Sapphire (#1D4ED8)
+          [109, 40, 217],  // Twilight Violet (#6D28D9)
+          [30, 27, 75],    // Deep Indigo (#1E1B4B)
+        ];
+
+        let currentTriad = IDLE_TRIAD.map((c) => c.slice());
+        let targetTriad = IDLE_TRIAD.map((c) => c.slice());
+        let animStartTriad = IDLE_TRIAD.map((c) => c.slice());
+        let animStartTs = 0;
+        let animRafId = 0;
+        let lastCoverUrl = '';
+        let currentStageTab = 'player';
+        const triadCache = new Map();
+
+        function rgbToHsl(r, g, b) {
+          r /= 255; g /= 255; b /= 255;
+          const max = Math.max(r, g, b), min = Math.min(r, g, b);
+          let h = 0, s = 0;
+          const l = (max + min) / 2;
+          if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+              case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+              case g: h = (b - r) / d + 2; break;
+              case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+          }
+          return [h * 360, s * 100, l * 100];
+        }
+
+        function hslToRgb(h, s, l) {
+          h = ((h % 360) + 360) % 360;
+          s = Math.max(0, Math.min(100, s)) / 100;
+          l = Math.max(0, Math.min(100, l)) / 100;
+          const c = (1 - Math.abs(2 * l - 1)) * s;
+          const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+          const m = l - c / 2;
+          let r = 0, g = 0, b = 0;
+          if (h < 60) { r = c; g = x; }
+          else if (h < 120) { r = x; g = c; }
+          else if (h < 180) { g = c; b = x; }
+          else if (h < 240) { g = x; b = c; }
+          else if (h < 300) { r = x; b = c; }
+          else { r = c; b = x; }
+          return [
+            Math.round((r + m) * 255),
+            Math.round((g + m) * 255),
+            Math.round((b + m) * 255),
+          ];
+        }
+
+        function buildProxyImageUrl(rawUrl) {
+          const u = String(rawUrl || '').trim();
+          if (!u || u.startsWith('data:') || u.startsWith('blob:') || u.startsWith('/')) return u;
+          const base = typeof API_BASE === 'string' ? API_BASE : '';
+          return `${base}/api/proxy-image?url=${encodeURIComponent(u)}`;
+        }
+
+        function extractHarmoniousTriadFromImage(img) {
+          try {
+            const c = document.createElement('canvas');
+            c.width = 48;
+            c.height = 48;
+            const ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, 48, 48);
+            const data = ctx.getImageData(0, 0, 48, 48).data;
+            const bins = new Array(12).fill(null).map(() => ({ w: 0, hSin: 0, hCos: 0, s: 0, l: 0 }));
+            let totalSatWeight = 0;
+            let count = 0;
+            for (let i = 0; i < data.length; i += 16) {
+              const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+              if (a < 180) continue;
+              const [h, s, l] = rgbToHsl(r, g, b);
+              count++;
+              if (l < 8 || l > 92) continue;
+              totalSatWeight += s;
+              const binIdx = Math.floor(((h % 360) / 30)) % 12;
+              const weight = (s / 100) * (1 - Math.abs(l - 50) / 55) + 0.08;
+              const rad = (h * Math.PI) / 180;
+              bins[binIdx].w += weight;
+              bins[binIdx].hSin += Math.sin(rad) * weight;
+              bins[binIdx].hCos += Math.cos(rad) * weight;
+              bins[binIdx].s += s * weight;
+              bins[binIdx].l += l * weight;
+            }
+            const avgSat = count > 0 ? totalSatWeight / count : 0;
+            if (avgSat < 11) {
+              return MONO_TRIAD.map((x) => x.slice());
+            }
+            bins.sort((a, b) => b.w - a.w);
+            const top = bins[0];
+            if (!top || top.w <= 0.1) return MONO_TRIAD.map((x) => x.slice());
+
+            const h1 = ((Math.atan2(top.hSin, top.hCos) * 180) / Math.PI + 360) % 360;
+            const s1 = Math.max(54, Math.min(82, top.s / top.w + 18));
+            const l1 = Math.max(34, Math.min(50, top.l / top.w));
+
+            // Pick a secondary hue that is distinct (avoid muddy brown/olive clashes)
+            let h2 = (h1 + 42) % 360;
+            for (let j = 1; j < bins.length; j++) {
+              if (bins[j].w < top.w * 0.22) break;
+              const candH = ((Math.atan2(bins[j].hSin, bins[j].hCos) * 180) / Math.PI + 360) % 360;
+              const diff = Math.min(Math.abs(candH - h1), 360 - Math.abs(candH - h1));
+              if (diff >= 28 && diff <= 145) { h2 = candH; break; }
+            }
+            const s2 = Math.max(52, Math.min(84, s1 + 6));
+            const l2 = Math.max(38, Math.min(54, l1 + 6));
+
+            // Deep anchor orb (low-mid luminosity, rich saturation)
+            const h3 = (h1 + 210) % 360;
+            const s3 = Math.max(48, Math.min(72, s1));
+            const l3 = Math.max(30, Math.min(40, l1 - 6));
+
+            return [
+              hslToRgb(h1, s1, l1),
+              hslToRgb(h2, s2, l2),
+              hslToRgb(h3, s3, l3),
+            ];
+          } catch {
+            return MONO_TRIAD.map((x) => x.slice());
+          }
+        }
+
+        function extractHarmoniousTriad(coverUrl) {
+          const clean = String(coverUrl || '').trim();
+          if (!clean || clean.includes('icon-192.png')) {
+            return Promise.resolve(IDLE_TRIAD.map((c) => c.slice()));
+          }
+          if (triadCache.has(clean)) {
+            return Promise.resolve(triadCache.get(clean).map((c) => c.slice()));
+          }
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.decoding = 'async';
+            const timer = setTimeout(() => resolve(MONO_TRIAD.map((c) => c.slice())), 3500);
+            img.onload = () => {
+              clearTimeout(timer);
+              const triad = extractHarmoniousTriadFromImage(img);
+              if (triadCache.size > 40) triadCache.clear();
+              triadCache.set(clean, triad);
+              resolve(triad.map((c) => c.slice()));
+            };
+            img.onerror = () => {
+              clearTimeout(timer);
+              resolve(MONO_TRIAD.map((c) => c.slice()));
+            };
+            img.src = buildProxyImageUrl(clean);
+          });
+        }
+
+        function applyTriadCssVars(triad) {
+          const root = document.documentElement.style;
+          const [c1, c2, c3] = triad;
+          root.setProperty('--sf-mesh-rgb', `${c1[0]}, ${c1[1]}, ${c1[2]}`);
+          root.setProperty('--sf-orb1', `rgb(${c1[0]}, ${c1[1]}, ${c1[2]})`);
+          root.setProperty('--sf-orb2', `rgb(${c2[0]}, ${c2[1]}, ${c2[2]})`);
+          root.setProperty('--sf-orb3', `rgb(${c3[0]}, ${c3[1]}, ${c3[2]})`);
+        }
+
+        function drawMeshFrame(triad) {
+          const canvas = document.getElementById('sf-ambient-mesh-canvas');
+          if (!canvas) return;
+          if (window.__sfIsAppBackgrounded || document.documentElement.getAttribute('data-sf-style') === 'editorial') {
+            return;
+          }
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          const w = canvas.width;
+          const h = canvas.height;
+          const [c1, c2, c3] = triad;
+
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = '#06080F';
+          ctx.fillRect(0, 0, w, h);
+
+          // Orb 1: Top-Left Luminous Primary
+          const g1 = ctx.createRadialGradient(w * 0.16, h * 0.16, 4, w * 0.16, h * 0.16, w * 0.82);
+          g1.addColorStop(0, `rgba(${c1[0]}, ${c1[1]}, ${c1[2]}, 0.92)`);
+          g1.addColorStop(0.55, `rgba(${c1[0]}, ${c1[1]}, ${c1[2]}, 0.36)`);
+          g1.addColorStop(1, 'rgba(6, 8, 15, 0)');
+          ctx.fillStyle = g1;
+          ctx.fillRect(0, 0, w, h);
+
+          // Orb 2: Mid-Right Luminous Complement
+          const g2 = ctx.createRadialGradient(w * 0.88, h * 0.42, 4, w * 0.88, h * 0.42, w * 0.80);
+          g2.addColorStop(0, `rgba(${c2[0]}, ${c2[1]}, ${c2[2]}, 0.86)`);
+          g2.addColorStop(0.55, `rgba(${c2[0]}, ${c2[1]}, ${c2[2]}, 0.30)`);
+          g2.addColorStop(1, 'rgba(6, 8, 15, 0)');
+          ctx.fillStyle = g2;
+          ctx.fillRect(0, 0, w, h);
+
+          // Orb 3: Bottom-Left Deep Anchor
+          const g3 = ctx.createRadialGradient(w * 0.24, h * 0.88, 4, w * 0.24, h * 0.88, w * 0.84);
+          g3.addColorStop(0, `rgba(${c3[0]}, ${c3[1]}, ${c3[2]}, 0.82)`);
+          g3.addColorStop(0.55, `rgba(${c3[0]}, ${c3[1]}, ${c3[2]}, 0.28)`);
+          g3.addColorStop(1, 'rgba(6, 8, 15, 0)');
+          ctx.fillStyle = g3;
+          ctx.fillRect(0, 0, w, h);
+        }
+
+        function stopMeshAnim() {
+          if (animRafId) {
+            cancelAnimationFrame(animRafId);
+            animRafId = 0;
+          }
+        }
+
+        function transitionToTriad(nextTriad) {
+          stopMeshAnim();
+          targetTriad = nextTriad.map((c) => c.slice());
+          applyTriadCssVars(targetTriad);
+          if (window.__sfIsAppBackgrounded || document.documentElement.getAttribute('data-sf-style') === 'editorial') {
+            currentTriad = targetTriad.map((c) => c.slice());
+            return;
+          }
+          animStartTriad = currentTriad.map((c) => c.slice());
+          animStartTs = performance.now();
+          const DURATION = 850;
+          function step(now) {
+            if (window.__sfIsAppBackgrounded || document.documentElement.getAttribute('data-sf-style') === 'editorial') {
+              currentTriad = targetTriad.map((c) => c.slice());
+              animRafId = 0;
+              return;
+            }
+            const t = Math.min(1, (now - animStartTs) / DURATION);
+            const ease = 1 - Math.pow(1 - t, 3);
+            for (let i = 0; i < 3; i++) {
+              for (let j = 0; j < 3; j++) {
+                currentTriad[i][j] = Math.round(animStartTriad[i][j] + (targetTriad[i][j] - animStartTriad[i][j]) * ease);
+              }
+            }
+            drawMeshFrame(currentTriad);
+            if (t < 1) {
+              animRafId = requestAnimationFrame(step);
+            } else {
+              animRafId = 0; // 0% idle CPU/GPU once color lerp finishes!
+            }
+          }
+          animRafId = requestAnimationFrame(step);
+        }
+
+        function syncMeshForCurrentTrack(force = false) {
+          const track = AppState?.currentTrack || null;
+          const url = track && typeof getCover === 'function' ? getCover(track, 'medium') : '';
+          if (!force && url === lastCoverUrl && url) return;
+          lastCoverUrl = url;
+          if (!url) {
+            transitionToTriad(IDLE_TRIAD);
+            return;
+          }
+          extractHarmoniousTriad(url).then((triad) => {
+            transitionToTriad(triad);
+          });
+        }
+
+        function syncStagePlayState() {
+          const stage = document.getElementById('fullscreen-stage');
+          if (!stage) return;
+          const playing = Boolean(AppState?.isPlaying);
+          stage.classList.toggle('sf-stage-playing', playing);
+          stage.classList.toggle('sf-stage-paused', !playing);
+        }
+
+        function syncStageBottomPills(activeTab) {
+          currentStageTab = activeTab || 'player';
+          const lyrBtn = document.getElementById('sf201-pill-lyrics');
+          const qBtn = document.getElementById('sf201-pill-queue');
+          if (lyrBtn) lyrBtn.classList.toggle('sf201-pill-active', currentStageTab === 'lyrics');
+          if (qBtn) qBtn.classList.toggle('sf201-pill-active', currentStageTab === 'queue');
+        }
+
+        function toggleStageTab(tab) {
+          const nextTab = currentStageTab === tab ? 'player' : tab;
+          if (typeof switchFullscreenStageMobileTab === 'function') {
+            switchFullscreenStageMobileTab(nextTab);
+          }
+          // On desktop (lg+), clicking Lirik scrolls lyrics into view & clicking Antrean opens queue panel
+          if (window.innerWidth >= 1024) {
+            if (tab === 'queue') {
+              if (typeof closeFullscreenStage === 'function') closeFullscreenStage();
+              if (typeof openRightPanelTab === 'function') openRightPanelTab('queue');
+              return;
+            }
+            if (tab === 'lyrics') {
+              const lyrCol = document.getElementById('stage-lyrics-col');
+              if (lyrCol) lyrCol.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+          syncStageBottomPills(nextTab);
+        }
+
+        function closeFxSheet() {
+          const el = document.getElementById('sf201-fx-sheet');
+          if (el) el.remove();
+        }
+
+        function openFxSheet() {
+          closeFxSheet();
+          const curPreset = String(AppState?.audioFxPreset || 'normal');
+          const isBoost = Boolean(AppState?.maxVolumeBoost);
+          const isKaraoke = Boolean(AppState?.karaokeMode);
+          const isEditorial = document.documentElement.getAttribute('data-sf-style') === 'editorial';
+          const sheetBg = isEditorial
+            ? 'background:#111114;border:1px solid rgba(255,255,255,0.14);border-radius:16px 16px 0 0;'
+            : 'background:linear-gradient(155deg,rgba(24,28,42,0.84),rgba(10,12,20,0.92));backdrop-filter:blur(26px) saturate(210%);-webkit-backdrop-filter:blur(26px) saturate(210%);border-top:1px solid rgba(255,255,255,0.28);border-radius:28px 28px 0 0;';
+
+          const wrap = document.createElement('div');
+          wrap.id = 'sf201-fx-sheet';
+          wrap.className = 'fixed inset-0 z-[9990] flex flex-col justify-end';
+          const presetBtn = (id, label, icon) => {
+            const act = curPreset === id;
+            return `<button type="button" onclick="if(typeof applyAudioFxPreset==='function'){applyAudioFxPreset('${id}');} window.SF201.gui.openFxSheet();" class="sf-tap py-3 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${act ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.08] text-white/85 border-white/15 hover:bg-white/[0.14]'}"><span>${icon}</span><span>${label}</span></button>`;
+          };
+          wrap.innerHTML = `
+            <div onclick="window.SF201.gui.closeFxSheet()" class="absolute inset-0 bg-black/60"></div>
+            <div class="relative z-10 w-full max-w-lg mx-auto p-5 pb-[calc(1.4rem+env(safe-area-inset-bottom,0px))] space-y-4 shadow-2xl" style="${sheetBg}">
+              <div class="w-10 h-1 rounded-full bg-white/25 mx-auto"></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-mono text-[9.5px] uppercase tracking-[0.22em] text-white/55">AUDIO &amp; EFFECTS</p>
+                  <h3 class="font-display font-bold text-base text-white mt-0.5">🎛️ Audio &amp; FX Studio</h3>
+                </div>
+                <button type="button" onclick="window.SF201.gui.closeFxSheet()" aria-label="Tutup FX" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center">✕</button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                ${presetBtn('normal', 'Normal', '✨')}
+                ${presetBtn('slowed', 'Slowed + Reverb', '🌙')}
+                ${presetBtn('nightcore', 'Nightcore', '⚡')}
+                ${presetBtn('8d', '8D Spatial', '🎧')}
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="if(typeof toggleMaxVolumeBoost==='function'){toggleMaxVolumeBoost();} window.SF201.gui.openFxSheet();" class="sf-tap py-3 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${isBoost ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.08] text-white/85 border-white/15 hover:bg-white/[0.14]'}">
+                  <span>🔊</span><span>Volume Boost ${isBoost ? 'ON' : 'OFF'}</span>
+                </button>
+                <button type="button" onclick="if(typeof toggleKaraokeMode==='function'){toggleKaraokeMode();} window.SF201.gui.openFxSheet();" class="sf-tap py-3 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${isKaraoke ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.08] text-white/85 border-white/15 hover:bg-white/[0.14]'}">
+                  <span>🎤</span><span>Karaoke ${isKaraoke ? 'ON' : 'OFF'}</span>
+                </button>
+              </div>
+              <button type="button" onclick="window.SF201.gui.closeFxSheet(); if(typeof closeFullscreenStage==='function'){closeFullscreenStage();} if(typeof openRightPanelTab==='function'){openRightPanelTab('console');}" class="sf-tap w-full py-3 rounded-2xl bg-white text-black font-bold text-xs flex items-center justify-center gap-2 shadow-lg">
+                <span>🎚️</span><span>Buka EQ 5-Band &amp; Pengaturan Studio Lengkap</span>
+              </button>
+            </div>
+          `;
+          document.body.appendChild(wrap);
+        }
+
+        // Non-invasive hooks so Living Mesh & cover scale stay 100% synced
+        function installHooks() {
+          if (typeof window.updatePlayerUI === 'function' && !window.updatePlayerUI.__sf201Wrapped) {
+            const orig = window.updatePlayerUI;
+            const wrapped = function (...args) {
+              const res = orig.apply(this, args);
+              try { syncMeshForCurrentTrack(false); syncStagePlayState(); } catch {}
+              return res;
+            };
+            wrapped.__sf201Wrapped = true;
+            window.updatePlayerUI = wrapped;
+          }
+          if (typeof window.updatePlayPauseIcons === 'function' && !window.updatePlayPauseIcons.__sf201Wrapped) {
+            const orig = window.updatePlayPauseIcons;
+            const wrapped = function (...args) {
+              const res = orig.apply(this, args);
+              try { syncStagePlayState(); } catch {}
+              return res;
+            };
+            wrapped.__sf201Wrapped = true;
+            window.updatePlayPauseIcons = wrapped;
+          }
+          if (window.SF200?.ui?.setVisualStyle && !window.SF200.ui.setVisualStyle.__sf201Wrapped) {
+            const orig = window.SF200.ui.setVisualStyle;
+            const wrapped = function (styleId, silent) {
+              const res = orig.call(this, styleId, silent);
+              try {
+                if (styleId === 'editorial') {
+                  stopMeshAnim();
+                } else {
+                  drawMeshFrame(currentTriad);
+                }
+              } catch {}
+              return res;
+            };
+            wrapped.__sf201Wrapped = true;
+            window.SF200.ui.setVisualStyle = wrapped;
+          }
+          if (typeof window.__sfSetAppBackgrounded === 'function' && !window.__sfSetAppBackgrounded.__sf201Wrapped) {
+            const orig = window.__sfSetAppBackgrounded;
+            const wrapped = function (isBg) {
+              const res = orig.apply(this, arguments);
+              if (isBg) stopMeshAnim();
+              else if (document.documentElement.getAttribute('data-sf-style') !== 'editorial') drawMeshFrame(currentTriad);
+              return res;
+            };
+            wrapped.__sf201Wrapped = true;
+            window.__sfSetAppBackgrounded = wrapped;
+          }
+        }
+
+        // Boot immediately so Liquid Glass glows from frame 1!
+        setTimeout(() => {
+          applyTriadCssVars(IDLE_TRIAD);
+          drawMeshFrame(IDLE_TRIAD);
+          installHooks();
+          syncStagePlayState();
+          syncPerfHudVisibility();
+          if (AppState?.currentTrack) syncMeshForCurrentTrack(true);
+        }, 60);
+
+        return {
+          extractHarmoniousTriad,
+          syncMeshForCurrentTrack,
+          syncStagePlayState,
+          toggleStageTab,
+          openFxSheet,
+          closeFxSheet,
+        };
+      })();
+
+      // -------------------------------------------------------------------
+      // C. FIX C — 4-TAB FULLSCREEN POSTER MAKER STUDIO ALA AURALYS
+      // -------------------------------------------------------------------
+      const posterStudio = (function createSF201PosterStudio() {
+        const RATIOS = {
+          '9:16': { w: 1080, h: 1920, label: 'Story 9:16', sub: '1080×1920' },
+          '4:5':  { w: 1080, h: 1350, label: 'Feed 4:5',   sub: '1080×1350' },
+          '1:1':  { w: 1080, h: 1080, label: 'Square 1:1', sub: '1080×1080' },
+        };
+        const TEMPLATES = [
+          { id: 'glass',       name: 'Liquid Glass', desc: 'Kartu kaca berkilau + latar blur', icon: '🫧' },
+          { id: 'editorial',   name: 'Editorial',    desc: 'Majalah cetak + palet 5 warna + barcode', icon: '📰' },
+          { id: 'photo_quote', name: 'Photo Quote',  desc: 'Foto penuh + gradasi + lirik ekspresif', icon: '📸' },
+          { id: 'lyric_card',  name: 'Lyric Card',   desc: 'Fokus lirik rata kiri ala Apple/Auralys', icon: '💬' },
+          { id: 'polaroid',    name: 'Polaroid',     desc: 'Bingkai polaroid klasik + tanggal hari ini', icon: '🖼️' },
+        ];
+        const QUICK_SWATCHES = ['#0B0D14', '#1E1B4B', '#3B0764', '#0F3D3E', '#7F1D1D', '#F4F1EA'];
+        const DEFAULT_PALETTE = ['#1E40AF', '#7C3AED', '#0E7490', '#E5C99B', '#0F172A'];
+
+        let state = null;
+        let previewRaf = 0;
+        let searchDebounce = null;
+        let searchAbort = null;
+        let lyricsAbort = null;
+        let grainPatternCanvas = null;
+
+        function cleanTrackTitleForPoster(raw) {
+          return String(raw || '')
+            .replace(/\s*[\(\[]\s*(official\s*(music\s*)?video|official\s*audio|official\s*lyric\s*video|lyric\s*video|lyrics|mv|hd|4k|audio|visualizer|live\s*performance)[^\)\]]*[\)\]]/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim() || 'SpotyFlow Track';
+        }
+
+        function makeDefaultState(initialTrack) {
+          const tr = initialTrack || AppState?.currentTrack || AppState?.likedTracks?.[0] || AppState?.recentTracks?.[0] || {
+            id: 'sf_demo',
+            title: 'SpotyFlow Hi-Fi',
+            artist: { name: 'SpotyFlow Studio' },
+            album: { title: 'Auralys Edition' },
+            duration: 210,
+          };
+          return {
+            activeTab: 'track',       // 'track' | 'photo' | 'style' | 'settings'
+            trackSource: 'current',   // 'current' | 'liked' | 'recent' | 'search'
+            searchQuery: '',
+            searchResults: [],
+            searchLoading: false,
+            track: tr,
+            coverImg: null,
+            palette: DEFAULT_PALETTE.slice(),
+            lyricsLines: [],
+            lyricsLoading: false,
+            selectedLyricIndices: [],
+            customQuote: '',
+            // Photo controls
+            photoSource: 'cover',     // 'cover' | 'upload'
+            uploadedImg: null,
+            uploadedThumbUrl: '',
+            photoPlacement: 'replace_cover', // 'replace_cover' | 'background' | 'full_poster'
+            zoom: 100,
+            panX: 0,
+            panY: 0,
+            // Template & Settings
+            template: 'glass',
+            ratio: '9:16',
+            bgMode: 'auto',           // 'auto' | 'dark' | 'cream' | 'custom'
+            bgCustomColor: '#1E1B4B',
+            bgBlur: 22,
+            bgDimmer: 38,
+            cornerRadius: 28,
+            filmGrain: true,
+            customTitle: cleanTrackTitleForPoster(tr.title),
+            customArtist: String(tr.artist?.name || 'SpotyFlow'),
+            fontStyle: 'sans',        // 'sans' | 'serif' | 'mono'
+            textColorMode: 'auto',    // 'auto' | 'white' | 'black'
+            showProgress: true,
+            showLyrics: true,
+            showPalette: true,
+            showDate: true,
+            showWatermark: true,
+          };
+        }
+
+        function getFontFamily(style, bold = false) {
+          if (style === 'serif') return `Georgia, "Times New Roman", serif`;
+          if (style === 'mono') return `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace`;
+          return `"Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif`;
+        }
+
+        function getTodayFormatted() {
+          try {
+            return new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+          } catch {
+            return new Date().toISOString().slice(0, 10);
+          }
+        }
+
+        function getGrainCanvas() {
+          if (grainPatternCanvas) return grainPatternCanvas;
+          const gc = document.createElement('canvas');
+          gc.width = 128;
+          gc.height = 128;
+          const gctx = gc.getContext('2d');
+          const imgData = gctx.createImageData(128, 128);
+          for (let i = 0; i < imgData.data.length; i += 4) {
+            const v = Math.floor(Math.random() * 255);
+            imgData.data[i] = v;
+            imgData.data[i + 1] = v;
+            imgData.data[i + 2] = v;
+            imgData.data[i + 3] = 20;
+          }
+          gctx.putImageData(imgData, 0, 0);
+          grainPatternCanvas = gc;
+          return gc;
+        }
+
+        function roundedRectPath(ctx, x, y, w, h, r) {
+          const rad = Math.max(0, Math.min(r, w / 2, h / 2));
+          ctx.beginPath();
+          ctx.moveTo(x + rad, y);
+          ctx.lineTo(x + w - rad, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+          ctx.lineTo(x + w, y + h - rad);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+          ctx.lineTo(x + rad, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+          ctx.lineTo(x, y + rad);
+          ctx.quadraticCurveTo(x, y, x + rad, y);
+          ctx.closePath();
+        }
+
+        // ANTI-STRETCH IMAGE COVER HELPER (Zoom + PanX + PanY + Radius)
+        function drawImageCover(ctx, img, x, y, w, h, opts = {}) {
+          const zoom = Math.max(100, Math.min(220, Number(opts.zoom ?? 100))) / 100;
+          const panX = Math.max(-100, Math.min(100, Number(opts.panX ?? 0))) / 100;
+          const panY = Math.max(-100, Math.min(100, Number(opts.panY ?? 0))) / 100;
+          const radius = Number(opts.radius ?? 0);
+
+          ctx.save();
+          if (radius > 0) {
+            roundedRectPath(ctx, x, y, w, h, radius);
+            ctx.clip();
+          } else {
+            ctx.beginPath();
+            ctx.rect(x, y, w, h);
+            ctx.clip();
+          }
+
+          if (!img || !img.naturalWidth || !img.naturalHeight) {
+            const pal = state?.palette || DEFAULT_PALETTE;
+            const g = ctx.createLinearGradient(x, y, x + w, y + h);
+            g.addColorStop(0, pal[0] || '#1E40AF');
+            g.addColorStop(0.55, pal[1] || '#7C3AED');
+            g.addColorStop(1, pal[2] || '#0E7490');
+            ctx.fillStyle = g;
+            ctx.fillRect(x, y, w, h);
+            ctx.restore();
+            return;
+          }
+
+          const iw = img.naturalWidth;
+          const ih = img.naturalHeight;
+          const baseScale = Math.max(w / iw, h / ih);
+          const scale = baseScale * zoom;
+          const drawW = iw * scale;
+          const drawH = ih * scale;
+          const maxShiftX = Math.max(0, (drawW - w) / 2);
+          const maxShiftY = Math.max(0, (drawH - h) / 2);
+          const dx = x + (w - drawW) / 2 + panX * maxShiftX;
+          const dy = y + (h - drawH) / 2 + panY * maxShiftY;
+          ctx.drawImage(img, dx, dy, drawW, drawH);
+          ctx.restore();
+        }
+
+        // ANTI-OVERFLOW WRAPPED TEXT HELPER
+        function drawWrappedLines(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3, align = 'left') {
+          const clean = String(text || '').replace(/\r/g, '').trim();
+          if (!clean) return y;
+          ctx.textAlign = align;
+          const paragraphs = clean.split('\n');
+          const lines = [];
+
+          for (const para of paragraphs) {
+            const words = para.trim().split(/\s+/).filter(Boolean);
+            if (!words.length) continue;
+            let cur = words[0];
+            for (let i = 1; i < words.length; i++) {
+              const test = cur + ' ' + words[i];
+              if (ctx.measureText(test).width <= maxWidth) {
+                cur = test;
+              } else {
+                lines.push(cur);
+                cur = words[i];
+                if (lines.length >= maxLines) break;
+              }
+            }
+            if (lines.length < maxLines) lines.push(cur);
+            if (lines.length >= maxLines) break;
+          }
+
+          const finalLines = lines.slice(0, maxLines);
+          finalLines.forEach((line, idx) => {
+            let txt = line;
+            if (ctx.measureText(txt).width > maxWidth) {
+              while (txt.length > 1 && ctx.measureText(txt + '…').width > maxWidth) {
+                txt = txt.slice(0, -1);
+              }
+              txt += '…';
+            }
+            ctx.fillText(txt, x, y + idx * lineHeight);
+          });
+          return y + finalLines.length * lineHeight;
+        }
+
+        function extractPalette5FromImage(img) {
+          try {
+            const c = document.createElement('canvas');
+            c.width = 40; c.height = 40;
+            const ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, 40, 40);
+            const data = ctx.getImageData(0, 0, 40, 40).data;
+            const buckets = new Map();
+            for (let i = 0; i < data.length; i += 12) {
+              const r = Math.round(data[i] / 32) * 32;
+              const g = Math.round(data[i + 1] / 32) * 32;
+              const b = Math.round(data[i + 2] / 32) * 32;
+              const key = `${Math.min(255, r)},${Math.min(255, g)},${Math.min(255, b)}`;
+              buckets.set(key, (buckets.get(key) || 0) + 1);
+            }
+            const sorted = Array.from(buckets.entries())
+              .sort((a, b) => b[1] - a[1])
+              .map(([k]) => k.split(',').map(Number));
+            const picked = [];
+            for (const rgb of sorted) {
+              if (picked.length >= 5) break;
+              const distinct = picked.every((p) => (
+                Math.abs(p[0] - rgb[0]) + Math.abs(p[1] - rgb[1]) + Math.abs(p[2] - rgb[2]) > 72
+              ));
+              if (distinct) picked.push(rgb);
+            }
+            while (picked.length < 5) {
+              picked.push([30 + picked.length * 36, 58 + picked.length * 24, 138 + picked.length * 18]);
+            }
+            return picked.map(([r, g, b]) => '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join(''));
+          } catch {
+            return DEFAULT_PALETTE.slice();
+          }
+        }
+
+        function loadCoverImageSafe(track) {
+          const url = track && typeof getCover === 'function' ? getCover(track, 'big') : '';
+          if (!url || url.includes('icon-192.png')) return Promise.resolve(null);
+          const src = (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('/'))
+            ? url
+            : `${typeof API_BASE === 'string' ? API_BASE : ''}/api/proxy-image?url=${encodeURIComponent(url)}`;
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const tm = setTimeout(() => resolve(null), 5000);
+            img.onload = () => { clearTimeout(tm); resolve(img); };
+            img.onerror = () => { clearTimeout(tm); resolve(null); };
+            img.src = src;
+          });
+        }
+
+        function parseLyricsTextToLines(raw) {
+          if (!raw) return [];
+          const out = [];
+          if (Array.isArray(raw)) {
+            raw.forEach((item) => {
+              const txt = typeof item === 'string' ? item : String(item?.text || item?.line || '');
+              const clean = txt.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+              if (clean && !/^[\[(]?(instrumental|musik|music|intro|outro)[\])]?$/i.test(clean)) out.push(clean);
+            });
+            return out.slice(0, 80);
+          }
+          String(raw).split('\n').forEach((line) => {
+            const clean = line.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+            if (clean && clean.length >= 2 && !/^[\[(]?(instrumental|musik|music|intro|outro)[\])]?$/i.test(clean)) {
+              out.push(clean);
+            }
+          });
+          return out.slice(0, 80);
+        }
+
+        async function fetchLyricsForPosterTrack(track) {
+          if (!state || !track) return;
+          if (lyricsAbort) { try { lyricsAbort.abort(); } catch {} }
+          lyricsAbort = new AbortController();
+          state.lyricsLoading = true;
+          state.lyricsLines = [];
+          state.selectedLyricIndices = [];
+          renderActiveTabBody();
+
+          try {
+            // 1. Check current live lyrics if same track!
+            if (AppState?.currentTrack && String(AppState.currentTrack.id) === String(track.id)) {
+              const liveLines = parseLyricsTextToLines(AppState.syncedLyrics?.length ? AppState.syncedLyrics : AppState.plainLyrics);
+              if (liveLines.length) {
+                state.lyricsLines = liveLines;
+                state.selectedLyricIndices = liveLines.slice(0, 2).map((_, i) => i);
+                state.lyricsLoading = false;
+                renderActiveTabBody();
+                schedulePreviewRender();
+                return;
+              }
+            }
+            const base = typeof API_BASE === 'string' ? API_BASE : '';
+            const qs = new URLSearchParams({
+              title: cleanTrackTitleForPoster(track.title),
+              artist: String(track.artist?.name || ''),
+              duration: String(Math.round(Number(track.duration || 0))),
+            });
+            const resp = await fetch(`${base}/api/lyrics?${qs.toString()}`, { signal: lyricsAbort.signal });
+            if (!resp.ok) throw new Error('lyrics_fail');
+            const json = await resp.json();
+            const lines = parseLyricsTextToLines(json?.syncedLyrics || json?.plainLyrics || json?.lyrics || '');
+            if (!state || String(state.track?.id) !== String(track.id)) return;
+            state.lyricsLines = lines;
+            state.selectedLyricIndices = lines.slice(0, 2).map((_, i) => i);
+          } catch {}
+          if (state) {
+            state.lyricsLoading = false;
+            renderActiveTabBody();
+            schedulePreviewRender();
+          }
+        }
+
+        function getActiveQuoteText() {
+          if (!state || !state.showLyrics) return '';
+          if (String(state.customQuote || '').trim()) return String(state.customQuote).trim();
+          if (state.selectedLyricIndices.length && state.lyricsLines.length) {
+            return state.selectedLyricIndices
+              .slice()
+              .sort((a, b) => a - b)
+              .map((idx) => state.lyricsLines[idx])
+              .filter(Boolean)
+              .join('\n');
+          }
+          return '';
+        }
+
+        function getResolvedTextColors(isLightBg) {
+          const mode = state?.textColorMode || 'auto';
+          const light = mode === 'black' ? true : (mode === 'white' ? false : isLightBg);
+          return light
+            ? { primary: '#0B0B0F', secondary: 'rgba(11, 11, 15, 0.65)', subtle: 'rgba(11, 11, 15, 0.44)', rule: 'rgba(11, 11, 15, 0.16)' }
+            : { primary: '#FFFFFF', secondary: 'rgba(255, 255, 255, 0.72)', subtle: 'rgba(255, 255, 255, 0.48)', rule: 'rgba(255, 255, 255, 0.22)' };
+        }
+
+        function renderPosterToCanvas(canvas, fullResolution = false) {
+          if (!canvas || !state) return;
+          const spec = RATIOS[state.ratio] || RATIOS['9:16'];
+          const W = fullResolution ? spec.w : Math.round(spec.w * 0.45);
+          const H = fullResolution ? spec.h : Math.round(spec.h * 0.45);
+          const S = W / 1080; // Scale factor relative to 1080px HD width
+
+          if (canvas.width !== W || canvas.height !== H) {
+            canvas.width = W;
+            canvas.height = H;
+          }
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, W, H);
+
+          const useUpload = state.photoSource === 'upload' && state.uploadedImg;
+          const bgImg = (useUpload && (state.photoPlacement === 'background' || state.photoPlacement === 'full_poster'))
+            ? state.uploadedImg
+            : state.coverImg;
+          const fgImg = (useUpload && state.photoPlacement === 'replace_cover')
+            ? state.uploadedImg
+            : state.coverImg;
+          const fullPhotoMode = Boolean(useUpload && state.photoPlacement === 'full_poster');
+          const imgCropOpts = (imgIsUpload) => imgIsUpload
+            ? { zoom: state.zoom, panX: state.panX, panY: state.panY }
+            : { zoom: 100, panX: 0, panY: 0 };
+
+          const pal = state.palette || DEFAULT_PALETTE;
+          const title = String(state.customTitle || state.track?.title || 'SpotyFlow').trim();
+          const artist = String(state.customArtist || state.track?.artist?.name || 'SpotyFlow').trim();
+          const quoteText = getActiveQuoteText();
+          const radius = Number(state.cornerRadius || 28) * S;
+          const fontFam = getFontFamily(state.fontStyle);
+
+          // Determine if background is light
+          const isCreamDefault = state.template === 'editorial' && state.bgMode === 'auto';
+          const isLightBg = (state.bgMode === 'cream') || isCreamDefault;
+
+          // 1. DRAW BACKGROUND
+          const drawSolidOrPhotoBg = (forceFullClearPhoto = false) => {
+            if (forceFullClearPhoto) {
+              drawImageCover(ctx, useUpload ? state.uploadedImg : state.coverImg, 0, 0, W, H, {
+                ...imgCropOpts(useUpload),
+                radius: 0,
+              });
+              // Smooth editorial dark bottom vignette
+              const vig = ctx.createLinearGradient(0, H * 0.28, 0, H);
+              vig.addColorStop(0, `rgba(6, 8, 14, ${Math.min(0.65, (state.bgDimmer / 100) * 0.5)})`);
+              vig.addColorStop(0.62, `rgba(6, 8, 14, ${Math.min(0.88, 0.35 + (state.bgDimmer / 100) * 0.65)})`);
+              vig.addColorStop(1, 'rgba(4, 5, 10, 0.92)');
+              ctx.fillStyle = vig;
+              ctx.fillRect(0, 0, W, H);
+              return;
+            }
+            if (state.bgMode === 'dark') {
+              ctx.fillStyle = '#09090D';
+              ctx.fillRect(0, 0, W, H);
+            } else if (state.bgMode === 'cream' || isCreamDefault) {
+              ctx.fillStyle = '#F4F1EA';
+              ctx.fillRect(0, 0, W, H);
+            } else if (state.bgMode === 'custom') {
+              ctx.fillStyle = state.bgCustomColor || '#1E1B4B';
+              ctx.fillRect(0, 0, W, H);
+            } else {
+              // Auto Cover / Upload Background with controllable blur & dimmer
+              ctx.save();
+              const blurPx = Math.max(0, Number(state.bgBlur || 0)) * S * 1.4;
+              if (blurPx > 0.5 && typeof ctx.filter === 'string') {
+                ctx.filter = `blur(${blurPx.toFixed(1)}px) saturate(145%)`;
+              }
+              const pad = Math.ceil(blurPx * 2.2);
+              drawImageCover(ctx, bgImg, -pad, -pad, W + pad * 2, H + pad * 2, {
+                ...imgCropOpts(bgImg === state.uploadedImg),
+                radius: 0,
+              });
+              ctx.restore();
+
+              const dimAlpha = Math.max(0, Math.min(0.88, Number(state.bgDimmer || 38) / 100));
+              const shade = ctx.createLinearGradient(0, 0, 0, H);
+              shade.addColorStop(0, `rgba(6, 8, 16, ${Math.max(0.18, dimAlpha * 0.72)})`);
+              shade.addColorStop(1, `rgba(6, 8, 16, ${Math.min(0.92, dimAlpha + 0.16)})`);
+              ctx.fillStyle = shade;
+              ctx.fillRect(0, 0, W, H);
+            }
+          };
+
+          // Helper: Draw 5-color palette bar
+          const drawPaletteBar = (x, y, totalW, barH) => {
+            if (!state.showPalette) return;
+            const gap = 8 * S;
+            const swW = (totalW - gap * 4) / 5;
+            pal.slice(0, 5).forEach((hex, idx) => {
+              ctx.save();
+              ctx.fillStyle = hex;
+              roundedRectPath(ctx, x + idx * (swW + gap), y, swW, barH, 6 * S);
+              ctx.fill();
+              ctx.restore();
+            });
+          };
+
+          // Helper: Draw mini seekbar
+          const drawProgressBar = (x, y, barW, colPrimary, colTrack) => {
+            if (!state.showProgress) return;
+            const h = 7 * S;
+            ctx.save();
+            ctx.fillStyle = colTrack;
+            roundedRectPath(ctx, x, y, barW, h, h / 2);
+            ctx.fill();
+            ctx.fillStyle = colPrimary;
+            roundedRectPath(ctx, x, y, barW * 0.42, h, h / 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + barW * 0.42, y + h / 2, 7.5 * S, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          };
+
+          // Helper: Draw Watermark & Date footer
+          const drawFooterStamp = (colSubtle) => {
+            const padX = 72 * S;
+            const footY = H - 56 * S;
+            ctx.save();
+            ctx.font = `600 ${Math.round(22 * S)}px "JetBrains Mono", monospace`;
+            ctx.fillStyle = colSubtle;
+            if (state.showWatermark) {
+              ctx.textAlign = 'left';
+              ctx.fillText('SPOTYFLOW', padX, footY);
+            }
+            if (state.showDate) {
+              ctx.textAlign = 'right';
+              ctx.fillText(getTodayFormatted(), W - padX, footY);
+            }
+            ctx.restore();
+          };
+
+          // 2. RENDER TEMPLATE
+          const tpl = fullPhotoMode ? 'photo_quote' : state.template;
+
+          if (tpl === 'photo_quote') {
+            drawSolidOrPhotoBg(true);
+            const tc = getResolvedTextColors(false);
+            const padX = 76 * S;
+            const maxW = W - padX * 2;
+
+            // Expressive lyrics/quote in lower third
+            const badgeH = 112 * S;
+            const badgeY = H - 110 * S - badgeH;
+            if (quoteText) {
+              ctx.save();
+              ctx.fillStyle = tc.primary;
+              ctx.font = `800 ${Math.round((state.ratio === '1:1' ? 48 : 58) * S)}px ${fontFam}`;
+              ctx.shadowColor = 'rgba(0,0,0,0.45)';
+              ctx.shadowBlur = 24 * S;
+              const lineCount = Math.min(4, quoteText.split('\n').length + 1);
+              const lh = Math.round((state.ratio === '1:1' ? 62 : 74) * S);
+              const quoteStartY = Math.max(H * 0.32, badgeY - 70 * S - lineCount * lh);
+              drawWrappedLines(ctx, `“${quoteText}”`, padX, quoteStartY, maxW, lh, 4, 'left');
+              ctx.restore();
+            }
+
+            // Mini glass track badge
+            ctx.save();
+            ctx.fillStyle = 'rgba(255,255,255,0.13)';
+            roundedRectPath(ctx, padX, badgeY, maxW, badgeH, 24 * S);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+            ctx.lineWidth = 2 * S;
+            ctx.stroke();
+            ctx.restore();
+
+            const thumbS = 78 * S;
+            drawImageCover(ctx, state.coverImg, padX + 17 * S, badgeY + 17 * S, thumbS, thumbS, { radius: 14 * S });
+            ctx.save();
+            ctx.fillStyle = tc.primary;
+            ctx.font = `800 ${Math.round(30 * S)}px ${fontFam}`;
+            drawWrappedLines(ctx, title, padX + thumbS + 34 * S, badgeY + 52 * S, maxW - thumbS - 56 * S, 36 * S, 1, 'left');
+            ctx.fillStyle = tc.secondary;
+            ctx.font = `600 ${Math.round(23 * S)}px ${fontFam}`;
+            drawWrappedLines(ctx, artist, padX + thumbS + 34 * S, badgeY + 86 * S, maxW - thumbS - 56 * S, 30 * S, 1, 'left');
+            ctx.restore();
+
+            if (state.showPalette) {
+              drawPaletteBar(padX, badgeY - 30 * S, 220 * S, 12 * S);
+            }
+            drawFooterStamp(tc.subtle);
+
+          } else if (tpl === 'editorial') {
+            drawSolidOrPhotoBg(false);
+            const tc = getResolvedTextColors(isLightBg);
+            const padX = 82 * S;
+            const innerW = W - padX * 2;
+            const topY = (state.ratio === '1:1' ? 64 : 96) * S;
+
+            // Top Magazine Masthead
+            ctx.save();
+            ctx.fillStyle = tc.subtle;
+            ctx.font = `700 ${Math.round(20 * S)}px "JetBrains Mono", monospace`;
+            ctx.textAlign = 'left';
+            ctx.fillText('ISSUE NO. 02 • AUDIO ARCHIVE', padX, topY);
+            ctx.textAlign = 'right';
+            ctx.fillText(getTodayFormatted(), W - padX, topY);
+            ctx.strokeStyle = tc.rule;
+            ctx.lineWidth = 2 * S;
+            ctx.beginPath();
+            ctx.moveTo(padX, topY + 20 * S);
+            ctx.lineTo(W - padX, topY + 20 * S);
+            ctx.stroke();
+            ctx.restore();
+
+            // Big Square Cover
+            const artSize = Math.min(innerW, state.ratio === '1:1' ? 500 * S : (state.ratio === '4:5' ? 680 * S : 840 * S));
+            const artX = (W - artSize) / 2;
+            const artY = topY + 46 * S;
+            drawImageCover(ctx, fgImg, artX, artY, artSize, artSize, {
+              ...imgCropOpts(fgImg === state.uploadedImg),
+              radius: Math.min(radius, 24 * S),
+            });
+
+            // 5-Color Palette Swatch Bar
+            let curY = artY + artSize + 28 * S;
+            if (state.showPalette) {
+              drawPaletteBar(artX, curY, artSize, 22 * S);
+              curY += 46 * S;
+            } else {
+              curY += 16 * S;
+            }
+
+            // Editorial Serif Headline + Tracked Artist
+            ctx.save();
+            ctx.fillStyle = tc.primary;
+            const edFont = state.fontStyle === 'mono' ? getFontFamily('mono') : 'Georgia, "Times New Roman", serif';
+            ctx.font = `700 ${Math.round((state.ratio === '1:1' ? 54 : 68) * S)}px ${edFont}`;
+            curY = drawWrappedLines(ctx, title, padX, curY + 42 * S, innerW, Math.round((state.ratio === '1:1' ? 62 : 76) * S), 2, 'left');
+            ctx.fillStyle = tc.secondary;
+            ctx.font = `700 ${Math.round(24 * S)}px "JetBrains Mono", monospace`;
+            curY = drawWrappedLines(ctx, artist.toUpperCase(), padX, curY + 12 * S, innerW, 34 * S, 1, 'left');
+            ctx.restore();
+
+            if (quoteText && state.ratio !== '1:1') {
+              ctx.save();
+              ctx.fillStyle = tc.secondary;
+              ctx.font = `italic ${Math.round(28 * S)}px Georgia, serif`;
+              curY = drawWrappedLines(ctx, `“${quoteText}”`, padX, curY + 26 * S, innerW, 40 * S, 3, 'left');
+              ctx.restore();
+            }
+
+            // Vector Editorial Barcode + Watermark
+            const barY = H - 122 * S;
+            ctx.save();
+            ctx.strokeStyle = tc.rule;
+            ctx.lineWidth = 2 * S;
+            ctx.beginPath();
+            ctx.moveTo(padX, barY - 22 * S);
+            ctx.lineTo(W - padX, barY - 22 * S);
+            ctx.stroke();
+            ctx.fillStyle = tc.primary;
+            let bx = padX;
+            const pattern = [4, 2, 6, 2, 3, 5, 2, 7, 3, 2, 5, 3, 6, 2, 4, 3, 2, 6, 4, 2];
+            for (let i = 0; i < pattern.length; i++) {
+              const bw = pattern[i] * 2.2 * S;
+              if (i % 2 === 0) ctx.fillRect(bx, barY, bw, 52 * S);
+              bx += bw + 3 * S;
+            }
+            if (state.showWatermark) {
+              ctx.fillStyle = tc.subtle;
+              ctx.font = `700 ${Math.round(22 * S)}px "JetBrains Mono", monospace`;
+              ctx.textAlign = 'right';
+              ctx.fillText('SPOTYFLOW HI-FI', W - padX, barY + 34 * S);
+            }
+            ctx.restore();
+
+          } else if (tpl === 'lyric_card') {
+            drawSolidOrPhotoBg(false);
+            const tc = getResolvedTextColors(isLightBg);
+            const padX = 86 * S;
+            const innerW = W - padX * 2;
+            const topY = (state.ratio === '1:1' ? 88 : 136) * S;
+
+            // Header Mini Cover + Title + Artist
+            const miniS = 112 * S;
+            drawImageCover(ctx, fgImg, padX, topY, miniS, miniS, {
+              ...imgCropOpts(fgImg === state.uploadedImg),
+              radius: Math.min(radius, 22 * S),
+            });
+            ctx.save();
+            ctx.fillStyle = tc.primary;
+            ctx.font = `800 ${Math.round(36 * S)}px ${fontFam}`;
+            drawWrappedLines(ctx, title, padX + miniS + 28 * S, topY + 46 * S, innerW - miniS - 28 * S, 42 * S, 1, 'left');
+            ctx.fillStyle = tc.secondary;
+            ctx.font = `600 ${Math.round(26 * S)}px ${fontFam}`;
+            drawWrappedLines(ctx, artist, padX + miniS + 28 * S, topY + 88 * S, innerW - miniS - 28 * S, 32 * S, 1, 'left');
+            ctx.restore();
+
+            // Big Bold Left-Aligned Lyrics Hero
+            const lyrText = quoteText || `${title}\n— ${artist}`;
+            const lyrFontSize = Math.round((state.ratio === '1:1' ? 56 : 68) * S);
+            const lyrLineH = Math.round(lyrFontSize * 1.28);
+            const midY = state.ratio === '1:1' ? H * 0.42 : H * 0.36;
+            ctx.save();
+            ctx.fillStyle = tc.primary;
+            ctx.font = `800 ${lyrFontSize}px ${fontFam}`;
+            drawWrappedLines(ctx, lyrText, padX, midY, innerW, lyrLineH, 4, 'left');
+            ctx.restore();
+
+            if (state.showProgress) {
+              drawProgressBar(padX, H - 156 * S, innerW, tc.primary, tc.rule);
+            }
+            if (state.showPalette) {
+              drawPaletteBar(padX, H - 118 * S, 240 * S, 12 * S);
+            }
+            drawFooterStamp(tc.subtle);
+
+          } else if (tpl === 'polaroid') {
+            drawSolidOrPhotoBg(false);
+            const tcFrame = { primary: '#111114', secondary: 'rgba(17,17,20,0.62)', subtle: 'rgba(17,17,20,0.42)' };
+            const frameW = Math.round((state.ratio === '1:1' ? 760 : 840) * S);
+            const frameH = Math.round(frameW * 1.22);
+            const fx = (W - frameW) / 2;
+            const fy = (H - frameH) / 2 - (state.ratio === '9:16' ? 40 * S : 10 * S);
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.52)';
+            ctx.shadowBlur = 52 * S;
+            ctx.shadowOffsetY = 24 * S;
+            ctx.fillStyle = '#F7F5EF';
+            roundedRectPath(ctx, fx, fy, frameW, frameH, 16 * S);
+            ctx.fill();
+            ctx.restore();
+
+            const inset = 42 * S;
+            const photoSize = frameW - inset * 2;
+            drawImageCover(ctx, fgImg, fx + inset, fy + inset, photoSize, photoSize, {
+              ...imgCropOpts(fgImg === state.uploadedImg),
+              radius: Math.min(radius, 14 * S),
+            });
+
+            const textY = fy + inset + photoSize + 64 * S;
+            ctx.save();
+            ctx.fillStyle = tcFrame.primary;
+            ctx.font = `700 ${Math.round(38 * S)}px ${state.fontStyle === 'mono' ? getFontFamily('mono') : 'Georgia, serif'}`;
+            drawWrappedLines(ctx, title, fx + inset, textY, photoSize, 46 * S, 1, 'left');
+            ctx.fillStyle = tcFrame.secondary;
+            ctx.font = `600 ${Math.round(24 * S)}px ${fontFam}`;
+            drawWrappedLines(ctx, artist, fx + inset, textY + 42 * S, photoSize - 170 * S, 30 * S, 1, 'left');
+            if (state.showDate) {
+              ctx.fillStyle = tcFrame.subtle;
+              ctx.font = `600 ${Math.round(20 * S)}px "JetBrains Mono", monospace`;
+              ctx.textAlign = 'right';
+              ctx.fillText(getTodayFormatted(), fx + frameW - inset, textY + 42 * S);
+            }
+            ctx.restore();
+
+            if (quoteText && state.ratio === '9:16') {
+              const tcOut = getResolvedTextColors(isLightBg);
+              ctx.save();
+              ctx.fillStyle = tcOut.primary;
+              ctx.font = `600 ${Math.round(30 * S)}px ${fontFam}`;
+              drawWrappedLines(ctx, `“${quoteText}”`, 96 * S, fy + frameH + 86 * S, W - 192 * S, 42 * S, 2, 'center');
+              ctx.restore();
+            }
+            drawFooterStamp(getResolvedTextColors(isLightBg).subtle);
+
+          } else {
+            // DEFAULT: 'glass' — LIQUID GLASS CARD (Auralys Signature)
+            drawSolidOrPhotoBg(false);
+            const tc = getResolvedTextColors(isLightBg);
+            const cardW = Math.round((state.ratio === '1:1' ? 860 : 880) * S);
+            const cardPad = 48 * S;
+            const artSize = Math.min(cardW - cardPad * 2, state.ratio === '1:1' ? 460 * S : (state.ratio === '4:5' ? 620 * S : 740 * S));
+            const extraQuoteH = quoteText ? (state.ratio === '1:1' ? 92 * S : 148 * S) : 0;
+            const cardH = Math.min(H - 180 * S, artSize + cardPad * 2 + 250 * S + extraQuoteH);
+            const cx = (W - cardW) / 2;
+            const cy = (H - cardH) / 2 - 12 * S;
+
+            // Optical Specular Glass Card
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.48)';
+            ctx.shadowBlur = 54 * S;
+            ctx.shadowOffsetY = 26 * S;
+            const cardGrad = ctx.createLinearGradient(cx, cy, cx + cardW, cy + cardH);
+            if (isLightBg) {
+              cardGrad.addColorStop(0, 'rgba(255,255,255,0.72)');
+              cardGrad.addColorStop(1, 'rgba(255,255,255,0.44)');
+            } else {
+              cardGrad.addColorStop(0, 'rgba(255,255,255,0.18)');
+              cardGrad.addColorStop(1, 'rgba(255,255,255,0.06)');
+            }
+            ctx.fillStyle = cardGrad;
+            roundedRectPath(ctx, cx, cy, cardW, cardH, Math.max(24 * S, radius));
+            ctx.fill();
+            ctx.strokeStyle = isLightBg ? 'rgba(0,0,0,0.14)' : 'rgba(255,255,255,0.32)';
+            ctx.lineWidth = 2.5 * S;
+            ctx.stroke();
+            ctx.restore();
+
+            // Cover Art inside Glass Card
+            const ax = (W - artSize) / 2;
+            const ay = cy + cardPad;
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.42)';
+            ctx.shadowBlur = 32 * S;
+            ctx.shadowOffsetY = 14 * S;
+            drawImageCover(ctx, fgImg, ax, ay, artSize, artSize, {
+              ...imgCropOpts(fgImg === state.uploadedImg),
+              radius: radius,
+            });
+            ctx.restore();
+
+            // Title & Artist
+            let ty = ay + artSize + 58 * S;
+            ctx.save();
+            ctx.fillStyle = tc.primary;
+            ctx.font = `800 ${Math.round(44 * S)}px ${fontFam}`;
+            ty = drawWrappedLines(ctx, title, cx + cardPad, ty, cardW - cardPad * 2, 52 * S, 1, 'left');
+            ctx.fillStyle = tc.secondary;
+            ctx.font = `600 ${Math.round(28 * S)}px ${fontFam}`;
+            ty = drawWrappedLines(ctx, artist, cx + cardPad, ty + 8 * S, cardW - cardPad * 2, 34 * S, 1, 'left');
+            ctx.restore();
+
+            // Mini Seekbar
+            if (state.showProgress) {
+              drawProgressBar(cx + cardPad, ty + 20 * S, cardW - cardPad * 2, tc.primary, tc.rule);
+              ty += 48 * S;
+            }
+            // Optional Palette Bar
+            if (state.showPalette) {
+              drawPaletteBar(cx + cardPad, ty + 14 * S, 240 * S, 12 * S);
+              ty += 34 * S;
+            }
+            // Optional Lyric Quote
+            if (quoteText) {
+              ctx.save();
+              ctx.fillStyle = tc.secondary;
+              ctx.font = `600 ${Math.round(27 * S)}px ${fontFam}`;
+              drawWrappedLines(ctx, `“${quoteText}”`, cx + cardPad, ty + 32 * S, cardW - cardPad * 2, 38 * S, state.ratio === '1:1' ? 2 : 3, 'left');
+              ctx.restore();
+            }
+
+            drawFooterStamp(tc.subtle);
+          }
+
+          // 3. OPTIONAL SUBTLE FILM GRAIN OVERLAY
+          if (state.filmGrain) {
+            ctx.save();
+            ctx.globalAlpha = 0.22;
+            const pat = ctx.createPattern(getGrainCanvas(), 'repeat');
+            if (pat) {
+              ctx.fillStyle = pat;
+              ctx.fillRect(0, 0, W, H);
+            }
+            ctx.restore();
+          }
+        }
+
+        function schedulePreviewRender() {
+          if (previewRaf) cancelAnimationFrame(previewRaf);
+          previewRaf = requestAnimationFrame(() => {
+            previewRaf = 0;
+            const canvas = document.getElementById('sf-poster-preview-canvas');
+            if (canvas && state) renderPosterToCanvas(canvas, false);
+          });
+        }
+
+        async function selectTrack(track) {
+          if (!state || !track) return;
+          state.track = track;
+          state.customTitle = cleanTrackTitleForPoster(track.title);
+          state.customArtist = String(track.artist?.name || 'SpotyFlow');
+          state.customQuote = '';
+          renderActiveTabBody();
+          schedulePreviewRender();
+
+          const img = await loadCoverImageSafe(track);
+          if (!state || String(state.track?.id) !== String(track.id)) return;
+          state.coverImg = img;
+          state.palette = img ? extractPalette5FromImage(img) : DEFAULT_PALETTE.slice();
+          schedulePreviewRender();
+          fetchLyricsForPosterTrack(track);
+        }
+
+        function handlePhotoUploadFile(inputEl) {
+          const file = inputEl?.files?.[0];
+          if (!file || !state) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            const rawImg = new Image();
+            rawImg.onload = () => {
+              // ANTI-OOM: auto-downscale high-res phone photos (12MP+) to max 1600px!
+              const MAX_DIM = 1600;
+              const scale = Math.min(1, MAX_DIM / Math.max(rawImg.naturalWidth || 1, rawImg.naturalHeight || 1));
+              const rw = Math.max(1, Math.round((rawImg.naturalWidth || 1) * scale));
+              const rh = Math.max(1, Math.round((rawImg.naturalHeight || 1) * scale));
+              const off = document.createElement('canvas');
+              off.width = rw;
+              off.height = rh;
+              off.getContext('2d').drawImage(rawImg, 0, 0, rw, rh);
+              const safeDataUrl = off.toDataURL('image/jpeg', 0.92);
+              const safeImg = new Image();
+              safeImg.onload = () => {
+                if (!state) return;
+                state.uploadedImg = safeImg;
+                state.uploadedThumbUrl = safeDataUrl;
+                state.photoSource = 'upload';
+                state.zoom = 100;
+                state.panX = 0;
+                state.panY = 0;
+                renderActiveTabBody();
+                schedulePreviewRender();
+                if (typeof showToast === 'function') showToast('Foto berhasil dimuat (anti-gepeng HD)!', 'sparkles');
+              };
+              safeImg.src = safeDataUrl;
+            };
+            rawImg.src = String(reader.result || '');
+          };
+          reader.readAsDataURL(file);
+        }
+
+        function triggerLiveTrackSearch(query) {
+          if (!state) return;
+          state.searchQuery = String(query || '');
+          if (searchDebounce) clearTimeout(searchDebounce);
+          const q = state.searchQuery.trim();
+          if (q.length < 2) {
+            state.searchResults = [];
+            state.searchLoading = false;
+            renderTrackListSlot();
+            return;
+          }
+          state.searchLoading = true;
+          renderTrackListSlot();
+          searchDebounce = setTimeout(async () => {
+            if (searchAbort) { try { searchAbort.abort(); } catch {} }
+            searchAbort = new AbortController();
+            try {
+              const base = typeof API_BASE === 'string' ? API_BASE : '';
+              const resp = await fetch(`${base}/api/search/all?q=${encodeURIComponent(q)}&limit=15`, { signal: searchAbort.signal });
+              const data = await resp.json();
+              const list = Array.isArray(data?.tracks) ? data.tracks : (Array.isArray(data?.data) ? data.data : []);
+              if (state) {
+                state.searchResults = list.slice(0, 15);
+                state.searchLoading = false;
+                renderTrackListSlot();
+              }
+            } catch {
+              if (state) {
+                state.searchLoading = false;
+                renderTrackListSlot();
+              }
+            }
+          }, 350);
+        }
+
+        function getTrackListForSource() {
+          if (!state) return [];
+          if (state.trackSource === 'current') return AppState?.currentTrack ? [AppState.currentTrack] : [];
+          if (state.trackSource === 'liked') return Array.isArray(AppState?.likedTracks) ? AppState.likedTracks.slice(0, 40) : [];
+          if (state.trackSource === 'recent') return Array.isArray(AppState?.recentTracks) ? AppState.recentTracks.slice(0, 40) : [];
+          return Array.isArray(state.searchResults) ? state.searchResults : [];
+        }
+
+        function renderTrackListSlot() {
+          const slot = document.getElementById('sf-poster-track-list');
+          if (!slot || !state) return;
+          if (state.trackSource === 'search' && state.searchLoading) {
+            slot.innerHTML = `<p class="text-xs text-white/55 text-center py-6">Mencari lagu...</p>`;
+            return;
+          }
+          const list = getTrackListForSource();
+          if (!list.length) {
+            const msg = state.trackSource === 'search'
+              ? (state.searchQuery.trim().length < 2 ? 'Ketik judul lagu atau nama artis di atas (tidak memutus musik yang sedang diputar).' : 'Tidak ada lagu ditemukan.')
+              : 'Belum ada lagu di daftar ini.';
+            slot.innerHTML = `<p class="text-xs text-white/45 text-center py-6">${esc(msg)}</p>`;
+            return;
+          }
+          window.__sf201PosterTrackList = list;
+          slot.innerHTML = list.map((tr, idx) => {
+            const isSel = state.track && String(state.track.id) === String(tr.id);
+            const cov = typeof getCover === 'function' ? getCover(tr, 'small') : '/icon-192.png';
+            return `
+              <button type="button" onclick="window.SF201.posterStudio._pickIndex(${idx})" class="w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-white/15 border-white/40' : 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.09]'}">
+                <img src="${esc(cov)}" onerror="this.src='/icon-192.png'" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-black/40" referrerpolicy="no-referrer" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-bold text-white truncate">${esc(tr.title || 'Tanpa Judul')}</p>
+                  <p class="text-[11px] text-white/60 truncate">${esc(tr.artist?.name || 'SpotyFlow')}</p>
+                </div>
+                ${isSel ? `<span class="px-2 py-0.5 rounded-full bg-white text-black font-mono text-[9.5px] font-bold shrink-0">DIPILIH</span>` : ''}
+              </button>
+            `;
+          }).join('');
+        }
+
+        function renderActiveTabBody() {
+          const body = document.getElementById('sf-poster-tab-body');
+          if (!body || !state) return;
+
+          // Highlight active tab buttons
+          document.querySelectorAll('[data-poster-tab]').forEach((btn) => {
+            const isAct = btn.getAttribute('data-poster-tab') === state.activeTab;
+            btn.className = isAct
+              ? 'flex-1 py-2 rounded-full text-[11.5px] font-bold bg-white text-black transition-all shadow'
+              : 'flex-1 py-2 rounded-full text-[11.5px] font-semibold text-white/65 hover:text-white transition-all';
+          });
+
+          if (state.activeTab === 'track') {
+            const subPill = (id, label) => {
+              const act = state.trackSource === id;
+              return `<button type="button" onclick="window.SF201.posterStudio._setTrackSource('${id}')" class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap border transition-all ${act ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-white/75 border-white/12'}">${label}</button>`;
+            };
+            body.innerHTML = `
+              <div class="space-y-3">
+                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                  ${subPill('current', 'Sedang Diputar')}
+                  ${subPill('liked', 'Lagu Disukai')}
+                  ${subPill('recent', 'Riwayat')}
+                  ${subPill('search', '🔍 Cari Lagu')}
+                </div>
+                ${state.trackSource === 'search' ? `
+                  <input id="sf-poster-search-input" type="search" value="${esc(state.searchQuery)}" oninput="window.SF201.posterStudio._onSearch(this.value)" placeholder="Cari judul lagu atau artis..." class="w-full h-10 px-3.5 rounded-xl bg-white/[0.08] border border-white/15 focus:border-white/40 text-xs text-white placeholder-white/40 outline-none" />
+                ` : ''}
+                <div id="sf-poster-track-list" class="space-y-1.5"></div>
+              </div>
+            `;
+            renderTrackListSlot();
+            return;
+          }
+
+          if (state.activeTab === 'photo') {
+            const hasUp = Boolean(state.uploadedImg);
+            const placeBtn = (id, label, desc) => {
+              const act = state.photoPlacement === id;
+              return `
+                <button type="button" onclick="window.SF201.posterStudio._set('photoPlacement','${id}')" class="p-2.5 rounded-2xl border text-left transition-all ${act ? 'bg-white text-black border-white' : 'bg-white/[0.06] text-white border-white/12'}">
+                  <p class="text-xs font-bold">${label}</p>
+                  <p class="text-[10px] ${act ? 'text-black/70' : 'text-white/55'} mt-0.5">${desc}</p>
+                </button>
+              `;
+            };
+            body.innerHTML = `
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2.5">
+                  <button type="button" onclick="window.SF201.posterStudio._set('photoSource','cover')" class="p-3 rounded-2xl border text-left transition-all ${state.photoSource === 'cover' ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.06] text-white border-white/12'}">
+                    <p class="text-sm font-bold">🎵 Sampul Lagu Asli</p>
+                    <p class="text-[10.5px] ${state.photoSource === 'cover' ? 'text-black/65' : 'text-white/55'} mt-0.5">Artwork resmi lagu pilihan</p>
+                  </button>
+                  <button type="button" onclick="document.getElementById('sf-poster-photo-input')?.click()" class="p-3 rounded-2xl border text-left transition-all ${state.photoSource === 'upload' && hasUp ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.06] text-white border-white/12'}">
+                    <p class="text-sm font-bold">📷 Upload Foto Sendiri</p>
+                    <p class="text-[10.5px] ${state.photoSource === 'upload' && hasUp ? 'text-black/65' : 'text-white/55'} mt-0.5">Dari galeri HP (auto-HD aman)</p>
+                  </button>
+                </div>
+                <input id="sf-poster-photo-input" type="file" accept="image/*" class="hidden" onchange="window.SF201.posterStudio._onPhotoFile(this)" />
+                ${hasUp ? `
+                  <div class="flex items-center justify-between gap-3 p-2.5 rounded-2xl bg-white/[0.06] border border-white/12">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <img src="${esc(state.uploadedThumbUrl)}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0" />
+                      <div class="min-w-0">
+                        <p class="text-xs font-bold text-white truncate">Foto Galeri Kamu</p>
+                        <p class="text-[10.5px] text-white/55">Siap diatur anti-gepeng</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <button type="button" onclick="document.getElementById('sf-poster-photo-input')?.click()" class="px-2.5 py-1.5 rounded-xl bg-white/12 text-[11px] font-bold text-white">Ganti</button>
+                      <button type="button" onclick="window.SF201.posterStudio._clearPhoto()" class="px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-[11px] font-bold text-rose-300">Hapus</button>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Mode Penempatan Foto</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      ${placeBtn('replace_cover', 'Ganti Sampul', 'Foto masuk bingkai album')}
+                      ${placeBtn('background', 'Jadi Latar Belakang', 'Foto di belakang + sampul asli')}
+                      ${placeBtn('full_poster', 'Foto Penuh', '100% kanvas + lirik & badge')}
+                    </div>
+                  </div>
+                  <div class="space-y-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/10">
+                    <div class="flex items-center justify-between">
+                      <p class="font-mono text-[10px] uppercase tracking-wider text-white/55">Kontrol Posisi Foto</p>
+                      <button type="button" onclick="window.SF201.posterStudio._resetCrop()" class="text-[11px] font-bold text-white underline">Pusatkan Ulang</button>
+                    </div>
+                    <label class="block text-[11px] text-white/75">Zoom: <span id="sf-lbl-zoom" class="font-mono font-bold text-white">${state.zoom}%</span>
+                      <input type="range" min="100" max="220" value="${state.zoom}" oninput="window.SF201.posterStudio._setRange('zoom', this.value, 'sf-lbl-zoom', '%')" class="w-full accent-white mt-1" />
+                    </label>
+                    <label class="block text-[11px] text-white/75">Geser Horizontal (X): <span id="sf-lbl-panx" class="font-mono font-bold text-white">${state.panX}%</span>
+                      <input type="range" min="-100" max="100" value="${state.panX}" oninput="window.SF201.posterStudio._setRange('panX', this.value, 'sf-lbl-panx', '%')" class="w-full accent-white mt-1" />
+                    </label>
+                    <label class="block text-[11px] text-white/75">Geser Vertikal (Y): <span id="sf-lbl-pany" class="font-mono font-bold text-white">${state.panY}%</span>
+                      <input type="range" min="-100" max="100" value="${state.panY}" oninput="window.SF201.posterStudio._setRange('panY', this.value, 'sf-lbl-pany', '%')" class="w-full accent-white mt-1" />
+                    </label>
+                  </div>
+                ` : `<p class="text-[11.5px] text-white/50 text-center py-3">Upload foto sendiri dari galeri HP untuk mengaktifkan kontrol penempatan, Zoom, dan Geser X/Y.</p>`}
+              </div>
+            `;
+            return;
+          }
+
+          if (state.activeTab === 'style') {
+            body.innerHTML = `
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                ${TEMPLATES.map((tpl) => {
+                  const act = state.template === tpl.id;
+                  return `
+                    <button type="button" onclick="window.SF201.posterStudio._set('template','${tpl.id}')" class="p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${act ? 'bg-white text-black border-white shadow-lg' : 'bg-white/[0.06] text-white border-white/12 hover:bg-white/[0.1]'}">
+                      <span class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${act ? 'bg-black/10' : 'bg-white/10'}">${tpl.icon}</span>
+                      <div class="min-w-0">
+                        <p class="text-xs font-extrabold">${esc(tpl.name)}</p>
+                        <p class="text-[10.5px] ${act ? 'text-black/70' : 'text-white/55'} mt-0.5">${esc(tpl.desc)}</p>
+                      </div>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            `;
+            return;
+          }
+
+          // TAB 4: 'settings' (Atur Lengkap)
+          const pillBtn = (key, val, label) => {
+            const act = state[key] === val;
+            return `<button type="button" onclick="window.SF201.posterStudio._set('${key}','${val}')" class="px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${act ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-white/75 border-white/12'}">${label}</button>`;
+          };
+          const toggleChip = (key, label) => {
+            const on = Boolean(state[key]);
+            return `<button type="button" onclick="window.SF201.posterStudio._toggle('${key}')" class="px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${on ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-white/65 border-white/12'}">${on ? '✓ ' : ''}${label}</button>`;
+          };
+
+          body.innerHTML = `
+            <div class="space-y-4">
+              <!-- Rasio -->
+              <div class="space-y-1.5">
+                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Rasio &amp; Ukuran HD</p>
+                <div class="flex flex-wrap gap-1.5">
+                  ${Object.entries(RATIOS).map(([k, r]) => pillBtn('ratio', k, `${r.label} (${r.sub})`)).join('')}
+                </div>
+              </div>
+
+              <!-- Latar & Efek -->
+              <div class="space-y-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/10">
+                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Latar &amp; Efek Visual</p>
+                <div class="flex flex-wrap gap-1.5">
+                  ${pillBtn('bgMode', 'auto', 'Auto Sampul')}
+                  ${pillBtn('bgMode', 'dark', 'Hitam Pekat')}
+                  ${pillBtn('bgMode', 'cream', 'Krem Majalah')}
+                  ${pillBtn('bgMode', 'custom', 'Warna Kustom')}
+                </div>
+                ${state.bgMode === 'custom' ? `
+                  <div class="flex items-center gap-2 pt-1 flex-wrap">
+                    <input type="color" value="${esc(state.bgCustomColor)}" oninput="window.SF201.posterStudio._setLive('bgCustomColor', this.value)" class="w-8 h-8 rounded-lg bg-transparent border border-white/25 cursor-pointer" />
+                    ${QUICK_SWATCHES.map((hex) => `
+                      <button type="button" onclick="window.SF201.posterStudio._set('bgCustomColor','${hex}')" class="w-7 h-7 rounded-full border-2 ${state.bgCustomColor === hex ? 'border-white scale-110' : 'border-white/25'}" style="background:${hex};"></button>
+                    `).join('')}
+                  </div>
+                ` : ''}
+                <label class="block text-[11px] text-white/75">Blur Latar: <span id="sf-lbl-blur" class="font-mono font-bold text-white">${state.bgBlur}</span>
+                  <input type="range" min="0" max="40" value="${state.bgBlur}" oninput="window.SF201.posterStudio._setRange('bgBlur', this.value, 'sf-lbl-blur', '')" class="w-full accent-white mt-1" />
+                </label>
+                <label class="block text-[11px] text-white/75">Gelap Latar (Dimmer): <span id="sf-lbl-dim" class="font-mono font-bold text-white">${state.bgDimmer}%</span>
+                  <input type="range" min="0" max="85" value="${state.bgDimmer}" oninput="window.SF201.posterStudio._setRange('bgDimmer', this.value, 'sf-lbl-dim', '%')" class="w-full accent-white mt-1" />
+                </label>
+                <label class="block text-[11px] text-white/75">Sudut Foto (Radius): <span id="sf-lbl-rad" class="font-mono font-bold text-white">${state.cornerRadius}px</span>
+                  <input type="range" min="0" max="48" value="${state.cornerRadius}" oninput="window.SF201.posterStudio._setRange('cornerRadius', this.value, 'sf-lbl-rad', 'px')" class="w-full accent-white mt-1" />
+                </label>
+                <div class="pt-1">${toggleChip('filmGrain', 'Film Grain Halus')}</div>
+              </div>
+
+              <!-- Teks & Lirik -->
+              <div class="space-y-2.5 p-3 rounded-2xl bg-white/[0.05] border border-white/10">
+                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Teks &amp; Lirik</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input type="text" value="${esc(state.customTitle)}" oninput="window.SF201.posterStudio._setLive('customTitle', this.value)" placeholder="Judul Lagu" class="h-9 px-3 rounded-xl bg-black/35 border border-white/15 text-xs text-white outline-none focus:border-white/40" />
+                  <input type="text" value="${esc(state.customArtist)}" oninput="window.SF201.posterStudio._setLive('customArtist', this.value)" placeholder="Nama Artis" class="h-9 px-3 rounded-xl bg-black/35 border border-white/15 text-xs text-white outline-none focus:border-white/40" />
+                </div>
+                ${state.lyricsLines.length ? `
+                  <div class="space-y-1">
+                    <p class="text-[10.5px] text-white/60">Pilih hingga 4 baris lirik (${state.selectedLyricIndices.length}/4 dipilih):</p>
+                    <div class="max-h-32 overflow-y-auto studio-scroll space-y-1 pr-1">
+                      ${state.lyricsLines.map((line, idx) => {
+                        const sel = state.selectedLyricIndices.includes(idx);
+                        return `<button type="button" onclick="window.SF201.posterStudio._toggleLyric(${idx})" class="w-full text-left px-2.5 py-1.5 rounded-xl text-[11px] border transition-all ${sel ? 'bg-white text-black font-bold border-white' : 'bg-black/25 text-white/75 border-white/10 hover:bg-white/10'}">${esc(line)}</button>`;
+                      }).join('')}
+                    </div>
+                  </div>
+                ` : `<p class="text-[10.5px] text-white/45">${state.lyricsLoading ? 'Memuat lirik lagu...' : 'Ketik kutipan lirik bebas di bawah ini:'}</p>`}
+                <textarea rows="2" oninput="window.SF201.posterStudio._setLive('customQuote', this.value)" placeholder="Atau tulis kutipan / lirik sendiri..." class="w-full p-2.5 rounded-xl bg-black/35 border border-white/15 text-xs text-white outline-none focus:border-white/40 resize-none">${esc(state.customQuote)}</textarea>
+                <div class="flex flex-wrap gap-1.5 items-center">
+                  <span class="text-[10.5px] text-white/55 mr-1">Font:</span>
+                  ${pillBtn('fontStyle', 'sans', 'Modern Sans')}
+                  ${pillBtn('fontStyle', 'serif', 'Editorial Serif')}
+                  ${pillBtn('fontStyle', 'mono', 'Mono')}
+                </div>
+                <div class="flex flex-wrap gap-1.5 items-center">
+                  <span class="text-[10.5px] text-white/55 mr-1">Teks:</span>
+                  ${pillBtn('textColorMode', 'auto', 'Auto')}
+                  ${pillBtn('textColorMode', 'white', 'Putih')}
+                  ${pillBtn('textColorMode', 'black', 'Hitam')}
+                </div>
+              </div>
+
+              <!-- Sakelar Elemen -->
+              <div class="space-y-2">
+                <p class="font-mono text-[10px] uppercase tracking-wider text-white/50">Sakelar Elemen Poster</p>
+                <div class="flex flex-wrap gap-1.5">
+                  ${toggleChip('showProgress', 'Progress Bar')}
+                  ${toggleChip('showLyrics', 'Lirik / Kutipan')}
+                  ${toggleChip('showPalette', 'Palet 5 Warna')}
+                  ${toggleChip('showDate', 'Tanggal')}
+                  ${toggleChip('showWatermark', 'Watermark SpotyFlow')}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function exportHdCanvas() {
+          const out = document.createElement('canvas');
+          renderPosterToCanvas(out, true);
+          return out;
+        }
+
+        function makePosterFileName() {
+          const base = String(state?.customTitle || 'SpotyFlow').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 32) || 'SpotyFlow';
+          return `SpotyFlow_${base}_${Date.now().toString().slice(-6)}.png`;
+        }
+
+        function savePoster() {
+          if (!state) return;
+          const fileName = makePosterFileName();
+          try {
+            const hdCanvas = exportHdCanvas();
+            const br = getBridge();
+            if (br && typeof br.savePosterToGallery === 'function') {
+              const dataUrl = hdCanvas.toDataURL('image/png');
+              const rawRes = br.savePosterToGallery(dataUrl, fileName);
+              let parsed = { ok: false };
+              try { parsed = JSON.parse(rawRes); } catch {}
+              if (parsed.ok) {
+                if (typeof showToast === 'function') showToast('Poster tersimpan di Galeri (Pictures/SpotyFlow)!', 'sparkles');
+                return;
+              }
+            }
+            // Web Browser Fallback: toBlob + URL.revokeObjectURL
+            hdCanvas.toBlob((blob) => {
+              if (!blob) return;
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              setTimeout(() => URL.revokeObjectURL(url), 2500);
+              if (typeof showToast === 'function') showToast('Poster HD berhasil diunduh!', 'sparkles');
+            }, 'image/png');
+          } catch {
+            if (typeof showToast === 'function') showToast('Gagal mengekspor poster. Coba lagi.', 'error');
+          }
+        }
+
+        async function sharePoster() {
+          if (!state) return;
+          const fileName = makePosterFileName();
+          try {
+            const hdCanvas = exportHdCanvas();
+            const br = getBridge();
+            if (br && typeof br.sharePosterImage === 'function') {
+              const ok = br.sharePosterImage(hdCanvas.toDataURL('image/png'), fileName);
+              if (ok) return;
+            }
+            const blob = await new Promise((res) => hdCanvas.toBlob(res, 'image/png'));
+            if (blob && navigator.share && navigator.canShare) {
+              const file = new File([blob], fileName, { type: 'image/png' });
+              if (navigator.canShare({ files: [file] })) {
+                await navigator.share({ title: state.customTitle, text: `${state.customTitle} — ${state.customArtist}`, files: [file] });
+                return;
+              }
+            }
+            savePoster();
+          } catch {
+            savePoster();
+          }
+        }
+
+        function close() {
+          if (searchAbort) { try { searchAbort.abort(); } catch {} }
+          if (lyricsAbort) { try { lyricsAbort.abort(); } catch {} }
+          const el = document.getElementById('sf-poster-studio-v2');
+          if (el) el.remove();
+          state = null;
+        }
+
+        function open(optionalTrack) {
+          close();
+          state = makeDefaultState(optionalTrack);
+          const root = document.createElement('div');
+          root.id = 'sf-poster-studio-v2';
+          root.setAttribute('role', 'dialog');
+          root.setAttribute('aria-modal', 'true');
+          root.className = 'fixed inset-0 z-[9999] flex flex-col bg-[#080A10] text-white overflow-hidden';
+          root.innerHTML = `
+            <!-- Compact Header -->
+            <div class="shrink-0 flex items-center justify-between gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2.5 border-b border-white/10 bg-[#0B0D16]">
+              <button type="button" onclick="window.SF201.posterStudio.close()" aria-label="Tutup Poster Studio" class="sf-tap w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg leading-none">×</button>
+              <div class="text-center min-w-0">
+                <h2 class="font-display font-bold text-sm text-white truncate">Poster Studio</h2>
+                <p class="font-mono text-[9.5px] uppercase tracking-widest text-white/45">HD 1080P • AURALYS</p>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="window.SF201.posterStudio.sharePoster()" class="sf-tap h-9 px-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white">📤 Bagikan</button>
+                <button type="button" onclick="window.SF201.posterStudio.savePoster()" class="sf-tap h-9 px-3.5 rounded-full bg-white hover:bg-white/90 text-black text-xs font-extrabold shadow">💾 Simpan</button>
+              </div>
+            </div>
+
+            <!-- Top Zone (~44% height): Live Interactive HD Preview -->
+            <div class="relative flex-[0_0_43%] min-h-[210px] flex items-center justify-center p-3 bg-[radial-gradient(circle_at_50%_40%,rgba(124,58,237,0.16),rgba(8,10,16,0.96)_72%)] overflow-hidden">
+              <canvas id="sf-poster-preview-canvas" class="max-h-full max-w-full w-auto h-auto rounded-2xl shadow-[0_20px_54px_rgba(0,0,0,0.75)] ring-1 ring-white/15"></canvas>
+              <button type="button" onclick="window.SF201.posterStudio._resetAll()" title="Reset setingan poster" class="sf-tap absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 border border-white/20 text-[10.5px] font-bold text-white/85 hover:text-white">↻ Reset</button>
+            </div>
+
+            <!-- Bottom Zone (~57% height): 4-Tab Smooth Scroll Panel -->
+            <div class="flex-1 min-h-0 flex flex-col bg-[#0D1019] border-t border-white/12 rounded-t-3xl overflow-hidden">
+              <div class="shrink-0 px-3 pt-3 pb-2">
+                <div class="flex items-center gap-1 p-1 rounded-full bg-black/45 border border-white/10">
+                  <button type="button" data-poster-tab="track" onclick="window.SF201.posterStudio._setTab('track')">1. Lagu</button>
+                  <button type="button" data-poster-tab="photo" onclick="window.SF201.posterStudio._setTab('photo')">2. Foto</button>
+                  <button type="button" data-poster-tab="style" onclick="window.SF201.posterStudio._setTab('style')">3. Gaya</button>
+                  <button type="button" data-poster-tab="settings" onclick="window.SF201.posterStudio._setTab('settings')">4. Atur</button>
+                </div>
+              </div>
+              <div id="sf-poster-tab-body" class="flex-1 min-h-0 overflow-y-auto studio-scroll px-4 pt-1 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"></div>
+            </div>
+          `;
+          document.body.appendChild(root);
+          renderActiveTabBody();
+          selectTrack(state.track);
+        }
+
+        // Redirect legacy SF200.poster.openModal cleanly to SF201.posterStudio.open!
+        setTimeout(() => {
+          if (window.SF200?.poster) {
+            window.SF200.poster.openModal = (tr) => open(tr);
+          }
+        }, 80);
+
+        return {
+          open,
+          close,
+          savePoster,
+          sharePoster,
+          _setTab(tab) {
+            if (!state) return;
+            state.activeTab = tab;
+            renderActiveTabBody();
+          },
+          _setTrackSource(src) {
+            if (!state) return;
+            state.trackSource = src;
+            renderActiveTabBody();
+          },
+          _onSearch(val) { triggerLiveTrackSearch(val); },
+          _pickIndex(idx) {
+            const tr = window.__sf201PosterTrackList?.[idx];
+            if (tr) selectTrack(tr);
+          },
+          _onPhotoFile(inputEl) { handlePhotoUploadFile(inputEl); },
+          _clearPhoto() {
+            if (!state) return;
+            state.uploadedImg = null;
+            state.uploadedThumbUrl = '';
+            state.photoSource = 'cover';
+            renderActiveTabBody();
+            schedulePreviewRender();
+          },
+          _resetCrop() {
+            if (!state) return;
+            state.zoom = 100; state.panX = 0; state.panY = 0;
+            renderActiveTabBody();
+            schedulePreviewRender();
+          },
+          _resetAll() {
+            if (!state) return;
+            const curTrack = state.track;
+            const curTab = state.activeTab;
+            state = makeDefaultState(curTrack);
+            state.activeTab = curTab;
+            renderActiveTabBody();
+            selectTrack(curTrack);
+          },
+          _set(key, val) {
+            if (!state) return;
+            state[key] = val;
+            renderActiveTabBody();
+            schedulePreviewRender();
+          },
+          _setLive(key, val) {
+            if (!state) return;
+            state[key] = val;
+            schedulePreviewRender();
+          },
+          _setRange(key, val, lblId, suffix) {
+            if (!state) return;
+            const n = Number(val);
+            state[key] = n;
+            const lbl = document.getElementById(lblId);
+            if (lbl) lbl.textContent = `${n}${suffix || ''}`;
+            schedulePreviewRender();
+          },
+          _toggle(key) {
+            if (!state) return;
+            state[key] = !state[key];
+            renderActiveTabBody();
+            schedulePreviewRender();
+          },
+          _toggleLyric(idx) {
+            if (!state) return;
+            const pos = state.selectedLyricIndices.indexOf(idx);
+            if (pos >= 0) {
+              state.selectedLyricIndices.splice(pos, 1);
+            } else {
+              if (state.selectedLyricIndices.length >= 4) state.selectedLyricIndices.shift();
+              state.selectedLyricIndices.push(idx);
+            }
+            state.customQuote = '';
+            renderActiveTabBody();
+            schedulePreviewRender();
+          },
+        };
+      })();
+
+      return {
+        isPerfHudEnabled,
+        togglePerfHud,
+        updatePerfHud,
+        schedulePrefetchNextTwo,
+        gui,
+        posterStudio,
       };
     })();
   </script>
