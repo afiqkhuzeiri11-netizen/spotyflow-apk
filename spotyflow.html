@@ -1936,6 +1936,615 @@
       -webkit-user-select: none;
     }
   </style>
+
+  <style id="sf-v3-parity-css">
+/* =========================================================================
+ * SPOTYFLOW v3.0.0 — AURALYS LIQUID GLASS + EDITORIAL + 3 THEMES CSS
+ * Strict GPU Perf: backdrop-filter ONLY on static floating surfaces (Dock,
+ * Mini-Player, FABs, Glass Pills, Modals). ZERO blur in scroll lists/cards.
+ * ========================================================================= */
+:root,
+html[data-sf3-theme="light"] {
+  --sf3-bg: #F3F4F6;
+  --sf3-surface: #FFFFFF;
+  --sf3-surface-2: #E9ECEF;
+  --sf3-text: #111215;
+  --sf3-muted: #60656E;
+  --sf3-border: rgba(17, 18, 21, 0.08);
+  --sf3-accent: #1DB954;
+  --sf3-accent-soft: rgba(29, 185, 84, 0.14);
+  --sf3-glass-bg: rgba(255, 255, 255, 0.80);
+  --sf3-glass-border: rgba(255, 255, 255, 0.90);
+  --sf3-glass-shadow: 0 10px 30px rgba(17, 18, 21, 0.10), 0 2px 6px rgba(17, 18, 21, 0.05);
+  --sf3-lens-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(17, 18, 21, 0.06);
+  --sf3-pill-active-bg: rgba(17, 18, 21, 0.09);
+  --sf3-btn-solid-bg: #111215;
+  --sf3-btn-solid-fg: #FFFFFF;
+  --sf3-switch-off: #CBD5E1;
+  --sf3-slider-track: rgba(17, 18, 21, 0.14);
+}
+
+html[data-sf3-theme="dark"] {
+  --sf3-bg: #0D0E12;
+  --sf3-surface: #171920;
+  --sf3-surface-2: #21242E;
+  --sf3-text: #F8FAFC;
+  --sf3-muted: #9CA3AF;
+  --sf3-border: rgba(255, 255, 255, 0.09);
+  --sf3-accent: #1ED760;
+  --sf3-accent-soft: rgba(30, 215, 96, 0.16);
+  --sf3-glass-bg: rgba(23, 25, 32, 0.80);
+  --sf3-glass-border: rgba(255, 255, 255, 0.14);
+  --sf3-glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  --sf3-lens-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.24), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  --sf3-pill-active-bg: rgba(255, 255, 255, 0.13);
+  --sf3-btn-solid-bg: #FFFFFF;
+  --sf3-btn-solid-fg: #0D0E12;
+  --sf3-switch-off: #374151;
+  --sf3-slider-track: rgba(255, 255, 255, 0.16);
+}
+
+html[data-sf3-theme="amoled"] {
+  --sf3-bg: #000000;
+  --sf3-surface: #0B0C10;
+  --sf3-surface-2: #151720;
+  --sf3-text: #FFFFFF;
+  --sf3-muted: #94A3B8;
+  --sf3-border: rgba(255, 255, 255, 0.11);
+  --sf3-accent: #1ED760;
+  --sf3-accent-soft: rgba(30, 215, 96, 0.18);
+  --sf3-glass-bg: rgba(11, 12, 16, 0.86);
+  --sf3-glass-border: rgba(255, 255, 255, 0.16);
+  --sf3-glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.72);
+  --sf3-lens-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  --sf3-pill-active-bg: rgba(255, 255, 255, 0.14);
+  --sf3-btn-solid-bg: #FFFFFF;
+  --sf3-btn-solid-fg: #000000;
+  --sf3-switch-off: #2D313D;
+  --sf3-slider-track: rgba(255, 255, 255, 0.18);
+}
+
+/* Clean Diet: Hide legacy chrome & bloat via CSS ONLY — NEVER delete old DOM IDs */
+.sf3-hidden-legacy,
+body.sf3-active #quiz-stage-container,
+body.sf3-active #header-pomodoro-pill,
+body.sf3-active #stage-quick-fx-bar,
+body.sf3-active #sf201-pill-fx,
+body.sf3-active #mobile-mini-player,
+body.sf3-active #mobile-bottom-nav,
+body.sf3-active #sf-mobile-nav,
+body.sf3-active #player-bar,
+body.sf3-active #left-sidebar,
+body.sf3-active #main-scroll,
+body.sf3-active #right-panel,
+body.sf3-active #sf-ambient-mesh-canvas,
+body.sf3-active #sf-ambient-mesh-scrim {
+  display: none !important;
+}
+
+body.sf3-active {
+  background: var(--sf3-bg) !important;
+  color: var(--sf3-text) !important;
+  overflow: hidden !important;
+}
+
+/* Main v3.0.0 Shell */
+#sf3-app-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--sf3-bg);
+  color: var(--sf3-text);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), color 0.24s ease;
+}
+
+#sf3-page-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 168px) 16px;
+}
+
+#sf3-page-root {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Editorial Mode Typography & Flat Crisp Surfaces */
+html[data-sf3-style="editorial"] .sf3-glass-float {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--sf3-surface) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--sf3-border) !important;
+}
+html[data-sf3-style="editorial"] .sf3-page-title {
+  letter-spacing: -0.04em;
+  font-weight: 900;
+}
+
+/* Static Floating Liquid Glass (ALLOWED per spotyflow-ui-craft) */
+.sf3-glass-float {
+  background: var(--sf3-glass-bg);
+  border: 1px solid var(--sf3-glass-border);
+  box-shadow: var(--sf3-glass-shadow);
+}
+html[data-sf3-style="glass"][data-sf3-blur="1"] .sf3-glass-float {
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+}
+html[data-sf3-style="glass"][data-sf3-lens="1"] .sf3-glass-float {
+  box-shadow: var(--sf3-glass-shadow), var(--sf3-lens-highlight);
+}
+
+/* Scrolled Cards & Rows: ZERO backdrop-filter for locked 60-120 FPS */
+.sf3-card {
+  background: var(--sf3-surface);
+  border: 1px solid var(--sf3-border);
+  border-radius: 22px;
+}
+.sf3-card-soft {
+  background: var(--sf3-surface-2);
+  border: 1px solid var(--sf3-border);
+  border-radius: 18px;
+}
+.sf3-page-title {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--sf3-text);
+}
+.sf3-sec-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--sf3-text);
+}
+.sf3-muted { color: var(--sf3-muted); }
+
+/* Streak Card */
+.sf3-streak-card {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.14), rgba(234, 88, 12, 0.05));
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  border-radius: 22px;
+  padding: 14px 16px;
+}
+
+/* Chips */
+.sf3-chip-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.sf3-chip-row::-webkit-scrollbar { display: none; }
+.sf3-chip {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--sf3-surface);
+  color: var(--sf3-text);
+  border: 1px solid var(--sf3-border);
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.16s ease;
+}
+.sf3-chip:active { transform: scale(0.95); }
+.sf3-chip.active {
+  background: var(--sf3-btn-solid-bg);
+  color: var(--sf3-btn-solid-fg);
+  border-color: transparent;
+}
+
+/* Library Sub-Tabs (Underlined) */
+.sf3-subtabs {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--sf3-border);
+  margin-bottom: 12px;
+}
+.sf3-subtabs::-webkit-scrollbar { display: none; }
+.sf3-subtab {
+  position: relative;
+  padding: 8px 2px 10px 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sf3-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sf3-subtab.active {
+  color: var(--sf3-text);
+}
+.sf3-subtab.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5px;
+  border-radius: 99px;
+  background: var(--sf3-accent);
+}
+
+/* Track Rows & Quick Grid */
+.sf3-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sf3-row:active {
+  transform: scale(0.985);
+  background: var(--sf3-pill-active-bg);
+}
+.sf3-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  cursor: pointer;
+}
+.sf3-settings-row + .sf3-settings-row {
+  border-top: 1px solid var(--sf3-border);
+}
+
+/* Material 3 High-Contrast Switch */
+.sf3-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--sf3-switch-off);
+  flex-shrink: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sf3-switch::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+  transform: translateX(0);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sf3-switch.on {
+  background: var(--sf3-accent);
+}
+.sf3-switch.on::after {
+  transform: translateX(20px);
+}
+
+/* Material 3 Thick Pill Slider */
+.sf3-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sf3-slider-track);
+  outline: none;
+}
+.sf3-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--sf3-accent);
+  border: 3px solid var(--sf3-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  cursor: pointer;
+}
+
+/* Bottom Floating Chrome: Mini-Player + Morphing 4-Tab Liquid Glass Dock */
+#sf3-bottom-chrome {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  z-index: 60;
+  pointer-events: none;
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Home Floating Circular Action Buttons (Kenali Lagu + Acak) */
+#sf3-home-fabs {
+  position: fixed;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 158px);
+  z-index: 58;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+}
+body.sf3-dock-collapsed #sf3-home-fabs {
+  transform: translateY(64px);
+}
+.sf3-fab-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sf3-text);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sf3-fab-btn:active { transform: scale(0.92); }
+
+/* Mini-Player Capsule */
+#sf3-mini-player {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease, width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+#sf3-mini-progress-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: var(--sf3-border);
+  overflow: hidden;
+}
+#sf3-mini-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--sf3-accent);
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
+}
+.sf3-mini-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 9px;
+}
+
+/* 4-Tab Morphing Liquid Glass Dock */
+#sf3-bottom-dock {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 420px;
+  height: 60px;
+  border-radius: 999px;
+  padding: 5px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  gap: 2px;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), width 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+  will-change: transform;
+}
+.sf3-dock-btn {
+  height: 50px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--sf3-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sf3-dock-btn:active { transform: scale(0.93); }
+.sf3-dock-btn.active {
+  background: var(--sf3-pill-active-bg);
+  color: var(--sf3-text);
+}
+
+/* Collapsed Morphing State: Dock -> 58x58 Left Pill, Mini-Player slides right beside it! */
+body.sf3-dock-collapsed #sf3-bottom-chrome {
+  flex-direction: row-reverse;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+body.sf3-dock-collapsed #sf3-bottom-dock {
+  width: 58px;
+  min-width: 58px;
+  height: 58px;
+  padding: 0;
+  grid-template-columns: 1fr;
+}
+body.sf3-dock-collapsed #sf3-bottom-dock .sf3-dock-btn:not(.active) {
+  display: none;
+}
+body.sf3-dock-collapsed #sf3-bottom-dock .sf3-dock-btn.active {
+  width: 58px;
+  height: 58px;
+  background: transparent;
+}
+body.sf3-dock-collapsed #sf3-bottom-dock .sf3-dock-label {
+  display: none;
+}
+body.sf3-dock-collapsed #sf3-mini-player {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+/* Fullscreen Clean v3.0.0 Player Sheet */
+#sf3-player-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: #0D0E12;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(104%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+  will-change: transform, opacity;
+  overflow: hidden;
+}
+#sf3-player-sheet.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.sf3-stage-hero {
+  position: relative;
+  height: 47vh;
+  min-height: 290px;
+  max-height: 460px;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sf3-stage-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sf3-stage-hero-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0.06) 35%,
+    rgba(13, 14, 18, 0.65) 78%,
+    var(--sf3-stage-base, #0D0E12) 100%
+  );
+  pointer-events: none;
+}
+.sf3-stage-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 22px calc(env(safe-area-inset-bottom, 0px) + 18px) 22px;
+  background: var(--sf3-stage-base, #0D0E12);
+}
+
+/* Subpage Drawer Overlay (Settings, Widget Editor, Collection, History, Recap, EQ, Recognize) */
+#sf3-subpage-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--sf3-bg);
+  color: var(--sf3-text);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+  will-change: transform, opacity;
+}
+#sf3-subpage-overlay.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.sf3-subpage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 12px;
+  border-bottom: 1px solid var(--sf3-border);
+  background: var(--sf3-bg);
+  flex-shrink: 0;
+}
+.sf3-subpage-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 48px) 16px;
+}
+
+/* Modal Sheet (Bottom/Center dialog) */
+#sf3-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.54);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+}
+#sf3-dialog-backdrop.open { display: flex; }
+#sf3-dialog-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 86vh;
+  overflow-y: auto;
+  border-radius: 26px;
+  padding: 18px;
+  color: var(--sf3-text);
+}
+
+/* Radar pulse for Kenali Lagu */
+@keyframes sf3RadarPulse {
+  0% { transform: scale(0.75); opacity: 0.7; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+.sf3-radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--sf3-accent);
+  animation: sf3RadarPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* Theme Harmony for Poster 3D Studio in Light/Dark/AMOLED */
+html[data-sf3-theme="light"] #sf202-poster3d-overlay {
+  background: rgba(243, 244, 246, 0.96) !important;
+  color: #111215 !important;
+}
+html[data-sf3-theme="amoled"] #sf202-poster3d-overlay {
+  background: #000000 !important;
+}
+
+  </style>
 </head>
 <body class="bg-[#050505] text-white flex flex-col h-[100dvh] w-full overflow-x-hidden overflow-y-hidden selection:bg-[#1ED760]/30 selection:text-white">
   <!-- Living Multi-Orb Ambient Mesh Canvas (SpotyFlow v2.0.2 Static 128x128 Zero-Lag Mesh) -->
@@ -2199,7 +2808,7 @@
               <i data-lucide="settings" aria-hidden="true" class="w-4 h-4 text-[#1ED760] shrink-0"></i>
               <span class="truncate">Pengaturan</span>
             </span>
-            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v2.0.2</span>
+            <span class="font-mono text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#1ED760]/15 text-[#1ED760] shrink-0">v3.0.0</span>
           </button>
           <button type="button" role="menuitem" onclick="closeHeaderQuickMenu(); openAiMoodDjModal()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/[0.08] text-xs font-bold text-[#E5C99B] text-left transition-colors">
             <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
@@ -2649,7 +3258,7 @@
             <div class="flex items-center justify-between pt-1.5 gap-2">
               <span class="text-[11px] text-[#B3B3B3] shrink-0">Auto-Update OTA</span>
               <button type="button" id="console-app-version" onclick="SFAutoUpdate.checkNow(true)" class="font-mono text-[11px] font-bold text-white hover:text-[#1ED760] text-right truncate transition-colors">
-                v2.0.2 • Cek Update
+                v3.0.0 • Cek Update
               </button>
             </div>
           </div>
@@ -3726,7 +4335,7 @@
     /* =====================================================================
        1. STATE & PERSISTENCE
        ===================================================================== */
-    const APP_VERSION = '2.0.2';
+    const APP_VERSION = '3.0.0';
     const DEFAULT_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
         <defs>
@@ -6322,6 +6931,8 @@
           durationMs: Math.max(1000, Math.round(durSec * 1000)),
           positionMs: Math.max(0, Math.round((curPos || 0) * 1000)),
           playbackRate: Number(AppState.playbackRate || 1.0),
+          isLiked: typeof isTrackLiked === 'function' ? Boolean(isTrackLiked(track.id)) : false,
+          streakDays: window.SF300?.streak?.getDays?.() || 1,
         };
 
         if (bridge && typeof bridge.updateState === 'function') {
@@ -6504,6 +7115,9 @@
             audio.pause();
           }
           updatePlayPauseIcons();
+          syncNativeMediaBridge(true);
+        } else if (action === 'like') {
+          if (typeof toggleLikeCurrent === 'function') toggleLikeCurrent();
           syncNativeMediaBridge(true);
         } else if (action === 'next') {
           playNext(true);
@@ -12420,7 +13034,7 @@
             <div class="space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
                 <div>
-                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v2.0.2</p>
+                  <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1ED760]">SPOTYFLOW • v3.0.0</p>
                   <h1 class="font-display font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-tight text-white mt-0.5">${greetingText}</h1>
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
@@ -30198,6 +30812,13 @@
       'sf_offline_meta_v2',
       'sf_perf_hud_v1',
       'sf_custom_stickers_v1',
+      'sf_v3_prefs',
+      'sf_v3_streak',
+      'sf_v3_alarms',
+      'sf_v3_widget_cfg',
+      'sf_v3_search_history',
+      'sf_v3_device_cache',
+      'sf_seen_whats_new_3_0_0',
       'sf_seen_whats_new_2_0_0',
       'sf_seen_whats_new_2_0_1',
       'sf_seen_whats_new_2_0_2',
@@ -30536,8 +31157,8 @@
       `);
     }
 
-    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v2.0.2" (AUTO 1X) ---
-    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_2_0_2';
+    // --- 23G. MODAL "APA YANG BARU DI SPOTYFLOW v3.0.0" (AUTO 1X) ---
+    const SF_SEEN_WHATS_NEW_KEY = 'sf_seen_whats_new_3_0_0';
 
     function dismissWhatsNewV152Modal() {
       safeStorageSet(SF_SEEN_WHATS_NEW_KEY, '1');
@@ -30550,17 +31171,18 @@
         <div class="space-y-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#E5C99B]/20 text-[#1ED760] border border-[#1ED760]/40">v2.0.2 • ZERO-STUTTER + 3D DEPTH POSTER</span>
-              <h3 class="font-display font-extrabold text-xl text-white mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
+              <span class="inline-block font-mono text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#1ED760]/20 to-[#7C3AED]/20 text-[#1ED760] border border-[#1ED760]/40">v3.0.0 • 100% PARITY EDITION</span>
+              <h3 class="font-display font-extrabold text-xl mt-1.5">Selamat Datang di SpotyFlow v${APP_VERSION}</h3>
             </div>
-            <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white/80 shrink-0">
+            <button type="button" onclick="dismissWhatsNewV152Modal()" aria-label="Tutup" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center shrink-0">
               <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
             </button>
           </div>
-          <ul class="space-y-2.5 text-xs text-zinc-200 leading-relaxed">
-            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">⚡</span><span><strong>Anti-Patah-Patah 4G &amp; 60–120 FPS Mulus</strong> — Buffer 4G stabil, interpolasi progres lokal 60 FPS, blur GPU super ringan, &amp; update lirik widget tanpa lag.</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-purple-300 font-bold">🧊</span><span><strong>Poster Lagu 3D Depth Effect (ML Kit Offline)</strong> — Kartu &amp; sampul 3D perspektif nyata di <strong>belakang subjek foto</strong> kamu, bisa digeser langsung pakai jari!</span></li>
-            <li class="flex items-start gap-2.5"><span class="text-pink-400 font-bold">✨</span><span><strong>Tab Stiker Lengkap Ala Auralys</strong> — Stiker <em>Burung</em>, <em>Kilau (✦)</em>, upload stiker PNG sendiri, &amp; simpan HD langsung ke Galeri (<code>Pictures/SpotyFlow</code>)!</span></li>
+          <ul class="space-y-2.5 text-xs leading-relaxed opacity-90">
+            <li class="flex items-start gap-2.5"><span class="text-[#1ED760] font-bold">✨</span><span><strong>Liquid Glass &amp; 3 Tema (Terang, Gelap, AMOLED)</strong> — Gaya Kaca &amp; Editorial, Dock 4 Tab (Beranda, Cari, Pustaka, Kamu) yang menyusut saat scroll, serta Streak <strong>🔥 Percikan</strong> harian.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-purple-400 font-bold">🎛️</span><span><strong>Pengaturan 10 Kategori &amp; Audio Native Pro</strong> — Skip Silence, Normalisasi/Loudness, Equalizer 5-Band Hardware, Varispeed/Pitch, 120Hz, &amp; Opt-in Floating Dynamic Island.</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">🧩</span><span><strong>5 Ukuran Widget Home Screen + Editor Live Preview</strong> — Pemutar 1×1, 2×2, 2×4, 4×1, 4×2 yang kustomisasi kaca &amp; sudutnya sinkron langsung dengan Home Screen Android!</span></li>
+            <li class="flex items-start gap-2.5"><span class="text-sky-400 font-bold">📱</span><span><strong>6 Koleksi Pustaka + Musik Perangkat + Poster 3D Depth</strong> — Putar MP3/FLAC lokal perangkat offline, unduh semua lagu disukai, &amp; buat Poster 3D AI ML Kit!</span></li>
           </ul>
           <button type="button" onclick="dismissWhatsNewV152Modal()" class="w-full py-3 rounded-full bg-[#1ED760] hover:bg-[#3BE477] text-black text-sm font-extrabold transition-colors shadow-lg">
             Mulai Mendengarkan
@@ -32367,11 +32989,14 @@
               trackId: String(track.id || cleanVid || 'track'),
               videoId: cleanVid,
               title: String(track.title || 'SpotyFlow'),
-              artist: String(track.artist?.name || 'SpotyFlow'),
-              album: String(track.album?.title || 'SpotyFlow'),
+              artist: String(track.artist?.name || track.artist || 'SpotyFlow'),
+              album: String(track.album?.title || track.album || 'SpotyFlow'),
               coverUrl: typeof getCover === 'function' ? getCover(track, 'big') : '',
               startSec: Math.max(0, Number(startSec) || 0),
               dataSaver: Boolean(AppState.dataSaver),
+              localUri: String(track.localUri || ''),
+              isLiked: typeof isTrackLiked === 'function' ? Boolean(isTrackLiked(track.id)) : false,
+              streakDays: window.SF300?.streak?.getDays?.() || 1,
             };
             br.playNativeTrack(JSON.stringify(payload));
           } catch {
@@ -37976,6 +38601,2646 @@
         requestNativeDepthMask,
       };
     })();
+  </script>
+
+  <script id="sf-v3-parity-js">
+/* =========================================================================
+ * 28. SPOTYFLOW v3.0.0 — 100% PARITY EDITION (MODULAR ENGINE: window.SF300)
+ * Stages 1–4: Liquid Glass/Editorial + 3 Themes + Morphing 4-Tab Dock +
+ * Streak + Clean Fullscreen Stage + 10-Category Settings + Native Audio Pro
+ * + 5-Band EQ + Kenali Lagu + 5-Widget Live Editor + 6 Pustaka Collections
+ * ========================================================================= */
+window.SF300 = (function createSpotyFlow300Module() {
+  'use strict';
+
+  const PREFS_KEY = 'sf_v3_prefs';
+  const STREAK_KEY = 'sf_v3_streak';
+  const ALARMS_KEY = 'sf_v3_alarms';
+  const WIDGET_KEY = 'sf_v3_widget_cfg';
+  const SEARCH_HIST_KEY = 'sf_v3_search_history';
+  const DEVICE_CACHE_KEY = 'sf_v3_device_cache';
+
+  const DEFAULT_PREFS = {
+    // Stage 1 Themes & Surface
+    theme: 'light', // light | dark | amoled | system
+    uiStyle: 'glass', // glass | editorial
+    blurEnabled: true,
+    glassLens: true,
+    collapseNavOnScroll: true,
+    gridLayout: 'standard', // standard (3-col) | large (2-col)
+    // Stage 2 Audio Pro
+    audioQuality: 'high', // auto | high | saver
+    skipSilence: false,
+    normalizeAudio: false,
+    loudnessLevel: 0,
+    audioOffload: false,
+    varispeed: false,
+    speed: 1.0,
+    pitch: 1.0,
+    keepPlayingInGames: false,
+    stopOnTaskRemoved: false,
+    pauseOnMute: false,
+    resumeOnBluetooth: false,
+    eqEnabled: false,
+    eqBands: [0, 0, 0, 0, 0],
+    eqPreset: 'Datar',
+    // Stage 2 Queue (13 toggles)
+    qAutoplaySimilar: true,
+    qInfiniteRadio: true,
+    qPersistQueue: true,
+    qSmartShuffle: true,
+    qSwipeToQueue: true,
+    qAddToTop: false,
+    qRemoveAfterPlay: false,
+    qConfirmClearQueue: true,
+    qResumeLastPos: true,
+    qSkipOnError: true,
+    qCrossfade: false,
+    qGapless: true,
+    qShowNumbers: true,
+    // Stage 2 Lainnya (10 toggles)
+    videoMode: true,
+    miniLyricsInPlayer: true,
+    swipeMiniPlayer: true,
+    miniPlayerSwipeSensitivity: 50,
+    headsetControls: true,
+    smartPrefetch: true,
+    // Stage 2 Display Native
+    keepScreenOn: false,
+    highRefreshRate: true,
+    immersiveStatusBar: false,
+    // Stage 2 Dynamic Island (opt-in OFF default)
+    islandEnabled: false,
+    islandShowLyrics: true,
+    islandVerticalOffsetDp: 12,
+    islandPillWidthDp: 215,
+    // Stage 2/4 Auto Playlists (6 toggles)
+    autoPlLiked: true,
+    autoPlDownloaded: true,
+    autoPlCached: true,
+    autoPlDevice: true,
+    autoPlTop50: true,
+    autoPlUploaded: true,
+    // Stage 4 Remaining 8 Categories
+    lang: 'id',
+    region: 'ID',
+    hideExplicit: false,
+    lyricsAutoRomanize: true,
+    lyricsAutoTranslate: false,
+    lyricsFontSize: 'medium',
+    islandLyricsNative: true,
+    privateSession: false,
+    pauseWatchHistory: false,
+    pauseSearchHistory: false,
+    historyDurationSec: 15,
+    autoAutoResumeCar: true,
+    autoCarQueueView: true,
+    autoSteeringControls: true,
+  };
+
+  const DEFAULT_WIDGET_CFG = {
+    style: 'glass', // glass | clear_glass | cover_color | light | dark
+    accentMode: 'cover', // cover | custom
+    accentColorHex: '#7C3AED',
+    glassShine: 70,
+    glassThickness: 60,
+    cornerRadiusPct: 66,
+    coverShape: 'rounded', // rounded | circle | square
+    textSize: 'medium', // small | medium | large
+    playBtnStyle: 'round', // round | plain
+    showCover: true,
+    showProgress: true,
+    showTime: true,
+    showLike: true,
+    showPrevNext: true,
+    showStreak: true,
+  };
+
+  const MOODS = [
+    { id: 'senang', label: 'Senang', query: 'lagu pop ceria happy hits Indonesia' },
+    { id: 'bersantai', label: 'Bersantai', query: 'indie chill akustik santai Indonesia' },
+    { id: 'perjalanan', label: 'Perjalanan', query: 'road trip driving songs upbeat' },
+    { id: 'energi', label: 'Mengisi energi', query: 'workout high energy dance pop hits' },
+    { id: 'fokus', label: 'Fokus', query: 'lofi beats instrumental study focus' },
+    { id: 'malam', label: 'Malam', query: 'galau malam acoustic slow hits' },
+  ];
+
+  const EQ_PRESETS = {
+    Datar: [0, 0, 0, 0, 0],
+    'Bass Boost': [6, 4, 0, 1, 2],
+    Vokal: [-2, 0, 4, 4, 1],
+    Pop: [2, 3, 1, 3, 2],
+    Rock: [5, 2, -1, 3, 5],
+    EDM: [6, 4, 0, 2, 5],
+    Akustik: [3, 1, 2, 3, 2],
+  };
+
+  const WIDGET_SWATCHES = ['#1ED760', '#7C3AED', '#EC4899', '#F97316', '#0EA5E9', '#EAB308', '#EF4444', '#14B8A6'];
+
+  // ---------------- Safe Utilities ----------------
+  function esc(str) {
+    if (typeof escapeHtml === 'function') return escapeHtml(String(str ?? ''));
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeJsonParse(raw, fallback) {
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function getBridge() {
+    try {
+      return window.SpotyFlowMediaBridge || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function toast(msg, icon = 'info') {
+    if (typeof showToast === 'function') {
+      showToast(msg, icon);
+    }
+  }
+
+  function trackArtist(t) {
+    if (!t) return 'SpotyFlow';
+    if (typeof t.artist === 'string') return t.artist || 'SpotyFlow';
+    return t.artist?.name || t.channelTitle || 'SpotyFlow';
+  }
+
+  function trackCover(t) {
+    if (!t) return '/icon-512.png';
+    try {
+      if (typeof getCover === 'function') {
+        const c = getCover(t, 'medium');
+        if (c) return c;
+      }
+    } catch {}
+    return t.cover || t.coverUrl || t.album?.cover_medium || t.album?.cover || '/icon-512.png';
+  }
+
+  function fmtTime(sec) {
+    const s = Math.max(0, Math.floor(Number(sec) || 0));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${r < 10 ? '0' : ''}${r}`;
+  }
+
+  function getPlaybackTiming() {
+    try {
+      const curTrack = window.AppState?.currentTrack || null;
+      const fallbackDur = Math.max(1, Number(curTrack?.duration || curTrack?.durationSec || 210));
+      if (window.SF200?.isNativePlayingActive?.() && typeof window.SF200.getInterpolatedPosSec === 'function') {
+        const pos = Math.max(0, Number(window.SF200.getInterpolatedPosSec() || 0));
+        const dur = Math.max(1, Number(window.SF200.getNativeDurationSec?.() || fallbackDur));
+        return { pos, dur };
+      }
+      if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+        const pos = Math.max(0, Number(SFYtFull.getCurrentTime?.() || 0));
+        const dur = Math.max(1, Number(SFYtFull.getDuration?.() || fallbackDur));
+        return { pos, dur };
+      }
+      const el = document.getElementById('audio-player') || window.audio;
+      if (el && Number.isFinite(el.currentTime)) {
+        const pos = Math.max(0, Number(el.currentTime || 0));
+        const dur = Number.isFinite(el.duration) && el.duration > 1 ? el.duration : fallbackDur;
+        return { pos, dur };
+      }
+      return { pos: 0, dur: fallbackDur };
+    } catch {
+      return { pos: 0, dur: 210 };
+    }
+  }
+
+  // ---------------- 1. Prefs Manager ----------------
+  let statePrefs = Object.assign({}, DEFAULT_PREFS, safeJsonParse(localStorage.getItem(PREFS_KEY), {}));
+
+  function savePrefs(patch = {}) {
+    statePrefs = Object.assign({}, statePrefs, patch);
+    try {
+      localStorage.setItem(PREFS_KEY, JSON.stringify(statePrefs));
+    } catch {}
+    applyPrefsToDomAndNative();
+    return statePrefs;
+  }
+
+  function resolveEffectiveTheme() {
+    if (statePrefs.theme === 'system') {
+      try {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      } catch {
+        return 'light';
+      }
+    }
+    return ['light', 'dark', 'amoled'].includes(statePrefs.theme) ? statePrefs.theme : 'light';
+  }
+
+  function applyPrefsToDomAndNative() {
+    const html = document.documentElement;
+    const effTheme = resolveEffectiveTheme();
+    html.setAttribute('data-sf3-theme', effTheme);
+    html.setAttribute('data-sf3-style', statePrefs.uiStyle === 'editorial' ? 'editorial' : 'glass');
+    html.setAttribute('data-sf3-blur', statePrefs.blurEnabled ? '1' : '0');
+    html.setAttribute('data-sf3-lens', statePrefs.glassLens ? '1' : '0');
+    html.classList.toggle('dark', effTheme !== 'light');
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', effTheme === 'light' ? '#F3F4F6' : (effTheme === 'amoled' ? '#000000' : '#0D0E12'));
+    }
+
+    if (window.AppState) {
+      window.AppState.dataSaver = statePrefs.audioQuality === 'saver';
+      window.AppState.privateSession = Boolean(statePrefs.privateSession);
+    }
+
+    const br = getBridge();
+    if (br) {
+      try {
+        if (typeof br.applyAudioSettings === 'function') {
+          br.applyAudioSettings(JSON.stringify({
+            skipSilence: Boolean(statePrefs.skipSilence),
+            normalizeAudio: Boolean(statePrefs.normalizeAudio),
+            loudnessLevel: Number(statePrefs.loudnessLevel || 0),
+            audioOffload: Boolean(statePrefs.audioOffload),
+            varispeed: Boolean(statePrefs.varispeed),
+            speed: Number(statePrefs.speed || 1.0),
+            pitch: Number(statePrefs.pitch || 1.0),
+            keepPlayingInGames: Boolean(statePrefs.keepPlayingInGames),
+            stopOnTaskRemoved: Boolean(statePrefs.stopOnTaskRemoved),
+            pauseOnMute: Boolean(statePrefs.pauseOnMute),
+            resumeOnBluetooth: Boolean(statePrefs.resumeOnBluetooth),
+          }));
+        }
+        if (typeof br.applyEqualizer === 'function') {
+          br.applyEqualizer(JSON.stringify({
+            enabled: Boolean(statePrefs.eqEnabled),
+            bands: Array.isArray(statePrefs.eqBands) ? statePrefs.eqBands : [0, 0, 0, 0, 0],
+          }));
+        }
+        if (typeof br.setHighRefreshRate === 'function') br.setHighRefreshRate(Boolean(statePrefs.highRefreshRate));
+        if (typeof br.setImmersiveStatusBar === 'function') br.setImmersiveStatusBar(Boolean(statePrefs.immersiveStatusBar));
+        if (typeof br.setFloatingIslandConfig === 'function') {
+          br.setFloatingIslandConfig(JSON.stringify({
+            enabled: Boolean(statePrefs.islandEnabled),
+            showLyrics: Boolean(statePrefs.islandShowLyrics),
+            verticalOffsetDp: Number(statePrefs.islandVerticalOffsetDp || 12),
+            pillWidthDp: Number(statePrefs.islandPillWidthDp || 215),
+          }));
+        }
+      } catch {}
+    }
+  }
+
+  // ---------------- 2. Streak "Percikan" Engine ----------------
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function loadStreak() {
+    const def = { days: 1, longest: 1, lastActiveDate: '', todaySec: 0, totalTracksToday: 0 };
+    return Object.assign(def, safeJsonParse(localStorage.getItem(STREAK_KEY), {}));
+  }
+
+  function saveStreak(s) {
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); } catch {}
+  }
+
+  let streakState = loadStreak();
+  let lastStreakCountedTrack = '';
+
+  const streak = {
+    get() { return streakState; },
+    getDays() { return Math.max(1, Number(streakState.days || 1)); },
+    tickListening(deltaSec) {
+      if (statePrefs.privateSession || statePrefs.pauseWatchHistory) return;
+      const today = todayKey();
+      if (streakState.lastActiveDate !== today) {
+        // Check yesterday continuity
+        const prev = streakState.lastActiveDate ? new Date(streakState.lastActiveDate + 'T00:00:00') : null;
+        const nowD = new Date(today + 'T00:00:00');
+        const diffDays = prev ? Math.round((nowD - prev) / 86400000) : 0;
+        streakState.todaySec = (streakState.todaySec || 0) + deltaSec;
+        const threshold = Math.max(5, Number(statePrefs.historyDurationSec || 15));
+        if (streakState.todaySec >= threshold) {
+          if (diffDays === 1) streakState.days = (streakState.days || 1) + 1;
+          else if (diffDays > 1 || !streakState.lastActiveDate) streakState.days = Math.max(1, streakState.days || 1);
+          streakState.longest = Math.max(streakState.longest || 1, streakState.days);
+          streakState.lastActiveDate = today;
+          streakState.totalTracksToday = (streakState.totalTracksToday || 0) + 1;
+          saveStreak(streakState);
+          if (typeof syncNativeMediaBridge === 'function') syncNativeMediaBridge(true);
+        } else {
+          saveStreak(streakState);
+        }
+      } else {
+        streakState.todaySec = (streakState.todaySec || 0) + deltaSec;
+        const curId = String(window.AppState?.currentTrack?.id || '');
+        if (curId && curId !== lastStreakCountedTrack) {
+          lastStreakCountedTrack = curId;
+          streakState.totalTracksToday = (streakState.totalTracksToday || 0) + 1;
+        }
+        saveStreak(streakState);
+      }
+    },
+    renderCardHtml() {
+      const s = streakState;
+      const goal = Math.max(60, Number(statePrefs.historyDurationSec || 15) * 4);
+      const pct = Math.min(100, Math.round(((s.todaySec || 0) / goal) * 100));
+      const activeToday = s.lastActiveDate === todayKey();
+      return `
+        <div class="sf3-streak-card flex items-center justify-between gap-3 cursor-pointer" onclick="window.SF300.complete.openRecap()">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(249,115,22,0.18);">🔥</div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-[15px]">Percikan ${s.days} hari</span>
+                <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(249,115,22,0.2);color:#F97316;">${activeToday ? 'Aktif hari ini' : 'Putar 1 lagu'}</span>
+              </div>
+              <p class="text-xs sf3-muted truncate mt-0.5">Rekor terbaik ${s.longest} hari • ${Math.floor((s.todaySec || 0) / 60)} mnt hari ini</p>
+              <div class="w-full h-1.5 rounded-full mt-1.5 overflow-hidden" style="background:rgba(249,115,22,0.18);">
+                <div style="width:${pct}%;height:100%;background:#F97316;border-radius:99px;"></div>
+              </div>
+            </div>
+          </div>
+          <span class="text-xs font-bold sf3-muted shrink-0">›</span>
+        </div>
+      `;
+    },
+  };
+
+  // ---------------- 3. Navigation, Morphing Dock & Mini-Player ----------------
+  let activeTab = 'beranda';
+  let activeMood = '';
+  let moodTracksCache = {};
+  let searchState = { query: '', filter: 'Semua', results: [], loading: false };
+  let libraryState = { subTab: 'Semua', sortBy: 'added', sortAsc: false, query: '', viewMode: 'list' };
+  let uploadedTracks = [];
+  let deviceTracks = safeJsonParse(localStorage.getItem(DEVICE_CACHE_KEY), []);
+  if (!Array.isArray(deviceTracks)) deviceTracks = [];
+  let stageVideoMode = false;
+  let stageOpen = false;
+  let sleepTimerEndMs = 0;
+  let sleepTimerEndOfTrack = false;
+  let subpageStack = [];
+
+  const SVG_ICONS = {
+    beranda: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+    cari: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>',
+    pustaka: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v14.5"/><path d="M10 19.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v15.5"/><path d="M16 7l4 12.5"/></svg>',
+    kamu: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>',
+    heartOut: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12.57L12 20l-7.5-7.43A5 5 0 1 1 12 6.01a5 5 0 1 1 7.5 6.56z"/></svg>',
+    heartFill: '<svg width="20" height="20" viewBox="0 0 24 24" fill="#1ED760" stroke="#1ED760" stroke-width="1.5"><path d="M19.5 12.57L12 20l-7.5-7.43A5 5 0 1 1 12 6.01a5 5 0 1 1 7.5 6.56z"/></svg>',
+    play: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>',
+    pause: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+    prev: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l9 6V6z"/></svg>',
+    next: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5.5 18l9-6-9-6zM16 6h2v12h-2z"/></svg>',
+    shuffle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>',
+    repeat: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+    mic: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
+  };
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 11) return 'Selamat pagi';
+    if (h < 15) return 'Selamat siang';
+    if (h < 18) return 'Selamat sore';
+    return 'Selamat malam';
+  }
+
+  function getUserTracksPool() {
+    const liked = Array.isArray(window.AppState?.likedTracks) ? window.AppState.likedTracks : safeJsonParse(localStorage.getItem('sf_liked_tracks'), []);
+    const recent = Array.isArray(window.AppState?.recentTracks) ? window.AppState.recentTracks : safeJsonParse(localStorage.getItem('sf_recent_tracks'), []);
+    const queue = Array.isArray(window.AppState?.queue) ? window.AppState.queue : [];
+    const seen = new Set();
+    const out = [];
+    for (const list of [recent, liked, queue]) {
+      if (!Array.isArray(list)) continue;
+      for (const t of list) {
+        if (!t || !t.title) continue;
+        const id = String(t.id || t.videoId || t.title);
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(t);
+      }
+    }
+    return out;
+  }
+
+  const FALLBACK_SEEDS = [
+    { id: 'sf_seed_1', title: 'Sialan', artist: { name: 'Adrian Khalif, Juicy Luicy' }, album: { title: 'Sialan' }, duration: 241, cover: '/icon-512.png' },
+    { id: 'sf_seed_2', title: 'Mati-Matian', artist: { name: 'Mahalini' }, album: { title: 'Mati-Matian' }, duration: 244, cover: '/icon-512.png' },
+    { id: 'sf_seed_3', title: 'Die With A Smile', artist: { name: 'Lady Gaga, Bruno Mars' }, album: { title: 'Die With A Smile' }, duration: 251, cover: '/icon-512.png' },
+    { id: 'sf_seed_4', title: 'BIRDS OF A FEATHER', artist: { name: 'Billie Eilish' }, album: { title: 'HIT ME HARD AND SOFT' }, duration: 210, cover: '/icon-512.png' },
+    { id: 'sf_seed_5', title: 'Gala Bunga Matahari', artist: { name: 'Sal Priadi' }, album: { title: 'Markers and Such Pens Flashdisks' }, duration: 210, cover: '/icon-512.png' },
+    { id: 'sf_seed_6', title: 'Nanti Kita Seperti Ini', artist: { name: 'Batas Senja' }, album: { title: 'Nanti Kita Seperti Ini' }, duration: 228, cover: '/icon-512.png' },
+  ];
+
+  async function apiSearchTracks(query, limit = 16) {
+    const q = String(query || '').trim();
+    if (!q) return [];
+    try {
+      const resp = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=${limit}`);
+      const json = await resp.json();
+      const arr = json?.data || json?.tracks || json?.results || [];
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function playTrackSafe(list, idx, label) {
+    const arr = Array.isArray(list) ? list : [list];
+    if (!arr.length) return;
+    const t = arr[idx] || arr[0];
+    // Handle uploaded ObjectURL audio directly
+    if (t && t.objectUrl) {
+      try {
+        if (window.AppState) {
+          window.AppState.queue = arr;
+          window.AppState.queueIndex = idx;
+          window.AppState.currentTrack = t;
+          window.AppState.isPlaying = true;
+        }
+        const el = document.getElementById('audio-player') || window.audio;
+        if (el) {
+          el.src = t.objectUrl;
+          el.play().catch(() => {});
+        }
+        updateMiniAndStageUI();
+        toast(`Memutar "${t.title}"`, 'music');
+        return;
+      } catch {}
+    }
+    if (typeof playTrackList === 'function') {
+      playTrackList(arr, idx, label || 'SpotyFlow v3');
+    }
+    setTimeout(updateMiniAndStageUI, 120);
+  }
+
+  function mountShell() {
+    if (document.getElementById('sf3-app-shell')) return;
+    document.body.classList.add('sf3-active');
+
+    const shell = document.createElement('div');
+    shell.id = 'sf3-app-shell';
+    shell.innerHTML = `
+      <div id="sf3-page-scroll">
+        <div id="sf3-page-root"></div>
+      </div>
+
+      <div id="sf3-home-fabs">
+        <button type="button" class="sf3-fab-btn sf3-glass-float" title="Kenali Lagu" aria-label="Kenali Lagu" onclick="window.SF300.audioTools.openRecognizeModal()">${SVG_ICONS.mic}</button>
+        <button type="button" class="sf3-fab-btn sf3-glass-float" title="Putar Acak" aria-label="Putar Acak" onclick="window.SF300.pages.shufflePlayAll()">${SVG_ICONS.shuffle}</button>
+      </div>
+
+      <div id="sf3-bottom-chrome">
+        <div id="sf3-mini-player" class="sf3-glass-float">
+          <div id="sf3-mini-progress-track"><div id="sf3-mini-progress-fill"></div></div>
+          <div class="sf3-mini-inner">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer" onclick="window.SF300.stage.open()">
+              <img id="sf3-mini-cover" src="/icon-512.png" alt="Cover" class="w-11 h-11 rounded-full object-cover shrink-0 border border-black/10" />
+              <div class="min-w-0 flex-1">
+                <div id="sf3-mini-title" class="text-[13.5px] font-extrabold truncate">SpotyFlow</div>
+                <div id="sf3-mini-artist" class="text-[11.5px] sf3-muted truncate">Ketuk lagu untuk memutar</div>
+              </div>
+            </div>
+            <button type="button" id="sf3-mini-like" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" aria-label="Suka" onclick="window.SF300.stage.toggleLike()">${SVG_ICONS.heartOut}</button>
+            <button type="button" id="sf3-mini-play" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" aria-label="Putar atau Jeda" onclick="window.SF300.stage.togglePlay()">${SVG_ICONS.play}</button>
+            <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" aria-label="Berikutnya" onclick="window.SF300.stage.next()">${SVG_ICONS.next}</button>
+          </div>
+        </div>
+
+        <nav id="sf3-bottom-dock" class="sf3-glass-float" aria-label="Navigasi Utama">
+          <button type="button" class="sf3-dock-btn active" data-tab="beranda" onclick="window.SF300.nav.onDockTap('beranda')">${SVG_ICONS.beranda}<span class="sf3-dock-label">Beranda</span></button>
+          <button type="button" class="sf3-dock-btn" data-tab="cari" onclick="window.SF300.nav.onDockTap('cari')">${SVG_ICONS.cari}<span class="sf3-dock-label">Cari</span></button>
+          <button type="button" class="sf3-dock-btn" data-tab="pustaka" onclick="window.SF300.nav.onDockTap('pustaka')">${SVG_ICONS.pustaka}<span class="sf3-dock-label">Pustaka</span></button>
+          <button type="button" class="sf3-dock-btn" data-tab="kamu" onclick="window.SF300.nav.onDockTap('kamu')">${SVG_ICONS.kamu}<span class="sf3-dock-label">Kamu</span></button>
+        </nav>
+      </div>
+
+      <div id="sf3-player-sheet" aria-hidden="true"></div>
+      <div id="sf3-subpage-overlay" aria-hidden="true"></div>
+      <div id="sf3-dialog-backdrop" onclick="if(event.target===this)window.SF300.nav.closeDialog()">
+        <div id="sf3-dialog-card" class="sf3-glass-float"></div>
+      </div>
+    `;
+    document.body.appendChild(shell);
+
+    // Scroll listener for Morphing Dock
+    const scroller = document.getElementById('sf3-page-scroll');
+    let lastScrollTop = 0;
+    scroller.addEventListener('scroll', () => {
+      if (!statePrefs.collapseNavOnScroll) {
+        document.body.classList.remove('sf3-dock-collapsed');
+        return;
+      }
+      const st = scroller.scrollTop;
+      if (st > 44 && st > lastScrollTop + 6) {
+        document.body.classList.add('sf3-dock-collapsed');
+      } else if (st < lastScrollTop - 8 || st <= 20) {
+        document.body.classList.remove('sf3-dock-collapsed');
+      }
+      lastScrollTop = Math.max(0, st);
+    }, { passive: true });
+
+    // Mini-player horizontal swipe to skip track
+    const miniEl = document.getElementById('sf3-mini-player');
+    let touchStartX = 0;
+    let touchStartY = 0;
+    miniEl.addEventListener('touchstart', (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    miniEl.addEventListener('touchend', (e) => {
+      if (!statePrefs.swipeMiniPlayer || !e.changedTouches || !e.changedTouches[0]) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      const threshold = Math.max(30, 110 - Number(statePrefs.miniPlayerSwipeSensitivity || 50));
+      if (Math.abs(dx) > threshold && dy < 45) {
+        if (dx < 0) stage.next();
+        else stage.prev();
+      }
+    }, { passive: true });
+  }
+
+  const nav = {
+    onDockTap(tab) {
+      if (document.body.classList.contains('sf3-dock-collapsed') && tab === activeTab) {
+        document.body.classList.remove('sf3-dock-collapsed');
+        return;
+      }
+      this.go(tab);
+    },
+    go(tab) {
+      activeTab = tab;
+      document.body.classList.remove('sf3-dock-collapsed');
+      document.querySelectorAll('#sf3-bottom-dock .sf3-dock-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+      });
+      const fabs = document.getElementById('sf3-home-fabs');
+      if (fabs) fabs.style.display = tab === 'beranda' ? 'flex' : 'none';
+      const scroller = document.getElementById('sf3-page-scroll');
+      if (scroller) scroller.scrollTop = 0;
+      pages.render();
+    },
+    openSubpage(title, bodyHtml, rightActionHtml = '') {
+      subpageStack.push({ title, bodyHtml, rightActionHtml });
+      this._renderTopSubpage();
+    },
+    replaceSubpage(title, bodyHtml, rightActionHtml = '') {
+      if (subpageStack.length) subpageStack[subpageStack.length - 1] = { title, bodyHtml, rightActionHtml };
+      else subpageStack.push({ title, bodyHtml, rightActionHtml });
+      this._renderTopSubpage();
+    },
+    backSubpage() {
+      subpageStack.pop();
+      if (!subpageStack.length) {
+        const ov = document.getElementById('sf3-subpage-overlay');
+        if (ov) {
+          ov.classList.remove('open');
+          ov.setAttribute('aria-hidden', 'true');
+        }
+        pages.render();
+      } else {
+        this._renderTopSubpage();
+      }
+    },
+    closeAllSubpages() {
+      subpageStack = [];
+      const ov = document.getElementById('sf3-subpage-overlay');
+      if (ov) {
+        ov.classList.remove('open');
+        ov.setAttribute('aria-hidden', 'true');
+      }
+      pages.render();
+    },
+    _renderTopSubpage() {
+      const ov = document.getElementById('sf3-subpage-overlay');
+      const top = subpageStack[subpageStack.length - 1];
+      if (!ov || !top) return;
+      ov.innerHTML = `
+        <div class="sf3-subpage-header">
+          <div class="flex items-center gap-2 min-w-0">
+            <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold" onclick="window.SF300.nav.backSubpage()" aria-label="Kembali">‹</button>
+            <h2 class="text-[18px] font-extrabold truncate">${esc(top.title)}</h2>
+          </div>
+          <div class="shrink-0">${top.rightActionHtml || ''}</div>
+        </div>
+        <div class="sf3-subpage-scroll"><div style="max-width:720px;margin:0 auto;">${top.bodyHtml}</div></div>
+      `;
+      ov.classList.add('open');
+      ov.setAttribute('aria-hidden', 'false');
+    },
+    openDialog(html) {
+      const bd = document.getElementById('sf3-dialog-backdrop');
+      const card = document.getElementById('sf3-dialog-card');
+      if (!bd || !card) return;
+      card.innerHTML = html;
+      bd.classList.add('open');
+    },
+    closeDialog() {
+      const bd = document.getElementById('sf3-dialog-backdrop');
+      if (bd) bd.classList.remove('open');
+    },
+  };
+
+  // ---------------- 4. Four Main Pages ----------------
+  let currentRenderedList = [];
+
+  function registerPlayableList(tracks) {
+    currentRenderedList = Array.isArray(tracks) ? tracks.slice() : [];
+  }
+
+  function renderTrackRow(t, idx, listTag) {
+    const title = esc(t.title || 'Tanpa Judul');
+    const artist = esc(trackArtist(t));
+    const cover = esc(trackCover(t));
+    const dur = t.duration || t.durationSec ? fmtTime(t.duration || t.durationSec) : '';
+    const isCur = window.AppState?.currentTrack && String(window.AppState.currentTrack.id) === String(t.id);
+    return `
+      <div class="sf3-row" onclick="window.SF300.pages.playFromRendered(${idx}, '${esc(listTag)}')">
+        <img src="${cover}" alt="" loading="lazy" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-black/5" onerror="this.src='/icon-512.png'" />
+        <div class="min-w-0 flex-1">
+          <div class="text-[14px] font-bold truncate" style="${isCur ? 'color:var(--sf3-accent);' : ''}">${title}</div>
+          <div class="text-[12px] sf3-muted truncate">${artist}${dur ? ' • ' + dur : ''}</div>
+        </div>
+        <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center sf3-muted shrink-0" aria-label="Menu lagu" onclick="event.stopPropagation();window.SF300.audioTools.openTrackMenu(${idx})">⋮</button>
+      </div>
+    `;
+  }
+
+  const pages = {
+    playFromRendered(idx, label) {
+      if (!currentRenderedList.length) return;
+      playTrackSafe(currentRenderedList, idx, label || 'SpotyFlow');
+    },
+    shufflePlayAll() {
+      const pool = getUserTracksPool();
+      const list = pool.length ? pool.slice() : FALLBACK_SEEDS.slice();
+      for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+      }
+      playTrackSafe(list, 0, 'Putar Acak');
+      toast('Memutar acak dari pustakamu 🔀', 'shuffle');
+    },
+    async selectMood(moodId) {
+      if (activeMood === moodId) {
+        activeMood = '';
+        this.render();
+        return;
+      }
+      activeMood = moodId;
+      const m = MOODS.find((x) => x.id === moodId);
+      if (!m) return;
+      if (!moodTracksCache[moodId]) {
+        this.render();
+        const found = await apiSearchTracks(m.query, 12);
+        moodTracksCache[moodId] = found.length ? found : FALLBACK_SEEDS;
+      }
+      this.render();
+    },
+    async runSearch(qOverride) {
+      const input = document.getElementById('sf3-search-input');
+      const q = (qOverride !== undefined ? qOverride : (input ? input.value : searchState.query)).trim();
+      searchState.query = q;
+      if (!q) {
+        searchState.results = [];
+        this.render();
+        return;
+      }
+      if (!statePrefs.pauseSearchHistory && !statePrefs.privateSession) {
+        const hist = safeJsonParse(localStorage.getItem(SEARCH_HIST_KEY), []);
+        const next = [q, ...(Array.isArray(hist) ? hist.filter((x) => x !== q) : [])].slice(0, 12);
+        try { localStorage.setItem(SEARCH_HIST_KEY, JSON.stringify(next)); } catch {}
+      }
+      searchState.loading = true;
+      this.render();
+      const suffix = searchState.filter === 'Video' ? ' official music video' : (searchState.filter === 'Album' ? ' full album' : '');
+      searchState.results = await apiSearchTracks(q + suffix, 18);
+      searchState.loading = false;
+      this.render();
+    },
+    deleteSearchHistory(item) {
+      const hist = safeJsonParse(localStorage.getItem(SEARCH_HIST_KEY), []);
+      const next = (Array.isArray(hist) ? hist : []).filter((x) => x !== item);
+      try { localStorage.setItem(SEARCH_HIST_KEY, JSON.stringify(next)); } catch {}
+      this.render();
+    },
+    clearSearchHistory() {
+      try { localStorage.setItem(SEARCH_HIST_KEY, '[]'); } catch {}
+      this.render();
+    },
+    setSearchFilter(f) {
+      searchState.filter = f;
+      if (searchState.query) this.runSearch(searchState.query);
+      else this.render();
+    },
+    setLibSubTab(t) { libraryState.subTab = t; this.render(); },
+    setLibSort(s) { libraryState.sortBy = s; this.render(); },
+    toggleLibDir() { libraryState.sortAsc = !libraryState.sortAsc; this.render(); },
+    toggleLibView() { libraryState.viewMode = libraryState.viewMode === 'list' ? 'grid' : 'list'; this.render(); },
+    setLibQuery(q) { libraryState.query = q; this.render(); },
+    render() {
+      const root = document.getElementById('sf3-page-root');
+      if (!root) return;
+      if (activeTab === 'beranda') root.innerHTML = this._renderBeranda();
+      else if (activeTab === 'cari') root.innerHTML = this._renderCari();
+      else if (activeTab === 'pustaka') root.innerHTML = this._renderPustaka();
+      else if (activeTab === 'kamu') root.innerHTML = this._renderKamu();
+    },
+    _renderBeranda() {
+      const pool = getUserTracksPool();
+      const quickItems = (pool.length ? pool : FALLBACK_SEEDS).slice(0, 6);
+      const andalanList = activeMood && moodTracksCache[activeMood]
+        ? moodTracksCache[activeMood]
+        : (pool.length >= 3 ? pool.slice(0, 12) : FALLBACK_SEEDS);
+      registerPlayableList(andalanList);
+      const gridCols = statePrefs.gridLayout === 'large' ? 'grid-cols-2' : 'grid-cols-3';
+      const user = window.AppState?.user || safeJsonParse(localStorage.getItem('sf_user_profile'), null);
+      const initials = esc((user?.name || 'S').slice(0, 1).toUpperCase());
+
+      return `
+        <div class="space-y-5">
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest sf3-muted">SpotyFlow v3.0</p>
+              <h1 class="sf3-page-title mt-0.5">${esc(getGreeting())}</h1>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="w-10 h-10 rounded-full sf3-card flex items-center justify-center text-base" title="Poster 3D Studio" onclick="window.SF202?.poster3d?.open?.(window.AppState?.currentTrack)">🎨</button>
+              <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm shadow-sm" style="background:var(--sf3-accent);color:#000;" onclick="window.SF300.settings.openMenu()">${initials}</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            ${quickItems.map((t, i) => `
+              <button type="button" class="sf3-card flex items-center gap-2.5 p-1.5 pr-3 text-left overflow-hidden active:scale-[0.98] transition-transform" style="border-radius:16px;" onclick="window.SF300.pages.playQuick(${i})">
+                <img src="${esc(trackCover(t))}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0" onerror="this.src='/icon-512.png'" />
+                <div class="min-w-0 flex-1">
+                  <div class="text-[12.5px] font-extrabold leading-tight line-clamp-2">${esc(t.title)}</div>
+                </div>
+              </button>
+            `).join('')}
+          </div>
+
+          ${streak.renderCardHtml()}
+
+          <div class="sf3-chip-row">
+            ${MOODS.map((m) => `
+              <button type="button" class="sf3-chip ${activeMood === m.id ? 'active' : ''}" onclick="window.SF300.pages.selectMood('${m.id}')">${esc(m.label)}</button>
+            `).join('')}
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="sf3-sec-title">${activeMood ? 'Suasana: ' + esc(MOODS.find((x) => x.id === activeMood)?.label || '') : 'Andalanmu'}</h2>
+              <button type="button" class="text-xs font-bold" style="color:var(--sf3-accent);" onclick="window.SF300.nav.go('cari')">Jelajahi ›</button>
+            </div>
+            <div class="grid ${gridCols} gap-3">
+              ${andalanList.slice(0, 9).map((t, idx) => `
+                <div class="cursor-pointer active:scale-[0.97] transition-transform" onclick="window.SF300.pages.playFromRendered(${idx}, 'Andalanmu')">
+                  <div class="aspect-square rounded-2xl overflow-hidden sf3-card mb-1.5">
+                    <img src="${esc(trackCover(t))}" alt="" loading="lazy" class="w-full h-full object-cover" onerror="this.src='/icon-512.png'" />
+                  </div>
+                  <div class="text-[12.5px] font-bold truncate">${esc(t.title)}</div>
+                  <div class="text-[11px] sf3-muted truncate">${esc(trackArtist(t))}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    },
+    playQuick(idx) {
+      const pool = getUserTracksPool();
+      const quickItems = (pool.length ? pool : FALLBACK_SEEDS).slice(0, 6);
+      playTrackSafe(quickItems, idx, 'Putar Cepat');
+    },
+    _renderCari() {
+      const filters = ['Semua', 'Lagu', 'Video', 'Album', 'Artis', 'Playlist'];
+      const hist = safeJsonParse(localStorage.getItem(SEARCH_HIST_KEY), []);
+      registerPlayableList(searchState.results);
+      return `
+        <div class="space-y-4">
+          <h1 class="sf3-page-title pt-1">Cari</h1>
+
+          <form onsubmit="event.preventDefault();window.SF300.pages.runSearch()" class="sf3-card flex items-center gap-2 px-3.5 py-2.5" style="border-radius:999px;">
+            <span class="sf3-muted">${SVG_ICONS.cari}</span>
+            <input id="sf3-search-input" type="search" value="${esc(searchState.query)}" placeholder="Cari lagu, artis, album, lirik..." class="flex-1 bg-transparent outline-none text-[14.5px] font-medium" style="color:var(--sf3-text);" />
+            ${searchState.query ? `<button type="button" class="text-sm font-bold px-2 sf3-muted" onclick="window.SF300.pages.runSearch('')">✕</button>` : ''}
+            <button type="submit" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold" style="background:var(--sf3-accent);color:#000;">Cari</button>
+          </form>
+
+          <div class="sf3-chip-row">
+            ${filters.map((f) => `
+              <button type="button" class="sf3-chip ${searchState.filter === f ? 'active' : ''}" onclick="window.SF300.pages.setSearchFilter('${f}')">${f}</button>
+            `).join('')}
+          </div>
+
+          ${searchState.loading ? `
+            <div class="sf3-card p-6 text-center text-sm sf3-muted">Mencari "${esc(searchState.query)}"...</div>
+          ` : searchState.results.length ? `
+            <div class="sf3-card p-2">
+              ${searchState.results.map((t, i) => renderTrackRow(t, i, 'Hasil Pencarian')).join('')}
+            </div>
+          ` : `
+            ${Array.isArray(hist) && hist.length ? `
+              <div class="sf3-card p-4 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold uppercase tracking-wider sf3-muted">Riwayat pencarian</span>
+                  <button type="button" class="text-xs font-bold sf3-muted" onclick="window.SF300.pages.clearSearchHistory()">Hapus semua</button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  ${hist.map((q) => `
+                    <div class="sf3-card-soft flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold">
+                      <span class="cursor-pointer" onclick="window.SF300.pages.runSearch(${JSON.stringify(q).replace(/"/g, '&quot;')})">${esc(q)}</span>
+                      <button type="button" class="sf3-muted ml-1" onclick="window.SF300.pages.deleteSearchHistory(${JSON.stringify(q).replace(/"/g, '&quot;')})">×</button>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+            <div class="sf3-card p-4 space-y-2">
+              <div class="text-xs font-extrabold uppercase tracking-wider sf3-muted">Coba telusuri suasana</div>
+              <div class="grid grid-cols-2 gap-2.5 pt-1">
+                ${MOODS.map((m) => `
+                  <button type="button" class="sf3-card-soft p-3.5 text-left font-bold text-sm" onclick="window.SF300.pages.runSearch('${esc(m.query)}')">${esc(m.label)} ›</button>
+                `).join('')}
+              </div>
+            </div>
+          `}
+        </div>
+      `;
+    },
+    _renderPustaka() {
+      const subTabs = ['Semua', 'Playlist', 'Lagu', 'Album', 'Artis', 'Podcast'];
+      const collections = complete.getCollectionsSummary();
+      const userPls = safeJsonParse(localStorage.getItem('sf_user_playlists'), []);
+      let playlists = Array.isArray(userPls) ? userPls.slice() : [];
+      if (libraryState.query) {
+        const q = libraryState.query.toLowerCase();
+        playlists = playlists.filter((p) => String(p.name || '').toLowerCase().includes(q));
+      }
+      if (libraryState.sortBy === 'title') {
+        playlists.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+      }
+      if (libraryState.sortAsc) playlists.reverse();
+
+      const showCols = libraryState.subTab === 'Semua' || libraryState.subTab === 'Lagu';
+      const showPls = libraryState.subTab === 'Semua' || libraryState.subTab === 'Playlist';
+
+      return `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between pt-1">
+            <h1 class="sf3-page-title">Pustaka</h1>
+            <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold" style="background:var(--sf3-accent);color:#000;" aria-label="Tambah" onclick="window.SF300.complete.openLibraryPlusSheet()">+</button>
+          </div>
+
+          <div class="sf3-subtabs">
+            ${subTabs.map((t) => `
+              <button type="button" class="sf3-subtab ${libraryState.subTab === t ? 'active' : ''}" onclick="window.SF300.pages.setLibSubTab('${t}')">${t}</button>
+            `).join('')}
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select onchange="window.SF300.pages.setLibSort(this.value)" class="sf3-card px-3 py-2 text-xs font-bold outline-none" style="color:var(--sf3-text);border-radius:14px;">
+              <option value="added" ${libraryState.sortBy === 'added' ? 'selected' : ''}>Tanggal ditambahkan ⌄</option>
+              <option value="title" ${libraryState.sortBy === 'title' ? 'selected' : ''}>Judul A–Z</option>
+              <option value="plays" ${libraryState.sortBy === 'plays' ? 'selected' : ''}>Paling sering diputar</option>
+            </select>
+            <button type="button" class="sf3-card w-9 h-9 flex items-center justify-center text-sm font-bold" style="border-radius:12px;" onclick="window.SF300.pages.toggleLibDir()">${libraryState.sortAsc ? '↑' : '↓'}</button>
+            <input type="search" value="${esc(libraryState.query)}" oninput="window.SF300.pages.setLibQuery(this.value)" placeholder="Filter..." class="sf3-card flex-1 px-3 py-2 text-xs outline-none" style="color:var(--sf3-text);border-radius:14px;" />
+            <button type="button" class="sf3-card w-9 h-9 flex items-center justify-center text-sm" style="border-radius:12px;" onclick="window.SF300.pages.toggleLibView()">${libraryState.viewMode === 'list' ? '⊞' : '☰'}</button>
+          </div>
+
+          ${showCols ? `
+            <div>
+              <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2 px-1">Koleksi</p>
+              <div class="${libraryState.viewMode === 'grid' ? 'grid grid-cols-2 gap-2.5' : 'sf3-card overflow-hidden'}">
+                ${collections.map((c) => libraryState.viewMode === 'grid' ? `
+                  <button type="button" class="sf3-card p-3.5 text-left space-y-1.5" onclick="window.SF300.complete.openCollection('${c.id}')">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background:${c.bg};">${c.icon}</div>
+                    <div class="font-extrabold text-sm">${esc(c.label)}</div>
+                    <div class="text-xs sf3-muted">${c.count} lagu</div>
+                  </button>
+                ` : `
+                  <div class="sf3-settings-row" onclick="window.SF300.complete.openCollection('${c.id}')">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:${c.bg};">${c.icon}</div>
+                      <div class="min-w-0">
+                        <div class="text-[14.5px] font-bold truncate">${esc(c.label)}</div>
+                        <div class="text-xs sf3-muted">${c.count} lagu</div>
+                      </div>
+                    </div>
+                    <span class="sf3-muted text-lg">›</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${showPls ? `
+            <div>
+              <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2 px-1">Playlist Kamu (${playlists.length})</p>
+              ${playlists.length ? `
+                <div class="sf3-card overflow-hidden">
+                  ${playlists.map((pl, idx) => `
+                    <div class="sf3-settings-row" onclick="window.SF300.complete.openUserPlaylist(${idx})">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:var(--sf3-accent-soft);">🎵</div>
+                        <div class="min-w-0">
+                          <div class="text-[14.5px] font-bold truncate">${esc(pl.name || 'Playlist')}</div>
+                          <div class="text-xs sf3-muted">${Array.isArray(pl.tracks) ? pl.tracks.length : 0} lagu</div>
+                        </div>
+                      </div>
+                      <span class="sf3-muted text-lg">›</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="sf3-card p-5 text-center space-y-2">
+                  <p class="text-sm sf3-muted">Belum ada playlist kustom.</p>
+                  <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold" style="background:var(--sf3-accent);color:#000;" onclick="window.SF300.complete.createPlaylistPrompt()">+ Buat Playlist Baru</button>
+                </div>
+              `}
+            </div>
+          ` : ''}
+
+          ${['Album', 'Artis', 'Podcast'].includes(libraryState.subTab) ? `
+            <div class="sf3-card p-5 text-center space-y-2">
+              <p class="text-sm font-bold">${esc(libraryState.subTab)} Tersimpan</p>
+              <p class="text-xs sf3-muted">Cari ${esc(libraryState.subTab.toLowerCase())} favoritmu di tab Cari untuk menyimpannya di sini.</p>
+              <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold" style="background:var(--sf3-btn-solid-bg);color:var(--sf3-btn-solid-fg);" onclick="window.SF300.nav.go('cari')">Buka Pencarian</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    },
+    _renderKamu() {
+      const user = window.AppState?.user || safeJsonParse(localStorage.getItem('sf_user_profile'), null);
+      const name = esc(user?.name || 'Pendengar SpotyFlow');
+      return `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between pt-1">
+            <h1 class="sf3-page-title">Kamu</h1>
+            <span class="text-xs font-bold px-3 py-1.5 rounded-full sf3-card">${name}</span>
+          </div>
+
+          ${streak.renderCardHtml()}
+
+          <div class="sf3-card overflow-hidden">
+            <div class="sf3-settings-row" onclick="window.SF300.complete.openHistory()">
+              <div class="flex items-center gap-3"><span class="text-lg">🕒</span><div><div class="font-bold text-[14.5px]">Riwayat</div><div class="text-xs sf3-muted">Lagu yang baru saja kamu putar</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+            <div class="sf3-settings-row" onclick="window.SF300.complete.openRecap()">
+              <div class="flex items-center gap-3"><span class="text-lg">📊</span><div><div class="font-bold text-[14.5px]">Statistik dan recap</div><div class="text-xs sf3-muted">Waktu dengar, artis teratas &amp; Percikan</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+          </div>
+
+          <div class="sf3-card overflow-hidden">
+            <div class="sf3-settings-row" onclick="window.SF300.complete.openListenTogether()">
+              <div class="flex items-center gap-3"><span class="text-lg">🎧</span><div><div class="font-bold text-[14.5px]">Dengar bersama</div><div class="text-xs sf3-muted">Sinkronkan antrean musik bareng teman</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+            <div class="sf3-settings-row" onclick="window.SF300.audioTools.openRecognizeModal()">
+              <div class="flex items-center gap-3"><span class="text-lg">🎤</span><div><div class="font-bold text-[14.5px]">Kenali lagu</div><div class="text-xs sf3-muted">Identifikasi lagu dari suara atau potongan lirik</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+            <div class="sf3-settings-row" onclick="window.SF300.audioTools.openEqModal()">
+              <div class="flex items-center gap-3"><span class="text-lg">🎛️</span><div><div class="font-bold text-[14.5px]">Ekualiser</div><div class="text-xs sf3-muted">EQ 5-Band Hardware, Kecepatan &amp; Pitch</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted mb-2 px-1">Akun &amp; Impor</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-4 rounded-[22px] space-y-3" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.28);">
+                <div class="font-extrabold text-[14px]" style="color:#EF4444;">YouTube Music</div>
+                <p class="text-[11.5px] sf3-muted leading-snug">Impor tautan playlist atau lagu YouTube.</p>
+                <button type="button" class="w-full py-2 rounded-full text-xs font-extrabold text-white" style="background:#EF4444;" onclick="window.SF300.complete.openImportAccount('ytm')">Masuk / Impor</button>
+              </div>
+              <div class="p-4 rounded-[22px] space-y-3" style="background:rgba(30,215,96,0.12);border:1px solid rgba(30,215,96,0.28);">
+                <div class="font-extrabold text-[14px]" style="color:#1DB954;">Spotify</div>
+                <p class="text-[11.5px] sf3-muted leading-snug">Hubungkan &amp; impor daftar lagu Spotify.</p>
+                <button type="button" class="w-full py-2 rounded-full text-xs font-extrabold text-black" style="background:#1ED760;" onclick="window.SF300.complete.openImportAccount('spotify')">Hubungkan</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sf3-card overflow-hidden">
+            <div class="sf3-settings-row" onclick="window.SF300.settings.openMenu()">
+              <div class="flex items-center gap-3"><span class="text-lg">⚙️</span><div><div class="font-bold text-[14.5px]">Pengaturan</div><div class="text-xs sf3-muted">10 kategori: Audio, Tampilan, Privasi, Backup</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+            <div class="sf3-settings-row" onclick="window.SF300.widgetSettings.open()">
+              <div class="flex items-center gap-3"><span class="text-lg">🧩</span><div><div class="font-bold text-[14.5px]">Pengaturan widget</div><div class="text-xs sf3-muted">Kustomisasi 5 ukuran widget Home Screen</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+            <div class="sf3-settings-row" onclick="window.SF202?.poster3d?.open?.(window.AppState?.currentTrack)">
+              <div class="flex items-center gap-3"><span class="text-lg">🧊</span><div><div class="font-bold text-[14.5px]">Poster Lagu 3D Depth</div><div class="text-xs sf3-muted">Efek kedalaman AI ML Kit Offline + Stiker</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+            <div class="sf3-settings-row" onclick="window.SF300.settings.openCategory('tentang')">
+              <div class="flex items-center gap-3"><span class="text-lg">ℹ️</span><div><div class="font-bold text-[14.5px]">Tentang SpotyFlow</div><div class="text-xs sf3-muted">v3.0.0 • Build 300</div></div></div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+  };
+
+  // ---------------- 5. Clean Fullscreen Player Stage ----------------
+  const stage = {
+    open() {
+      stageOpen = true;
+      const el = document.getElementById('sf3-player-sheet');
+      if (!el) return;
+      this.render();
+      el.classList.add('open');
+      el.setAttribute('aria-hidden', 'false');
+      const br = getBridge();
+      if (statePrefs.keepScreenOn && br?.setKeepScreenOn) br.setKeepScreenOn(true);
+    },
+    close() {
+      stageOpen = false;
+      stageVideoMode = false;
+      const el = document.getElementById('sf3-player-sheet');
+      if (el) {
+        el.classList.remove('open');
+        el.setAttribute('aria-hidden', 'true');
+      }
+      const br = getBridge();
+      if (br?.setKeepScreenOn) br.setKeepScreenOn(false);
+    },
+    togglePlay() {
+      if (typeof togglePlayPause === 'function') togglePlayPause();
+      setTimeout(updateMiniAndStageUI, 80);
+    },
+    next() {
+      if (typeof playNext === 'function') playNext(true);
+      setTimeout(updateMiniAndStageUI, 150);
+    },
+    prev() {
+      if (typeof playPrev === 'function') playPrev();
+      setTimeout(updateMiniAndStageUI, 150);
+    },
+    toggleLike() {
+      if (typeof toggleLikeCurrent === 'function') toggleLikeCurrent();
+      if (typeof syncNativeMediaBridge === 'function') syncNativeMediaBridge(true);
+      setTimeout(updateMiniAndStageUI, 60);
+    },
+    toggleShuffleBtn() {
+      if (typeof toggleShuffle === 'function') toggleShuffle();
+      this.render();
+    },
+    toggleRepeatBtn() {
+      if (typeof toggleRepeat === 'function') toggleRepeat();
+      this.render();
+    },
+    setMediaMode(isVideo) {
+      if (!statePrefs.videoMode && isVideo) return;
+      stageVideoMode = Boolean(isVideo);
+      this.render();
+    },
+    onSeek(valPct) {
+      const { dur } = getPlaybackTiming();
+      const targetSec = (Math.max(0, Math.min(100, Number(valPct) || 0)) / 100) * dur;
+      if (window.SF200?.isNativePlayingActive?.()) {
+        window.SF200.nativeControl('seek', Math.round(targetSec * 1000));
+      } else if (typeof SFYtFull !== 'undefined' && SFYtFull.active) {
+        SFYtFull.seekTo(targetSec);
+      } else {
+        const el = document.getElementById('audio-player') || window.audio;
+        if (el) el.currentTime = targetSec;
+      }
+      updateMiniAndStageUI();
+    },
+    onVolume(valPct) {
+      const p = Math.max(0, Math.min(100, Math.round(Number(valPct) || 0)));
+      const br = getBridge();
+      if (br?.setSystemVolume) {
+        br.setSystemVolume(p);
+      } else {
+        const el = document.getElementById('audio-player') || window.audio;
+        if (el) el.volume = p / 100;
+      }
+    },
+    openOutputPicker() {
+      const br = getBridge();
+      if (br?.openAudioOutputPicker) {
+        br.openAudioOutputPicker();
+      } else {
+        toast('Output audio: Speaker / Bluetooth perangkat', 'volume-2');
+      }
+    },
+    openStageMenu() {
+      const t = window.AppState?.currentTrack;
+      if (!t) return;
+      nav.openDialog(`
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 pb-2 border-b" style="border-color:var(--sf3-border);">
+            <img src="${esc(trackCover(t))}" class="w-12 h-12 rounded-xl object-cover" onerror="this.src='/icon-512.png'" />
+            <div class="min-w-0 flex-1">
+              <div class="font-extrabold text-sm truncate">${esc(t.title)}</div>
+              <div class="text-xs sf3-muted truncate">${esc(trackArtist(t))}</div>
+            </div>
+          </div>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF202?.poster3d?.open?.(window.AppState?.currentTrack)">🧊 Buat Poster Lagu 3D Depth</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();if(typeof toggleTrackOffline==='function')toggleTrackOffline(window.AppState?.currentTrack)">⬇️ Unduh Offline (.m4a)</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();if(typeof startTrackRadio==='function')startTrackRadio(window.AppState?.currentTrack)">📻 Mulai Radio Lagu Ini</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();if(typeof openAddToPlaylistModal==='function')openAddToPlaylistModal(window.AppState?.currentTrack)">➕ Tambah ke Playlist</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.stage.close();window.SF300.audioTools.openEqModal()">🎛️ Ekualiser &amp; Varispeed</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.stage.close();window.SF300.widgetSettings.open()">🧩 Pengaturan Widget</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.stage.shareCurrent()">📤 Bagikan Lagu</button>
+        </div>
+      `);
+    },
+    shareCurrent() {
+      const t = window.AppState?.currentTrack;
+      if (!t) return;
+      const text = `Mendengarkan "${t.title}" oleh ${trackArtist(t)} di SpotyFlow v3.0.0 🎵`;
+      if (navigator.share) {
+        navigator.share({ title: t.title, text, url: 'https://spotyflow.vercel.app' }).catch(() => {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => toast('Info lagu disalin ke clipboard!', 'check'));
+      }
+    },
+    render() {
+      const el = document.getElementById('sf3-player-sheet');
+      if (!el) return;
+      const t = window.AppState?.currentTrack || { title: 'SpotyFlow', artist: { name: 'Pilih lagu untuk memutar' }, cover: '/icon-512.png' };
+      const cover = esc(trackCover(t));
+      const liked = t.id && typeof isTrackLiked === 'function' ? isTrackLiked(t.id) : false;
+      const playing = Boolean(window.AppState?.isPlaying);
+      const sourceLabel = esc(window.AppState?.currentSourceLabel || 'Mix Harian Kamu');
+      const { pos, dur } = getPlaybackTiming();
+      const pct = Math.max(0, Math.min(100, (pos / Math.max(1, dur)) * 100));
+      const remSec = Math.max(0, Math.floor(dur - pos));
+      const br = getBridge();
+      const sysVol = br?.getSystemVolume ? br.getSystemVolume() : 75;
+      const shufOn = Boolean(window.AppState?.shuffle);
+      const repMode = window.AppState?.repeat || 'off';
+      const ytId = t.videoId || t.ytId || '';
+      const activeLyric = esc(window.__sfCurrentLyricLine || '');
+
+      el.innerHTML = `
+        <div class="sf3-stage-hero">
+          ${stageVideoMode && statePrefs.videoMode && ytId ? `
+            <iframe src="https://www.youtube.com/embed/${esc(ytId)}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0" class="w-full h-full border-0" allow="autoplay; encrypted-media"></iframe>
+          ` : `
+            <img src="${cover}" alt="" class="sf3-stage-hero-img" onerror="this.src='/icon-512.png'" />
+          `}
+          <div class="sf3-stage-hero-fade"></div>
+
+          <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-4" style="padding-top:calc(env(safe-area-inset-top, 0px) + 12px);">
+            <button type="button" class="flex items-center gap-2 text-left text-white max-w-[44%]" onclick="window.SF300.stage.close()">
+              <span class="w-9 h-9 rounded-full flex items-center justify-center bg-black/35 text-lg font-bold">⌄</span>
+              <div class="min-w-0">
+                <div class="text-[10px] uppercase tracking-widest opacity-80">Sedang diputar</div>
+                <div class="text-[12.5px] font-extrabold italic truncate">${sourceLabel}</div>
+              </div>
+            </button>
+
+            ${statePrefs.videoMode ? `
+              <div class="flex items-center rounded-full p-0.5 bg-black/45 border border-white/20 text-[11.5px] font-bold">
+                <button type="button" class="px-3 py-1 rounded-full ${!stageVideoMode ? 'bg-white text-black' : 'text-white/80'}" onclick="window.SF300.stage.setMediaMode(false)">Audio</button>
+                <button type="button" class="px-3 py-1 rounded-full ${stageVideoMode ? 'bg-white text-black' : 'text-white/80'}" onclick="window.SF300.stage.setMediaMode(true)">Video</button>
+              </div>
+            ` : '<div></div>'}
+
+            <button type="button" class="w-9 h-9 rounded-full flex items-center justify-center bg-black/35 text-white text-lg font-bold" onclick="window.SF300.stage.openStageMenu()" aria-label="Menu">⋮</button>
+          </div>
+        </div>
+
+        <div class="sf3-stage-body">
+          <div class="flex items-start justify-between gap-3 pt-1">
+            <div class="min-w-0 flex-1">
+              <div id="sf3-stage-title" class="text-[22px] font-extrabold leading-tight truncate">${esc(t.title)}</div>
+              <div id="sf3-stage-artist" class="text-[14.5px] text-white/75 truncate mt-0.5">${esc(trackArtist(t))}</div>
+              ${statePrefs.miniLyricsInPlayer ? `
+                <div id="sf3-stage-mini-lyric" class="text-[12.5px] font-semibold mt-1.5 truncate" style="color:#1ED760;min-height:18px;">${activeLyric ? '♪ ' + activeLyric : ''}</div>
+              ` : ''}
+            </div>
+            <button type="button" id="sf3-stage-like" class="w-11 h-11 rounded-full flex items-center justify-center bg-white/10 shrink-0" onclick="window.SF300.stage.toggleLike()">${liked ? SVG_ICONS.heartFill : SVG_ICONS.heartOut}</button>
+          </div>
+
+          <div class="space-y-1.5">
+            <input id="sf3-stage-seek" type="range" min="0" max="100" step="0.2" value="${pct.toFixed(1)}" class="sf3-slider" oninput="window.SF300.stage.onSeek(this.value)" />
+            <div class="flex items-center justify-between text-[11.5px] font-semibold text-white/70">
+              <span id="sf3-stage-cur">${fmtTime(pos)}</span>
+              <span id="sf3-stage-rem">-${fmtTime(remSec)}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between px-1">
+            <button type="button" class="w-11 h-11 rounded-full flex items-center justify-center" style="color:${shufOn ? '#1ED760' : 'rgba(255,255,255,0.72)'};" onclick="window.SF300.stage.toggleShuffleBtn()">${SVG_ICONS.shuffle}</button>
+            <button type="button" class="w-12 h-12 rounded-full flex items-center justify-center text-white" onclick="window.SF300.stage.prev()">${SVG_ICONS.prev}</button>
+            <button type="button" id="sf3-stage-play" class="w-16 h-16 rounded-full flex items-center justify-center bg-white text-black shadow-xl active:scale-95 transition-transform" onclick="window.SF300.stage.togglePlay()">${playing ? SVG_ICONS.pause : SVG_ICONS.play}</button>
+            <button type="button" class="w-12 h-12 rounded-full flex items-center justify-center text-white" onclick="window.SF300.stage.next()">${SVG_ICONS.next}</button>
+            <button type="button" class="w-11 h-11 rounded-full flex items-center justify-center relative" style="color:${repMode !== 'off' ? '#1ED760' : 'rgba(255,255,255,0.72)'};" onclick="window.SF300.stage.toggleRepeatBtn()">${SVG_ICONS.repeat}${repMode === 'one' ? '<span style="position:absolute;font-size:9px;font-weight:900;bottom:7px;right:8px;">1</span>' : ''}</button>
+          </div>
+
+          <div class="flex items-center gap-3 px-1">
+            <span class="text-sm opacity-75">🔊</span>
+            <input type="range" min="0" max="100" value="${sysVol}" class="sf3-slider flex-1" oninput="window.SF300.stage.onVolume(this.value)" aria-label="Volume" />
+            <button type="button" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold" title="Output Audio / Bluetooth" onclick="window.SF300.stage.openOutputPicker()">ᛒ</button>
+          </div>
+
+          <div class="flex items-center justify-around pt-1">
+            <button type="button" class="flex flex-col items-center gap-1 text-white/80 text-[11px] font-semibold" onclick="window.SF300.audioTools.openLyricsSheet()"><span class="text-lg">💬</span>Lirik</button>
+            <button type="button" class="flex flex-col items-center gap-1 text-white/80 text-[11px] font-semibold" onclick="window.SF300.audioTools.openQueueSheet()"><span class="text-lg">≡</span>Antrean</button>
+            <button type="button" class="flex flex-col items-center gap-1 text-white/80 text-[11px] font-semibold" onclick="window.SF202?.poster3d?.open?.(window.AppState?.currentTrack)"><span class="text-lg">📤</span>Poster 3D</button>
+            <button type="button" class="flex flex-col items-center gap-1 text-white/80 text-[11px] font-semibold" onclick="window.SF300.audioTools.openSleepTimer()"><span class="text-lg">🌙</span>Timer</button>
+          </div>
+        </div>
+      `;
+    },
+  };
+
+  function updateMiniAndStageUI() {
+    const t = window.AppState?.currentTrack;
+    const playing = Boolean(window.AppState?.isPlaying);
+    const { pos, dur } = getPlaybackTiming();
+    const ratio = Math.max(0, Math.min(1, pos / Math.max(1, dur)));
+
+    const fill = document.getElementById('sf3-mini-progress-fill');
+    if (fill) fill.style.transform = `scaleX(${ratio.toFixed(4)})`;
+
+    if (t) {
+      const mCov = document.getElementById('sf3-mini-cover');
+      const mTit = document.getElementById('sf3-mini-title');
+      const mArt = document.getElementById('sf3-mini-artist');
+      const mLik = document.getElementById('sf3-mini-like');
+      const mPly = document.getElementById('sf3-mini-play');
+      const cov = trackCover(t);
+      if (mCov && mCov.getAttribute('src') !== cov) mCov.src = cov;
+      if (mTit) mTit.textContent = t.title || 'SpotyFlow';
+      if (mArt) mArt.textContent = trackArtist(t);
+      const liked = t.id && typeof isTrackLiked === 'function' ? isTrackLiked(t.id) : false;
+      if (mLik) mLik.innerHTML = liked ? SVG_ICONS.heartFill : SVG_ICONS.heartOut;
+      if (mPly) mPly.innerHTML = playing ? SVG_ICONS.pause : SVG_ICONS.play;
+
+      if (stageOpen) {
+        const sCur = document.getElementById('sf3-stage-cur');
+        const sRem = document.getElementById('sf3-stage-rem');
+        const sSeek = document.getElementById('sf3-stage-seek');
+        const sPly = document.getElementById('sf3-stage-play');
+        const sLik = document.getElementById('sf3-stage-like');
+        const sTit = document.getElementById('sf3-stage-title');
+        const sLyr = document.getElementById('sf3-stage-mini-lyric');
+        if (sTit && sTit.textContent !== (t.title || 'SpotyFlow')) {
+          stage.render();
+        } else {
+          if (sCur) sCur.textContent = fmtTime(pos);
+          if (sRem) sRem.textContent = '-' + fmtTime(Math.max(0, Math.floor(dur - pos)));
+          if (sSeek && document.activeElement !== sSeek) sSeek.value = (ratio * 100).toFixed(1);
+          if (sPly) sPly.innerHTML = playing ? SVG_ICONS.pause : SVG_ICONS.play;
+          if (sLik) sLik.innerHTML = liked ? SVG_ICONS.heartFill : SVG_ICONS.heartOut;
+          if (sLyr && window.__sfCurrentLyricLine) sLyr.textContent = '♪ ' + window.__sfCurrentLyricLine;
+        }
+      }
+    }
+
+    // Sleep timer countdown check
+    if (sleepTimerEndMs > 0 && Date.now() >= sleepTimerEndMs) {
+      sleepTimerEndMs = 0;
+      if (playing && typeof togglePlayPause === 'function') togglePlayPause();
+      toast('Timer tidur selesai — musik dijeda 🌙', 'moon');
+    }
+  }
+
+  // ---------------- 6. 10-Category Settings System ----------------
+  function swRow(label, sub, key) {
+    const on = Boolean(statePrefs[key]);
+    return `
+      <div class="sf3-settings-row" onclick="window.SF300.settings.toggle('${key}')">
+        <div class="min-w-0 pr-2">
+          <div class="text-[14px] font-bold">${esc(label)}</div>
+          ${sub ? `<div class="text-[11.5px] sf3-muted mt-0.5">${esc(sub)}</div>` : ''}
+        </div>
+        <button type="button" class="sf3-switch ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}"></button>
+      </div>
+    `;
+  }
+
+  let currentSettingsCat = '';
+
+  const settings = {
+    toggle(key) {
+      const nextVal = !statePrefs[key];
+      if (key === 'islandEnabled' && nextVal) {
+        const br = getBridge();
+        if (br && typeof br.hasOverlayPermission === 'function' && !br.hasOverlayPermission()) {
+          nav.openDialog(`
+            <div class="space-y-3">
+              <h3 class="font-extrabold text-base">Izin Tampil di Atas Aplikasi Lain</h3>
+              <p class="text-xs sf3-muted leading-relaxed">Floating Dynamic Island membutuhkan izin overlay Android agar kapsul musik bisa melayang di atas layar lain. Fitur ini opsional dan bisa dimatikan kapan saja.</p>
+              <div class="flex gap-2">
+                <button type="button" class="flex-1 py-2.5 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.nav.closeDialog()">Batal</button>
+                <button type="button" class="flex-1 py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.nav.closeDialog();window.SpotyFlowMediaBridge?.openOverlayPermissionSettings?.()">Buka Izin Overlay</button>
+              </div>
+            </div>
+          `);
+          return;
+        }
+      }
+      savePrefs({ [key]: nextVal });
+      if (currentSettingsCat) this.openCategory(currentSettingsCat, true);
+    },
+    setVal(key, val) {
+      savePrefs({ [key]: val });
+      if (currentSettingsCat) this.openCategory(currentSettingsCat, true);
+    },
+    openMenu() {
+      currentSettingsCat = '';
+      const cats = [
+        { id: 'pemutar', icon: '🎵', title: 'Pemutar dan audio', sub: 'Kualitas, Skip Silence, Normalisasi, Alarm, 13 opsi Antrean' },
+        { id: 'tampilan', icon: '🎨', title: 'Tampilan', sub: 'Tema Terang/Gelap/AMOLED, Kaca/Editorial, 120Hz, Island' },
+        { id: 'widget', icon: '🧩', title: 'Pengaturan widget', sub: 'Live Preview & kustomisasi 5 ukuran widget Home Screen' },
+        { id: 'bahasa', icon: '🌐', title: 'Bahasa dan konten', sub: 'Bahasa aplikasi, wilayah rekomendasi & filter eksplisit' },
+        { id: 'lirik', icon: '💬', title: 'Lirik dan terjemahan', sub: 'Lirik sinkron, romanisasi, ukuran font & Dynamic Island' },
+        { id: 'privasi', icon: '🛡️', title: 'Privasi dan riwayat', sub: 'Sesi privat, durasi riwayat Percikan & bersihkan jejak' },
+        { id: 'penyimpanan', icon: '💾', title: 'Penyimpanan', sub: 'Cache aman terproteksi whitelist & kelola lagu offline' },
+        { id: 'cadangan', icon: '📦', title: 'Cadangan dan impor', sub: 'Ekspor & pulihkan data likes, playlist, tema (.json)' },
+        { id: 'androidauto', icon: '🚗', title: 'Android Auto', sub: 'Putar otomatis di mobil & kontrol setir Bluetooth' },
+        { id: 'tautan', icon: '🔗', title: 'Tautan', sub: 'Putar langsung tautan YouTube / Spotify di SpotyFlow' },
+        { id: 'tentang', icon: 'ℹ️', title: 'Tentang SpotyFlow', sub: 'v3.0.0 (Build 300) • Cek pembaruan & Apa yang Baru' },
+      ];
+      nav.openSubpage('Pengaturan', `
+        <div class="sf3-card overflow-hidden">
+          ${cats.map((c) => `
+            <div class="sf3-settings-row" onclick="${c.id === 'widget' ? 'window.SF300.widgetSettings.open()' : `window.SF300.settings.openCategory('${c.id}')`}">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="text-xl shrink-0">${c.icon}</span>
+                <div class="min-w-0">
+                  <div class="font-bold text-[14.5px]">${esc(c.title)}</div>
+                  <div class="text-[11.5px] sf3-muted truncate">${esc(c.sub)}</div>
+                </div>
+              </div>
+              <span class="sf3-muted text-lg">›</span>
+            </div>
+          `).join('')}
+        </div>
+      `);
+    },
+    openCategory(cat, replace = false) {
+      currentSettingsCat = cat;
+      let title = 'Pengaturan';
+      let html = '';
+      if (cat === 'pemutar') {
+        title = 'Pemutar dan audio';
+        const alarms = safeJsonParse(localStorage.getItem(ALARMS_KEY), []);
+        html = `
+          <div class="space-y-4">
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">1. Kualitas &amp; Mesin Audio Native</p>
+            <div class="sf3-card overflow-hidden">
+              <div class="sf3-settings-row">
+                <div><div class="font-bold text-sm">Kualitas audio</div><div class="text-[11.5px] sf3-muted">Tinggi (Opus/M4A 256kbps) atau Hemat Data</div></div>
+                <select onchange="window.SF300.settings.setVal('audioQuality', this.value)" class="sf3-card-soft px-3 py-1.5 text-xs font-bold" style="color:var(--sf3-text);">
+                  <option value="auto" ${statePrefs.audioQuality === 'auto' ? 'selected' : ''}>Otomatis</option>
+                  <option value="high" ${statePrefs.audioQuality === 'high' ? 'selected' : ''}>Tinggi</option>
+                  <option value="saver" ${statePrefs.audioQuality === 'saver' ? 'selected' : ''}>Hemat Data</option>
+                </select>
+              </div>
+              ${swRow('Lewati keheningan (Skip Silence)', 'ExoPlayer memangkas jeda hening otomatis', 'skipSilence')}
+              ${swRow('Normalisasi audio', 'Menyamakan volume antar lagu via LoudnessEnhancer', 'normalizeAudio')}
+              <div class="sf3-settings-row" style="flex-direction:column;align-items:stretch;">
+                <div class="flex justify-between text-sm font-bold mb-2"><span>Level kelantangan (Loudness Boost)</span><span>+${statePrefs.loudnessLevel} dB</span></div>
+                <input type="range" min="0" max="10" step="1" value="${statePrefs.loudnessLevel}" class="sf3-slider" onchange="window.SF300.settings.setVal('loudnessLevel', Number(this.value))" />
+              </div>
+              ${swRow('Audio Offload Hardware', 'Hemat baterai saat layar mati via DSP perangkat', 'audioOffload')}
+              ${swRow('Varispeed (Pitch ikut kecepatan)', 'Ubah kecepatan & nada secara natural seperti piringan hitam', 'varispeed')}
+              <div class="sf3-settings-row" onclick="window.SF300.audioTools.openEqModal()">
+                <div><div class="font-bold text-sm">Ekualiser 5-Band &amp; Kecepatan</div><div class="text-[11.5px] sf3-muted">Preset: ${esc(statePrefs.eqPreset)} • ${statePrefs.speed}x</div></div>
+                <span class="sf3-muted text-lg">›</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-1">
+              <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted">2. Alarm Musik</p>
+              <button type="button" class="text-xs font-extrabold" style="color:var(--sf3-accent);" onclick="window.SF300.settings.openAddAlarmDialog()">+ Tambah alarm</button>
+            </div>
+            <div class="sf3-card overflow-hidden">
+              ${Array.isArray(alarms) && alarms.length ? alarms.map((a, idx) => `
+                <div class="sf3-settings-row">
+                  <div>
+                    <div class="font-extrabold text-base">${esc(a.time || '07:00')} <span class="text-xs font-bold sf3-muted">• ${esc(a.label || 'Alarm Musik')}</span></div>
+                    <div class="text-[11.5px] sf3-muted">${esc(a.days || 'Setiap hari')}</div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button type="button" class="sf3-switch ${a.enabled ? 'on' : ''}" onclick="window.SF300.settings.toggleAlarm(${idx})"></button>
+                    <button type="button" class="text-xs font-bold sf3-muted px-2" onclick="window.SF300.settings.deleteAlarm(${idx})">✕</button>
+                  </div>
+                </div>
+              `).join('') : `
+                <div class="p-4 text-xs sf3-muted text-center">Belum ada alarm musik. Ketuk "+ Tambah alarm" untuk bangun dengan lagu favoritmu.</div>
+              `}
+              <div class="sf3-settings-row" onclick="window.SpotyFlowMediaBridge?.openExactAlarmSettings?.();window.SF300.settings.toastAlarmHint()">
+                <div><div class="font-bold text-xs">Izin Exact Alarm Android 12–15</div><div class="text-[11px] sf3-muted">Pastikan alarm tepat waktu saat ponsel tidur</div></div>
+                <span class="sf3-muted">›</span>
+              </div>
+            </div>
+
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">3. Antrean (13 Pengaturan)</p>
+            <div class="sf3-card overflow-hidden">
+              ${swRow('Putar otomatis lagu serupa', 'Lanjutkan rekomendasi saat antrean habis', 'qAutoplaySimilar')}
+              ${swRow('Radio tak terbatas', 'Bangun mix otomatis sesuai mood lagu terakhir', 'qInfiniteRadio')}
+              ${swRow('Simpan antrean saat keluar', 'Pulihkan antrean terakhir saat app dibuka', 'qPersistQueue')}
+              ${swRow('Acak cerdas (Smart Shuffle)', 'Hindari lagu artis yang sama berurutan', 'qSmartShuffle')}
+              ${swRow('Geser untuk tambah ke antrean', 'Swipe baris lagu untuk antre cepat', 'qSwipeToQueue')}
+              ${swRow('Tambahkan di atas antrean', 'Lagu baru masuk sebagai Putar Berikutnya', 'qAddToTop')}
+              ${swRow('Hapus lagu setelah diputar', 'Jaga antrean selalu ringkas', 'qRemoveAfterPlay')}
+              ${swRow('Konfirmasi sebelum hapus antrean', 'Cegah hapus antrean tanpa sengaja', 'qConfirmClearQueue')}
+              ${swRow('Lanjutkan posisi detik terakhir', 'Ingat menit terakhir pada lagu panjang', 'qResumeLastPos')}
+              ${swRow('Lewati otomatis saat stream error', 'Pindah halus ke lagu berikutnya jika gagal', 'qSkipOnError')}
+              ${swRow('Crossfade halus antar lagu', 'Transisi volume mulus 2 detik', 'qCrossfade')}
+              ${swRow('Gapless playback', 'Tanpa jeda antar trek dalam satu album', 'qGapless')}
+              ${swRow('Tampilkan nomor urut antrean', 'Tampilkan indeks #1, #2 di daftar antrean', 'qShowNumbers')}
+            </div>
+
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">4. Pemutaran &amp; Lainnya</p>
+            <div class="sf3-card overflow-hidden">
+              ${swRow('Tetap putar di dalam game', 'Abaikan kehilangan AudioFocus saat buka game', 'keepPlayingInGames')}
+              ${swRow('Hentikan saat ditutup dari Recents', 'Matikan musik saat kartu app digeser keluar', 'stopOnTaskRemoved')}
+              ${swRow('Jeda saat volume dibisukan', 'Otomatis pause ketika volume media mencapai 0', 'pauseOnMute')}
+              ${swRow('Lanjut saat Bluetooth / Headset tersambung', 'Otomatis lanjutkan musik saat TWS konek', 'resumeOnBluetooth')}
+              ${swRow('Mode video di pemutar', 'Tampilkan tombol Audio | Video di Fullscreen Player', 'videoMode')}
+              ${swRow('Lirik kecil di pemutar', 'Tampilkan 1 baris lirik aktif di bawah judul lagu', 'miniLyricsInPlayer')}
+              ${swRow('Geser mini-player untuk ganti lagu', 'Swipe kiri/kanan di kapsul bawah', 'swipeMiniPlayer')}
+              <div class="sf3-settings-row" style="flex-direction:column;align-items:stretch;">
+                <div class="flex justify-between text-sm font-bold mb-2"><span>Sensitivitas geser mini-player</span><span>${statePrefs.miniPlayerSwipeSensitivity}%</span></div>
+                <input type="range" min="15" max="90" value="${statePrefs.miniPlayerSwipeSensitivity}" class="sf3-slider" onchange="window.SF300.settings.setVal('miniPlayerSwipeSensitivity', Number(this.value))" />
+              </div>
+              ${swRow('Kontrol tombol headset & Bluetooth', 'Terima perintah play/pause/next dari TWS', 'headsetControls')}
+              ${swRow('Prefetch cerdas 1 lagu berikutnya', 'Resolusi awal 4 detik setelah main agar bebas lag', 'smartPrefetch')}
+            </div>
+          </div>
+        `;
+      } else if (cat === 'tampilan') {
+        title = 'Tampilan';
+        html = `
+          <div class="space-y-4">
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">1. Tema Warna</p>
+            <div class="grid grid-cols-2 gap-2.5">
+              ${[
+                ['light', '☀️ Terang', '#F3F4F6'],
+                ['dark', '🌙 Gelap', '#0D0E12'],
+                ['amoled', '🖤 AMOLED Hitam', '#000000'],
+                ['system', '📱 Ikuti Sistem', 'linear-gradient(90deg,#F3F4F6 50%,#0D0E12 50%)'],
+              ].map(([id, lbl, sw]) => `
+                <button type="button" class="sf3-card p-3.5 text-left flex items-center gap-2.5" style="${statePrefs.theme === id ? 'border-color:var(--sf3-accent);border-width:2px;' : ''}" onclick="window.SF300.settings.setVal('theme', '${id}')">
+                  <span class="w-6 h-6 rounded-full shrink-0 border border-black/15" style="background:${sw};"></span>
+                  <span class="font-bold text-xs">${lbl}</span>
+                </button>
+              `).join('')}
+            </div>
+
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">2. Gaya Permukaan (Liquid Glass vs Editorial)</p>
+            <div class="sf3-card overflow-hidden">
+              <div class="p-3 grid grid-cols-2 gap-2">
+                <button type="button" class="py-2.5 rounded-2xl text-xs font-extrabold" style="${statePrefs.uiStyle === 'glass' ? 'background:var(--sf3-accent);color:#000;' : 'background:var(--sf3-surface-2);'}" onclick="window.SF300.settings.setVal('uiStyle', 'glass')">✨ Kaca (Liquid Glass)</button>
+                <button type="button" class="py-2.5 rounded-2xl text-xs font-extrabold" style="${statePrefs.uiStyle === 'editorial' ? 'background:var(--sf3-accent);color:#000;' : 'background:var(--sf3-surface-2);'}" onclick="window.SF300.settings.setVal('uiStyle', 'editorial')">📰 Editorial (0% Blur)</button>
+              </div>
+              ${swRow('Efek blur permukaan melayang', 'Hanya pada Dock, Mini-Player & tombol melayang (60–120 FPS)', 'blurEnabled')}
+              ${swRow('Efek lensa kaca (Specular Rim)', 'Kilau tepi optik ala kaca iOS pada Dock & kapsul', 'glassLens')}
+            </div>
+
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">3. Navigasi &amp; Layar Native</p>
+            <div class="sf3-card overflow-hidden">
+              ${swRow('Ciutkan bilah navigasi saat scroll', 'Dock berubah jadi pil aktif kecil di kiri bawah saat digulir', 'collapseNavOnScroll')}
+              <div class="sf3-settings-row">
+                <div><div class="font-bold text-sm">Ukuran grid Beranda</div><div class="text-[11.5px] sf3-muted">3 kolom ringkas atau 2 kolom besar</div></div>
+                <select onchange="window.SF300.settings.setVal('gridLayout', this.value)" class="sf3-card-soft px-3 py-1.5 text-xs font-bold" style="color:var(--sf3-text);">
+                  <option value="standard" ${statePrefs.gridLayout === 'standard' ? 'selected' : ''}>Standar (3 Kolom)</option>
+                  <option value="large" ${statePrefs.gridLayout === 'large' ? 'selected' : ''}>Besar (2 Kolom)</option>
+                </select>
+              </div>
+              ${swRow('Mode 120Hz High Refresh Rate', 'Aktifkan laju penyegaran tertinggi layar perangkat', 'highRefreshRate')}
+              ${swRow('Layar tetap menyala di pemutar', 'Cegah layar tidur saat membaca lirik / Fullscreen Player', 'keepScreenOn')}
+              ${swRow('Sembunyikan status bar (Immersive)', 'Tampilan penuh tanpa bilah jam atas', 'immersiveStatusBar')}
+            </div>
+
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">4. Dynamic Island &amp; Widget</p>
+            <div class="sf3-card overflow-hidden">
+              <div class="sf3-settings-row" onclick="window.SF300.settings.openCategory('island')">
+                <div><div class="font-bold text-sm">Floating Dynamic Island</div><div class="text-[11.5px] sf3-muted">${statePrefs.islandEnabled ? 'Aktif' : 'Nonaktif (Opt-in)'} • Posisi &amp; ukuran kapsul</div></div>
+                <span class="sf3-muted text-lg">›</span>
+              </div>
+              <div class="sf3-settings-row" onclick="window.SF300.widgetSettings.open()">
+                <div><div class="font-bold text-sm">Pengaturan widget Home Screen</div><div class="text-[11.5px] sf3-muted">Live Preview &amp; kustomisasi 5 ukuran widget</div></div>
+                <span class="sf3-muted text-lg">›</span>
+              </div>
+            </div>
+
+            <p class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-1">5. Playlist Otomatis di Pustaka (6 Koleksi)</p>
+            <div class="sf3-card overflow-hidden">
+              ${swRow('Disukai', 'Tampilkan koleksi lagu yang disukai', 'autoPlLiked')}
+              ${swRow('Diunduh', 'Tampilkan file offline .m4a', 'autoPlDownloaded')}
+              ${swRow('Tersimpan di cache', 'Tampilkan lagu yang sudah ter-cache', 'autoPlCached')}
+              ${swRow('Di perangkat', 'Tampilkan pemindai audio lokal perangkat', 'autoPlDevice')}
+              ${swRow('Teratas saya 50', 'Tampilkan 50 lagu paling sering kamu putar', 'autoPlTop50')}
+              ${swRow('Diunggah', 'Tampilkan file audio impor manual', 'autoPlUploaded')}
+            </div>
+          </div>
+        `;
+      } else if (cat === 'island') {
+        title = 'Dynamic Island';
+        const br = getBridge();
+        const hasPerm = br?.hasOverlayPermission ? br.hasOverlayPermission() : false;
+        html = `
+          <div class="space-y-4">
+            <div class="sf3-card p-4 flex items-center justify-between gap-3">
+              <div>
+                <div class="font-extrabold text-sm">Status Izin Overlay Android</div>
+                <div class="text-xs sf3-muted">${hasPerm ? '✅ Diizinkan — siap menampilkan kapsul melayang' : '⚠️ Belum diizinkan (opsional)'}</div>
+              </div>
+              <button type="button" class="px-3.5 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SpotyFlowMediaBridge?.openOverlayPermissionSettings?.()">Atur Izin</button>
+            </div>
+            <div class="sf3-card overflow-hidden">
+              ${swRow('Aktifkan Floating Dynamic Island', 'Kapsul musik melayang di atas aplikasi lain (ketuk untuk kontrol)', 'islandEnabled')}
+              ${swRow('Tampilkan lirik berjalan di Island', 'Tampilkan baris lirik sinkron pada kapsul', 'islandShowLyrics')}
+              <div class="sf3-settings-row" style="flex-direction:column;align-items:stretch;">
+                <div class="flex justify-between text-sm font-bold mb-2"><span>Posisi vertikal dari atas</span><span>${statePrefs.islandVerticalOffsetDp} dp</span></div>
+                <input type="range" min="0" max="90" value="${statePrefs.islandVerticalOffsetDp}" class="sf3-slider" onchange="window.SF300.settings.setVal('islandVerticalOffsetDp', Number(this.value))" />
+              </div>
+              <div class="sf3-settings-row" style="flex-direction:column;align-items:stretch;">
+                <div class="flex justify-between text-sm font-bold mb-2"><span>Lebar kapsul Island</span><span>${statePrefs.islandPillWidthDp} dp</span></div>
+                <input type="range" min="160" max="320" value="${statePrefs.islandPillWidthDp}" class="sf3-slider" onchange="window.SF300.settings.setVal('islandPillWidthDp', Number(this.value))" />
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (cat === 'bahasa') {
+        title = 'Bahasa dan konten';
+        html = `
+          <div class="sf3-card overflow-hidden">
+            <div class="sf3-settings-row">
+              <div><div class="font-bold text-sm">Bahasa aplikasi</div><div class="text-xs sf3-muted">Antarmuka utama SpotyFlow</div></div>
+              <select onchange="window.SF300.settings.setVal('lang', this.value)" class="sf3-card-soft px-3 py-1.5 text-xs font-bold" style="color:var(--sf3-text);">
+                <option value="id" ${statePrefs.lang === 'id' ? 'selected' : ''}>Bahasa Indonesia</option>
+                <option value="en" ${statePrefs.lang === 'en' ? 'selected' : ''}>English</option>
+              </select>
+            </div>
+            <div class="sf3-settings-row">
+              <div><div class="font-bold text-sm">Wilayah konten &amp; tangga lagu</div><div class="text-xs sf3-muted">Prioritas hasil pencarian musik</div></div>
+              <select onchange="window.SF300.settings.setVal('region', this.value)" class="sf3-card-soft px-3 py-1.5 text-xs font-bold" style="color:var(--sf3-text);">
+                <option value="ID" ${statePrefs.region === 'ID' ? 'selected' : ''}>🇮🇩 Indonesia</option>
+                <option value="US" ${statePrefs.region === 'US' ? 'selected' : ''}>🇺🇸 Global / US</option>
+                <option value="JP" ${statePrefs.region === 'JP' ? 'selected' : ''}>🇯🇵 Jepang</option>
+                <option value="KR" ${statePrefs.region === 'KR' ? 'selected' : ''}>🇰🇷 Korea</option>
+              </select>
+            </div>
+            ${swRow('Sembunyikan konten eksplisit', 'Filter lagu bertanda Explicit dari pencarian', 'hideExplicit')}
+          </div>
+        `;
+      } else if (cat === 'lirik') {
+        title = 'Lirik dan terjemahan';
+        html = `
+          <div class="sf3-card overflow-hidden">
+            ${swRow('Romanisasi otomatis', 'Ubah aksara Jepang/Korea/Mandarin ke huruf Latin', 'lyricsAutoRomanize')}
+            ${swRow('Terjemahan lirik otomatis', 'Tampilkan terjemahan Bahasa Indonesia di bawah lirik', 'lyricsAutoTranslate')}
+            ${swRow('Lirik di notifikasi &amp; Origin Island', 'Sinkronkan baris lirik ke kapsul media sistem', 'islandLyricsNative')}
+            <div class="sf3-settings-row">
+              <div><div class="font-bold text-sm">Ukuran teks lirik</div></div>
+              <select onchange="window.SF300.settings.setVal('lyricsFontSize', this.value)" class="sf3-card-soft px-3 py-1.5 text-xs font-bold" style="color:var(--sf3-text);">
+                <option value="small" ${statePrefs.lyricsFontSize === 'small' ? 'selected' : ''}>Kecil</option>
+                <option value="medium" ${statePrefs.lyricsFontSize === 'medium' ? 'selected' : ''}>Sedang</option>
+                <option value="large" ${statePrefs.lyricsFontSize === 'large' ? 'selected' : ''}>Besar</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (cat === 'privasi') {
+        title = 'Privasi dan riwayat';
+        html = `
+          <div class="space-y-4">
+            <div class="sf3-card overflow-hidden">
+              ${swRow('Sesi privat', 'Jangan catat riwayat putar atau perbarui Percikan sementara', 'privateSession')}
+              ${swRow('Jeda riwayat pemutaran', 'Hentikan pencatatan lagu yang diputar', 'pauseWatchHistory')}
+              ${swRow('Jeda riwayat pencarian', 'Jangan simpan kata kunci yang kamu cari', 'pauseSearchHistory')}
+              <div class="sf3-settings-row" style="flex-direction:column;align-items:stretch;">
+                <div class="flex justify-between text-sm font-bold mb-2"><span>Durasi riwayat &amp; Percikan</span><span>${statePrefs.historyDurationSec} detik</span></div>
+                <input type="range" min="5" max="60" step="5" value="${statePrefs.historyDurationSec}" class="sf3-slider" onchange="window.SF300.settings.setVal('historyDurationSec', Number(this.value))" />
+              </div>
+            </div>
+            <div class="sf3-card overflow-hidden">
+              <div class="sf3-settings-row" onclick="window.SF300.pages.clearSearchHistory();window.SF300.settings.toastSimple('Riwayat pencarian dihapus')">
+                <div class="font-bold text-sm" style="color:#EF4444;">Hapus riwayat pencarian</div>
+                <span class="sf3-muted">›</span>
+              </div>
+              <div class="sf3-settings-row" onclick="localStorage.setItem('sf_recent_tracks','[]');if(window.AppState)window.AppState.recentTracks=[];window.SF300.settings.toastSimple('Riwayat pemutaran dibersihkan')">
+                <div class="font-bold text-sm" style="color:#EF4444;">Hapus riwayat pemutaran</div>
+                <span class="sf3-muted">›</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (cat === 'penyimpanan') {
+        title = 'Penyimpanan';
+        const cacheBytes = typeof getSafeCacheUsageBytes === 'function' ? getSafeCacheUsageBytes() : 0;
+        const offlineIds = window.SF200?.getOfflineIds?.() || [];
+        html = `
+          <div class="space-y-4">
+            <div class="sf3-card p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-extrabold text-sm">Cache Sementara Aman</div>
+                  <div class="text-xs sf3-muted">Lirik, sampul, &amp; pencarian ter-cache (${Math.round(cacheBytes / 1024)} KB)</div>
+                </div>
+                <button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.settings.cleanSafeCache()">Bersihkan Cache</button>
+              </div>
+              <p class="text-[11px] sf3-muted">🛡️ Terproteksi Whitelist: Lagu disukai, playlist, tema, Percikan, pengaturan widget, dan lagu offline TIDAK akan terhapus.</p>
+            </div>
+            <div class="sf3-card p-4 space-y-2">
+              <div class="font-extrabold text-sm">Unduhan Offline (${offlineIds.length} lagu)</div>
+              <p class="text-xs sf3-muted">Buka koleksi <strong>Diunduh</strong> di Pustaka untuk memutar atau menghapus file audio offline (.m4a).</p>
+              <button type="button" class="px-4 py-2 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.complete.openCollection('downloaded')">Kelola Lagu Diunduh ›</button>
+            </div>
+          </div>
+        `;
+      } else if (cat === 'cadangan') {
+        title = 'Cadangan dan impor';
+        html = `
+          <div class="space-y-4">
+            <div class="sf3-card p-4 space-y-3">
+              <div class="font-extrabold text-sm">Ekspor Cadangan SpotyFlow (.json)</div>
+              <p class="text-xs sf3-muted">Simpan semua lagu disukai, playlist kustom, tema, Percikan harian, dan konfigurasi widget ke satu file JSON.</p>
+              <button type="button" class="w-full py-3 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.settings.exportBackupJson()">⬇️ Unduh File Cadangan (.json)</button>
+            </div>
+            <div class="sf3-card p-4 space-y-3">
+              <div class="font-extrabold text-sm">Pulihkan dari Cadangan (.json)</div>
+              <p class="text-xs sf3-muted">Pilih file backup SpotyFlow sebelumnya untuk memulihkan semua datamu dalam 1 klik.</p>
+              <label class="block w-full py-3 rounded-full text-center text-xs font-extrabold cursor-pointer sf3-card-soft">
+                📂 Pilih File .json
+                <input type="file" accept=".json,application/json" class="hidden" onchange="window.SF300.settings.importBackupFile(this)" />
+              </label>
+            </div>
+          </div>
+        `;
+      } else if (cat === 'androidauto') {
+        title = 'Android Auto';
+        html = `
+          <div class="sf3-card overflow-hidden">
+            ${swRow('Lanjut otomatis saat Bluetooth mobil tersambung', 'Putar lagu terakhir ketika head unit mobil aktif', 'autoAutoResumeCar')}
+            ${swRow('Tampilkan antrean di layar Android Auto', 'Akses daftar lagu berikutnya langsung dari dashboard', 'autoCarQueueView')}
+            ${swRow('Kontrol tombol setir', 'Gunakan MediaSession Next/Prev untuk tombol kemudi', 'autoSteeringControls')}
+          </div>
+        `;
+      } else if (cat === 'tautan') {
+        title = 'Tautan';
+        html = `
+          <div class="sf3-card p-4 space-y-3">
+            <div class="font-extrabold text-sm">Putar Tautan YouTube / Musik Langsung</div>
+            <p class="text-xs sf3-muted">Tempel tautan YouTube (<code>youtu.be/...</code> atau <code>youtube.com/watch?v=...</code>) untuk langsung diputar di SpotyFlow.</p>
+            <input id="sf3-direct-link-input" type="url" placeholder="https://youtu.be/..." class="sf3-card-soft w-full px-3.5 py-2.5 text-sm outline-none" style="color:var(--sf3-text);" />
+            <button type="button" class="w-full py-3 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.settings.playDirectLink()">Putar Tautan Sekarang</button>
+          </div>
+        `;
+      } else if (cat === 'tentang') {
+        title = 'Tentang SpotyFlow';
+        html = `
+          <div class="space-y-4">
+            <div class="sf3-card p-5 text-center space-y-2">
+              <img src="/icon-512.png" class="w-16 h-16 rounded-2xl mx-auto shadow-md" alt="SpotyFlow" />
+              <div class="text-lg font-extrabold">SpotyFlow v3.0.0</div>
+              <div class="text-xs sf3-muted">100% Parity Edition • Build 300</div>
+              <p class="text-xs sf3-muted pt-1">Engine: AndroidX Media3 ExoPlayer 1.4.1 + NewPipe v0.27.1 + Google ML Kit Offline Depth + 5 Dynamic Glass Widgets.</p>
+            </div>
+            <div class="sf3-card overflow-hidden">
+              <div class="sf3-settings-row" onclick="window.SF300.settings.checkAppUpdate()">
+                <div class="font-bold text-sm">🔄 Cek Pembaruan Aplikasi</div>
+                <span class="sf3-muted">›</span>
+              </div>
+              <div class="sf3-settings-row" onclick="if(typeof openWhatsNewV152Modal==='function')openWhatsNewV152Modal(true)">
+                <div class="font-bold text-sm">✨ Lihat Apa yang Baru di v3.0.0</div>
+                <span class="sf3-muted">›</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (replace) nav.replaceSubpage(title, html);
+      else nav.openSubpage(title, html);
+    },
+    toastSimple(msg) { toast(msg, 'check'); },
+    toastAlarmHint() { toast('Membuka pengaturan Exact Alarm sistem...', 'clock'); },
+    openAddAlarmDialog() {
+      nav.openDialog(`
+        <div class="space-y-3">
+          <h3 class="font-extrabold text-base">Tambah Alarm Musik</h3>
+          <div class="space-y-2">
+            <label class="text-xs font-bold sf3-muted">Waktu</label>
+            <input id="sf3-alarm-time" type="time" value="06:30" class="sf3-card-soft w-full px-3 py-2 text-base font-bold" style="color:var(--sf3-text);" />
+            <label class="text-xs font-bold sf3-muted">Label</label>
+            <input id="sf3-alarm-label" type="text" value="Bangun Pagi SpotyFlow" class="sf3-card-soft w-full px-3 py-2 text-sm" style="color:var(--sf3-text);" />
+            <label class="text-xs font-bold sf3-muted">Hari</label>
+            <input id="sf3-alarm-days" type="text" value="Sen, Sel, Rab, Kam, Jum" class="sf3-card-soft w-full px-3 py-2 text-sm" style="color:var(--sf3-text);" />
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" class="flex-1 py-2.5 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.nav.closeDialog()">Batal</button>
+            <button type="button" class="flex-1 py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.settings.saveNewAlarm()">Simpan</button>
+          </div>
+        </div>
+      `);
+    },
+    saveNewAlarm() {
+      const time = document.getElementById('sf3-alarm-time')?.value || '06:30';
+      const label = document.getElementById('sf3-alarm-label')?.value || 'Alarm Musik';
+      const days = document.getElementById('sf3-alarm-days')?.value || 'Setiap hari';
+      const alarms = safeJsonParse(localStorage.getItem(ALARMS_KEY), []);
+      const next = Array.isArray(alarms) ? alarms.slice() : [];
+      next.push({ id: Date.now(), time, label, days, enabled: true });
+      try { localStorage.setItem(ALARMS_KEY, JSON.stringify(next)); } catch {}
+      nav.closeDialog();
+      toast(`Alarm ${time} disimpan ⏰`, 'clock');
+      this.openCategory('pemutar', true);
+    },
+    toggleAlarm(idx) {
+      const alarms = safeJsonParse(localStorage.getItem(ALARMS_KEY), []);
+      if (Array.isArray(alarms) && alarms[idx]) {
+        alarms[idx].enabled = !alarms[idx].enabled;
+        try { localStorage.setItem(ALARMS_KEY, JSON.stringify(alarms)); } catch {}
+        this.openCategory('pemutar', true);
+      }
+    },
+    deleteAlarm(idx) {
+      const alarms = safeJsonParse(localStorage.getItem(ALARMS_KEY), []);
+      if (Array.isArray(alarms)) {
+        alarms.splice(idx, 1);
+        try { localStorage.setItem(ALARMS_KEY, JSON.stringify(alarms)); } catch {}
+        this.openCategory('pemutar', true);
+      }
+    },
+    cleanSafeCache() {
+      if (typeof clearSafeSpotyFlowCache === 'function') {
+        clearSafeSpotyFlowCache();
+      } else {
+        const prefixes = ['sf_lyrics_', 'sf_ai_lyrics_', 'sf_romanize_', 'sf_search_cache_', 'sf_meta_cache_', 'sf_cover_cache_'];
+        Object.keys(localStorage).forEach((k) => {
+          if (prefixes.some((p) => k.startsWith(p))) localStorage.removeItem(k);
+        });
+      }
+      getBridge()?.clearHttpCache?.();
+      toast('Cache sementara dibersihkan — semua data permanen aman! 🛡️', 'check');
+      this.openCategory('penyimpanan', true);
+    },
+    exportBackupJson() {
+      const bundle = {
+        app: 'SpotyFlow',
+        version: '3.0.0',
+        exportedAt: new Date().toISOString(),
+        prefs: statePrefs,
+        streak: streakState,
+        alarms: safeJsonParse(localStorage.getItem(ALARMS_KEY), []),
+        widgetCfg: widgetSettings.getConfig(),
+        likedTracks: safeJsonParse(localStorage.getItem('sf_liked_tracks'), []),
+        userPlaylists: safeJsonParse(localStorage.getItem('sf_user_playlists'), []),
+        recentTracks: safeJsonParse(localStorage.getItem('sf_recent_tracks'), []),
+      };
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `spotyflow-v3-backup-${todayKey()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      toast('Cadangan JSON berhasil diunduh 📦', 'check');
+    },
+    importBackupFile(input) {
+      const file = input?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(String(reader.result || '{}'));
+          if (data.prefs) savePrefs(data.prefs);
+          if (data.streak) { streakState = Object.assign(loadStreak(), data.streak); saveStreak(streakState); }
+          if (Array.isArray(data.alarms)) localStorage.setItem(ALARMS_KEY, JSON.stringify(data.alarms));
+          if (data.widgetCfg) widgetSettings.save(data.widgetCfg, true);
+          if (Array.isArray(data.likedTracks)) {
+            localStorage.setItem('sf_liked_tracks', JSON.stringify(data.likedTracks));
+            if (window.AppState) window.AppState.likedTracks = data.likedTracks;
+          }
+          if (Array.isArray(data.userPlaylists)) {
+            localStorage.setItem('sf_user_playlists', JSON.stringify(data.userPlaylists));
+            if (window.AppState) window.AppState.playlists = data.userPlaylists;
+          }
+          toast('Cadangan berhasil dipulihkan! ✅', 'check');
+          pages.render();
+        } catch {
+          toast('File JSON tidak valid!', 'alert-circle');
+        }
+      };
+      reader.readAsText(file);
+    },
+    playDirectLink() {
+      const raw = (document.getElementById('sf3-direct-link-input')?.value || '').trim();
+      if (!raw) return toast('Tempel tautan terlebih dahulu', 'info');
+      if (typeof playDirectYouTubeUrl === 'function') {
+        playDirectYouTubeUrl(raw);
+        nav.closeAllSubpages();
+      } else {
+        pages.runSearch(raw);
+        nav.closeAllSubpages();
+        nav.go('cari');
+      }
+    },
+    async checkAppUpdate() {
+      try {
+        const r = await fetch('/api/app/version');
+        const j = await r.json();
+        toast(`SpotyFlow v${j.version || '3.0.0'} (Build ${j.versionCode || 300}) — Sudah versi terbaru! ✅`, 'check');
+      } catch {
+        toast('SpotyFlow v3.0.0 aktif', 'info');
+      }
+    },
+  };
+
+  // ---------------- 7. Audio Tools: 5-Band EQ, Kenali Lagu, Lyrics, Queue, Sleep Timer ----------------
+  let speechRec = null;
+
+  const audioTools = {
+    openEqModal() {
+      const bands = Array.isArray(statePrefs.eqBands) ? statePrefs.eqBands : [0, 0, 0, 0, 0];
+      const labels = ['60Hz', '230Hz', '910Hz', '3.6kHz', '14kHz'];
+      nav.openDialog(`
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-extrabold text-base">Ekualiser 5-Band Hardware</h3>
+              <p class="text-[11px] sf3-muted">Terhubung langsung ke DSP Android ExoPlayer</p>
+            </div>
+            <button type="button" class="sf3-switch ${statePrefs.eqEnabled ? 'on' : ''}" onclick="window.SF300.audioTools.toggleEq()"></button>
+          </div>
+
+          <div class="sf3-chip-row">
+            ${Object.keys(EQ_PRESETS).map((p) => `
+              <button type="button" class="sf3-chip ${statePrefs.eqPreset === p ? 'active' : ''}" onclick="window.SF300.audioTools.applyEqPreset('${p}')">${p}</button>
+            `).join('')}
+          </div>
+
+          <div class="space-y-2.5">
+            ${labels.map((lbl, i) => `
+              <div class="flex items-center gap-3">
+                <span class="w-12 text-xs font-bold sf3-muted">${lbl}</span>
+                <input type="range" min="-12" max="12" step="1" value="${bands[i] || 0}" class="sf3-slider flex-1" oninput="window.SF300.audioTools.setEqBand(${i}, this.value)" />
+                <span id="sf3-eq-v-${i}" class="w-11 text-right text-xs font-extrabold">${(bands[i] || 0) > 0 ? '+' : ''}${bands[i] || 0}dB</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="pt-2 border-t space-y-2.5" style="border-color:var(--sf3-border);">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span>Kecepatan Putar (Speed)</span>
+              <span id="sf3-speed-lbl">${Number(statePrefs.speed || 1).toFixed(2)}x</span>
+            </div>
+            <input type="range" min="0.5" max="2.0" step="0.05" value="${statePrefs.speed || 1}" class="sf3-slider" oninput="window.SF300.audioTools.setSpeed(this.value)" />
+
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span>Nada (Pitch)</span>
+              <span id="sf3-pitch-lbl">${Number(statePrefs.pitch || 1).toFixed(2)}x</span>
+            </div>
+            <input type="range" min="0.5" max="1.5" step="0.05" value="${statePrefs.pitch || 1}" class="sf3-slider" oninput="window.SF300.audioTools.setPitch(this.value)" />
+          </div>
+
+          <button type="button" class="w-full py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.nav.closeDialog()">Selesai</button>
+        </div>
+      `);
+    },
+    toggleEq() {
+      savePrefs({ eqEnabled: !statePrefs.eqEnabled });
+      this.openEqModal();
+    },
+    applyEqPreset(name) {
+      const arr = EQ_PRESETS[name];
+      if (!arr) return;
+      savePrefs({ eqEnabled: true, eqPreset: name, eqBands: arr.slice() });
+      this.openEqModal();
+    },
+    setEqBand(idx, val) {
+      const bands = (Array.isArray(statePrefs.eqBands) ? statePrefs.eqBands : [0, 0, 0, 0, 0]).slice();
+      bands[idx] = Math.max(-12, Math.min(12, Math.round(Number(val) || 0)));
+      const lbl = document.getElementById(`sf3-eq-v-${idx}`);
+      if (lbl) lbl.textContent = `${bands[idx] > 0 ? '+' : ''}${bands[idx]}dB`;
+      savePrefs({ eqEnabled: true, eqPreset: 'Kustom', eqBands: bands });
+    },
+    setSpeed(val) {
+      const spd = Math.max(0.5, Math.min(2.0, Number(val) || 1.0));
+      const lbl = document.getElementById('sf3-speed-lbl');
+      if (lbl) lbl.textContent = `${spd.toFixed(2)}x`;
+      if (window.AppState) window.AppState.playbackRate = spd;
+      savePrefs({ speed: spd });
+    },
+    setPitch(val) {
+      const ptc = Math.max(0.5, Math.min(1.5, Number(val) || 1.0));
+      const lbl = document.getElementById('sf3-pitch-lbl');
+      if (lbl) lbl.textContent = `${ptc.toFixed(2)}x`;
+      savePrefs({ pitch: ptc });
+    },
+    openRecognizeModal() {
+      nav.openDialog(`
+        <div class="space-y-4 text-center">
+          <h3 class="font-extrabold text-lg">Kenali Lagu</h3>
+          <div class="relative w-28 h-28 mx-auto my-2 flex items-center justify-center">
+            <div class="sf3-radar-ring"></div>
+            <div class="sf3-radar-ring" style="animation-delay:0.6s;"></div>
+            <button type="button" id="sf3-rec-btn" class="relative z-10 w-20 h-20 rounded-full flex items-center justify-center text-2xl shadow-lg text-black" style="background:var(--sf3-accent);" onclick="window.SF300.audioTools.startVoiceRecognize()">🎤</button>
+          </div>
+          <p id="sf3-rec-status" class="text-xs sf3-muted">Ketuk mikrofon &amp; nyanyikan / ucapkan sepenggal lirik lagu, atau ketik potongan lirik di bawah:</p>
+          <form onsubmit="event.preventDefault();window.SF300.audioTools.searchRecognized()" class="flex gap-2">
+            <input id="sf3-rec-input" type="text" placeholder="Ketik potongan lirik atau judul..." class="sf3-card-soft flex-1 px-3.5 py-2.5 text-sm outline-none" style="color:var(--sf3-text);" />
+            <button type="submit" class="px-4 py-2.5 rounded-2xl text-xs font-extrabold text-black" style="background:var(--sf3-accent);">Cari</button>
+          </form>
+        </div>
+      `);
+    },
+    startVoiceRecognize() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const stEl = document.getElementById('sf3-rec-status');
+      if (!SR) {
+        if (stEl) stEl.textContent = 'Pengenalan suara langsung tidak didukung di WebView ini — ketik potongan lirik di kolom bawah!';
+        return;
+      }
+      try {
+        if (speechRec) speechRec.stop();
+        speechRec = new SR();
+        speechRec.lang = statePrefs.lang === 'en' ? 'en-US' : 'id-ID';
+        speechRec.interimResults = false;
+        if (stEl) stEl.textContent = '🎧 Mendengarkan suara / lirik...';
+        speechRec.onresult = (ev) => {
+          const text = ev?.results?.[0]?.[0]?.transcript || '';
+          const inp = document.getElementById('sf3-rec-input');
+          if (inp) inp.value = text;
+          if (stEl) stEl.textContent = `Terdeteksi: "${text}" — mencari lagu...`;
+          if (text) this.searchRecognized(text);
+        };
+        speechRec.onerror = () => {
+          if (stEl) stEl.textContent = 'Tidak terdengar jelas. Coba ulangi atau ketik potongan liriknya.';
+        };
+        speechRec.start();
+      } catch {
+        if (stEl) stEl.textContent = 'Gagal mengakses mikrofon — ketik potongan lirik di bawah.';
+      }
+    },
+    async searchRecognized(overrideText) {
+      const q = (overrideText || document.getElementById('sf3-rec-input')?.value || '').trim();
+      if (!q) return;
+      nav.closeDialog();
+      nav.go('cari');
+      await pages.runSearch(q);
+    },
+    openSleepTimer() {
+      const activeMins = sleepTimerEndMs > Date.now() ? Math.ceil((sleepTimerEndMs - Date.now()) / 60000) : 0;
+      nav.openDialog(`
+        <div class="space-y-3">
+          <h3 class="font-extrabold text-base">Timer Tidur 🌙</h3>
+          ${activeMins > 0 ? `<p class="text-xs font-bold" style="color:var(--sf3-accent);">Aktif: berhenti otomatis dalam ${activeMins} menit</p>` : ''}
+          <div class="grid grid-cols-2 gap-2">
+            ${[15, 30, 45, 60].map((m) => `
+              <button type="button" class="sf3-card-soft py-3 text-sm font-extrabold" onclick="window.SF300.audioTools.setSleepMinutes(${m})">${m} Menit</button>
+            `).join('')}
+          </div>
+          <button type="button" class="w-full py-2.5 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.audioTools.setSleepMinutes(0)">Matikan Timer</button>
+        </div>
+      `);
+    },
+    setSleepMinutes(mins) {
+      sleepTimerEndMs = mins > 0 ? Date.now() + mins * 60000 : 0;
+      nav.closeDialog();
+      toast(mins > 0 ? `Timer tidur diatur ${mins} menit 🌙` : 'Timer tidur dimatikan', 'moon');
+    },
+    openQueueSheet() {
+      const q = Array.isArray(window.AppState?.queue) ? window.AppState.queue : [];
+      const curIdx = Number(window.AppState?.queueIndex || 0);
+      registerPlayableList(q);
+      nav.openDialog(`
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-extrabold text-base">Antrean (${q.length} lagu)</h3>
+            <button type="button" class="text-xs font-bold sf3-muted" onclick="window.SF300.nav.closeDialog()">Tutup</button>
+          </div>
+          <div class="max-h-[55vh] overflow-y-auto space-y-1">
+            ${q.length ? q.slice(0, 40).map((t, i) => `
+              <div class="sf3-row" onclick="window.SF300.nav.closeDialog();window.SF300.pages.playFromRendered(${i}, 'Antrean')">
+                ${statePrefs.qShowNumbers ? `<span class="w-5 text-[11px] font-bold sf3-muted">${i + 1}</span>` : ''}
+                <img src="${esc(trackCover(t))}" class="w-10 h-10 rounded-lg object-cover shrink-0" onerror="this.src='/icon-512.png'" />
+                <div class="min-w-0 flex-1">
+                  <div class="text-xs font-bold truncate" style="${i === curIdx ? 'color:var(--sf3-accent);' : ''}">${esc(t.title)}</div>
+                  <div class="text-[11px] sf3-muted truncate">${esc(trackArtist(t))}</div>
+                </div>
+              </div>
+            `).join('') : '<p class="text-xs sf3-muted py-4 text-center">Antrean masih kosong.</p>'}
+          </div>
+        </div>
+      `);
+    },
+    async openLyricsSheet() {
+      const t = window.AppState?.currentTrack;
+      if (!t) return toast('Putar lagu terlebih dahulu', 'info');
+      nav.openDialog(`
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="min-w-0">
+              <h3 class="font-extrabold text-base truncate">${esc(t.title)}</h3>
+              <p class="text-xs sf3-muted truncate">${esc(trackArtist(t))}</p>
+            </div>
+            <button type="button" class="text-xs font-bold sf3-muted" onclick="window.SF300.nav.closeDialog()">Tutup</button>
+          </div>
+          <div id="sf3-lyrics-box" class="max-h-[58vh] overflow-y-auto text-sm leading-relaxed space-y-2 py-2">Memuat lirik...</div>
+        </div>
+      `);
+      try {
+        const resp = await fetch(`/api/lyrics?artist=${encodeURIComponent(trackArtist(t))}&title=${encodeURIComponent(t.title)}`);
+        const data = await resp.json();
+        const raw = data?.syncedLyrics || data?.plainLyrics || data?.lyrics || '';
+        const box = document.getElementById('sf3-lyrics-box');
+        if (!box) return;
+        if (!raw) {
+          box.innerHTML = '<p class="sf3-muted text-center py-6">Lirik belum tersedia untuk lagu ini.</p>';
+          return;
+        }
+        const fz = statePrefs.lyricsFontSize === 'large' ? '18px' : (statePrefs.lyricsFontSize === 'small' ? '13px' : '15.5px');
+        const lines = String(raw).split('\n').map((l) => l.replace(/^\[\d+:\d+(?:\.\d+)?\]\s*/, '').trim()).filter(Boolean);
+        box.innerHTML = lines.map((l) => `<p style="font-size:${fz};font-weight:700;">${esc(l)}</p>`).join('');
+      } catch {
+        const box = document.getElementById('sf3-lyrics-box');
+        if (box) box.innerHTML = '<p class="sf3-muted text-center py-6">Gagal memuat lirik saat ini.</p>';
+      }
+    },
+    openTrackMenu(idx) {
+      const t = currentRenderedList[idx];
+      if (!t) return;
+      nav.openDialog(`
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-3 pb-2 border-b" style="border-color:var(--sf3-border);">
+            <img src="${esc(trackCover(t))}" class="w-11 h-11 rounded-xl object-cover" onerror="this.src='/icon-512.png'" />
+            <div class="min-w-0 flex-1">
+              <div class="font-extrabold text-sm truncate">${esc(t.title)}</div>
+              <div class="text-xs sf3-muted truncate">${esc(trackArtist(t))}</div>
+            </div>
+          </div>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();window.SF300.pages.playFromRendered(${idx}, 'Putar Sekarang')">▶️ Putar Sekarang</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof addToQueue==='function')addToQueue(window.SF300._getRenderedTrack(${idx}), true)">⏭️ Putar Berikutnya</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof addToQueue==='function')addToQueue(window.SF300._getRenderedTrack(${idx}), false)">➕ Tambahkan ke Antrean</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof toggleLikeTrack==='function')toggleLikeTrack(window.SF300._getRenderedTrack(${idx}))">💚 Suka / Batal Suka</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();if(typeof toggleTrackOffline==='function')toggleTrackOffline(window.SF300._getRenderedTrack(${idx}))">⬇️ Unduh Offline</button>
+          <button type="button" class="sf3-row w-full text-left text-sm font-bold" onclick="window.SF300.nav.closeDialog();window.SF202?.poster3d?.open?.(window.SF300._getRenderedTrack(${idx}))">🧊 Buat Poster 3D</button>
+        </div>
+      `);
+    },
+  };
+
+  // ---------------- 8. Stage 3: Pengaturan Widget (Live 60 FPS Preview + Native Sync) ----------------
+  let widgetCfg = Object.assign({}, DEFAULT_WIDGET_CFG, safeJsonParse(localStorage.getItem(WIDGET_KEY), {}));
+  let previewWidgetSize = '4x2';
+
+  const widgetSettings = {
+    getConfig() { return Object.assign({}, widgetCfg); },
+    save(nextCfg, silent = false) {
+      widgetCfg = Object.assign({}, widgetCfg, nextCfg);
+      try { localStorage.setItem(WIDGET_KEY, JSON.stringify(widgetCfg)); } catch {}
+      const br = getBridge();
+      if (br && typeof br.saveWidgetConfig === 'function') {
+        try { br.saveWidgetConfig(JSON.stringify(widgetCfg)); } catch {}
+      }
+      if (!silent) toast('Pengaturan 5 Widget Home Screen disimpan! 🧩', 'check');
+    },
+    setField(key, val) {
+      widgetCfg[key] = val;
+      this.open(true);
+    },
+    toggleField(key) {
+      widgetCfg[key] = !widgetCfg[key];
+      this.open(true);
+    },
+    setPreviewSize(sz) {
+      previewWidgetSize = sz;
+      this.open(true);
+    },
+    _renderLivePreviewHtml() {
+      const c = widgetCfg;
+      const t = window.AppState?.currentTrack || { title: 'Die With A Smile', artist: { name: 'Lady Gaga, Bruno Mars' }, cover: '/icon-512.png' };
+      const cov = esc(trackCover(t));
+      const radiusPx = Math.round((c.cornerRadiusPct / 100) * 34);
+      const borderW = (1 + (c.glassThickness / 100) * 2.5).toFixed(1);
+      const shineOp = ((c.glassShine / 100) * 0.34).toFixed(2);
+      const isLight = c.style === 'light';
+      const fg = isLight ? '#111215' : '#FFFFFF';
+      const subFg = isLight ? 'rgba(17,18,21,0.68)' : 'rgba(255,255,255,0.75)';
+      const accent = c.accentMode === 'custom' ? c.accentColorHex : '#7C3AED';
+      let bgStyle = `background:linear-gradient(135deg, ${accent}cc, #12141ce6);`;
+      if (c.style === 'clear_glass') bgStyle = `background:linear-gradient(135deg, ${accent}66, rgba(16,18,24,0.48));`;
+      else if (c.style === 'cover_color') bgStyle = `background:linear-gradient(135deg, ${accent}, #181024);`;
+      else if (c.style === 'light') bgStyle = 'background:rgba(248,250,252,0.96);';
+      else if (c.style === 'dark') bgStyle = 'background:#14161D;';
+      const covRad = c.coverShape === 'circle' ? '999px' : (c.coverShape === 'square' ? '4px' : '14px');
+      const titleFz = c.textSize === 'large' ? '16px' : (c.textSize === 'small' ? '12px' : '14px');
+      const playBg = c.playBtnStyle === 'plain' ? 'background:transparent;color:' + fg : 'background:#FFFFFF;color:#000000';
+      const boxW = previewWidgetSize === '1x1' ? '92px' : (previewWidgetSize === '2x2' || previewWidgetSize === '2x4' ? '190px' : '100%');
+
+      return `
+        <div class="p-4 rounded-[26px] flex flex-col items-center gap-3" style="background:linear-gradient(135deg,#1e1b4b,#312e81,#0f172a);">
+          <div class="flex gap-1.5">
+            ${['1x1', '2x2', '2x4', '4x1', '4x2'].map((sz) => `
+              <button type="button" class="px-2.5 py-1 rounded-full text-[10.5px] font-extrabold ${previewWidgetSize === sz ? 'bg-white text-black' : 'bg-white/15 text-white'}" onclick="window.SF300.widgetSettings.setPreviewSize('${sz}')">${sz.replace('x', '×')}</button>
+            `).join('')}
+          </div>
+
+          <div style="width:${boxW};max-width:360px;border-radius:${radiusPx}px;border:${borderW}px solid ${isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.34)'};${bgStyle}color:${fg};position:relative;overflow:hidden;padding:12px;box-shadow:0 16px 34px rgba(0,0,0,0.4);">
+            ${c.style === 'glass' || c.style === 'clear_glass' ? `<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,${shineOp}),transparent 65%);pointer-events:none;"></div>` : ''}
+            ${previewWidgetSize === '1x1' ? `
+              <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
+                <img src="${cov}" style="width:64px;height:64px;border-radius:${covRad};object-fit:cover;" onerror="this.src='/icon-512.png'" />
+                <span style="position:absolute;width:28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;${playBg};font-size:12px;">▶</span>
+              </div>
+            ` : `
+              <div class="relative z-10 space-y-2.5">
+                <div class="flex items-center gap-3">
+                  ${c.showCover ? `<img src="${cov}" style="width:${previewWidgetSize === '4x1' ? '44px' : '62px'};height:${previewWidgetSize === '4x1' ? '44px' : '62px'};border-radius:${covRad};object-fit:cover;flex-shrink:0;" onerror="this.src='/icon-512.png'" />` : ''}
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-1">
+                      <div style="font-size:${titleFz};font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(t.title)}</div>
+                      ${c.showStreak && previewWidgetSize === '4x2' ? `<span style="font-size:11px;font-weight:800;color:#FDBA74;flex-shrink:0;">🔥 ${streak.getDays()}</span>` : ''}
+                    </div>
+                    <div style="font-size:11.5px;color:${subFg};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(trackArtist(t))}</div>
+                    <div class="flex items-center gap-2 mt-2">
+                      ${c.showLike ? `<span style="font-size:14px;">💚</span>` : ''}
+                      ${c.showPrevNext ? `<span style="font-size:14px;">⏮</span>` : ''}
+                      <span style="width:32px;height:32px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;${playBg};font-size:13px;">⏸</span>
+                      ${c.showPrevNext ? `<span style="font-size:14px;">⏭</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+                ${previewWidgetSize !== '4x1' && (c.showProgress || c.showTime) ? `
+                  <div class="flex items-center gap-2">
+                    ${c.showTime ? `<span style="font-size:10px;color:${subFg};">1:24</span>` : ''}
+                    ${c.showProgress ? `<div style="flex:1;height:5px;border-radius:99px;background:rgba(255,255,255,0.25);overflow:hidden;"><div style="width:44%;height:100%;background:#FFFFFF;border-radius:99px;"></div></div>` : ''}
+                    ${c.showTime ? `<span style="font-size:10px;color:${subFg};">3:42</span>` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            `}
+          </div>
+          <p class="text-[10.5px] text-white/75">Live Preview 60 FPS • Sinkron ke 5 Widget Home Screen Android</p>
+        </div>
+      `;
+    },
+    open(replace = false) {
+      const c = widgetCfg;
+      const html = `
+        <div class="space-y-4">
+          ${this._renderLivePreviewHtml()}
+
+          <div class="sf3-card p-4 space-y-3">
+            <div class="font-extrabold text-xs uppercase tracking-wider sf3-muted">Gaya Widget</div>
+            <div class="sf3-chip-row">
+              ${[
+                ['glass', 'Kaca'],
+                ['clear_glass', 'Kaca bening'],
+                ['cover_color', 'Warna sampul'],
+                ['light', 'Terang'],
+                ['dark', 'Gelap'],
+              ].map(([id, lbl]) => `
+                <button type="button" class="sf3-chip ${c.style === id ? 'active' : ''}" onclick="window.SF300.widgetSettings.setField('style', '${id}')">${lbl}</button>
+              `).join('')}
+            </div>
+
+            <div class="font-extrabold text-xs uppercase tracking-wider sf3-muted pt-1">Warna Aksen</div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" class="sf3-chip ${c.accentMode === 'cover' ? 'active' : ''}" onclick="window.SF300.widgetSettings.setField('accentMode', 'cover')">Dari cover</button>
+              ${WIDGET_SWATCHES.map((hex) => `
+                <button type="button" class="w-7 h-7 rounded-full border-2" style="background:${hex};border-color:${c.accentMode === 'custom' && c.accentColorHex === hex ? 'var(--sf3-text)' : 'transparent'};" onclick="window.SF300.widgetSettings.setAccent('${hex}')"></button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="sf3-card p-4 space-y-3.5">
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1.5"><span>Kilau kaca</span><span>${c.glassShine}%</span></div>
+              <input type="range" min="0" max="100" value="${c.glassShine}" class="sf3-slider" onchange="window.SF300.widgetSettings.setField('glassShine', Number(this.value))" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1.5"><span>Ketebalan kaca</span><span>${c.glassThickness}%</span></div>
+              <input type="range" min="0" max="100" value="${c.glassThickness}" class="sf3-slider" onchange="window.SF300.widgetSettings.setField('glassThickness', Number(this.value))" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1.5"><span>Kebulatan sudut</span><span>${c.cornerRadiusPct}%</span></div>
+              <input type="range" min="0" max="100" value="${c.cornerRadiusPct}" class="sf3-slider" onchange="window.SF300.widgetSettings.setField('cornerRadiusPct', Number(this.value))" />
+            </div>
+          </div>
+
+          <div class="sf3-card p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Bentuk cover</span>
+              <div class="flex gap-1.5">
+                ${[['rounded', 'Membulat'], ['circle', 'Lingkaran'], ['square', 'Kotak']].map(([id, lbl]) => `
+                  <button type="button" class="sf3-chip text-[11px] px-2.5 py-1 ${c.coverShape === id ? 'active' : ''}" onclick="window.SF300.widgetSettings.setField('coverShape', '${id}')">${lbl}</button>
+                `).join('')}
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Ukuran teks</span>
+              <div class="flex gap-1.5">
+                ${[['small', 'Kecil'], ['medium', 'Sedang'], ['large', 'Besar']].map(([id, lbl]) => `
+                  <button type="button" class="sf3-chip text-[11px] px-2.5 py-1 ${c.textSize === id ? 'active' : ''}" onclick="window.SF300.widgetSettings.setField('textSize', '${id}')">${lbl}</button>
+                `).join('')}
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Tombol putar</span>
+              <div class="flex gap-1.5">
+                ${[['round', 'Bulat'], ['plain', 'Polos']].map(([id, lbl]) => `
+                  <button type="button" class="sf3-chip text-[11px] px-2.5 py-1 ${c.playBtnStyle === id ? 'active' : ''}" onclick="window.SF300.widgetSettings.setField('playBtnStyle', '${id}')">${lbl}</button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="sf3-card overflow-hidden">
+            ${[
+              ['showCover', 'Tampilkan sampul album'],
+              ['showProgress', 'Tampilkan bilah progres'],
+              ['showTime', 'Tampilkan waktu lagu'],
+              ['showLike', 'Tampilkan tombol Suka (♡)'],
+              ['showPrevNext', 'Tampilkan tombol Sebelumnya & Berikutnya'],
+              ['showStreak', 'Tampilkan lencana Percikan (🔥 Streak)'],
+            ].map(([k, lbl]) => `
+              <div class="sf3-settings-row" onclick="window.SF300.widgetSettings.toggleField('${k}')">
+                <span class="text-sm font-bold">${lbl}</span>
+                <button type="button" class="sf3-switch ${c[k] ? 'on' : ''}"></button>
+              </div>
+            `).join('')}
+          </div>
+
+          <button type="button" class="w-full py-3.5 rounded-full text-sm font-extrabold text-black shadow-lg" style="background:var(--sf3-accent);" onclick="window.SF300.widgetSettings.finishAndSave()">Selesai &amp; Terapkan ke 5 Widget</button>
+        </div>
+      `;
+      if (replace) nav.replaceSubpage('Pengaturan widget', html);
+      else nav.openSubpage('Pengaturan widget', html);
+    },
+    setAccent(hex) {
+      widgetCfg.accentMode = 'custom';
+      widgetCfg.accentColorHex = hex;
+      this.open(true);
+    },
+    finishAndSave() {
+      this.save(widgetCfg, false);
+      nav.backSubpage();
+    },
+  };
+
+  // ---------------- 9. Stage 4: 6 Pustaka Collections + Kamu Subpages ----------------
+  const complete = {
+    getCollectionsSummary() {
+      const liked = Array.isArray(window.AppState?.likedTracks) ? window.AppState.likedTracks : safeJsonParse(localStorage.getItem('sf_liked_tracks'), []);
+      const offlineIds = window.SF200?.getOfflineIds?.() || [];
+      const recent = Array.isArray(window.AppState?.recentTracks) ? window.AppState.recentTracks : safeJsonParse(localStorage.getItem('sf_recent_tracks'), []);
+      const playCounts = safeJsonParse(localStorage.getItem('sf_play_counts'), {});
+      const topCount = Math.min(50, Object.keys(playCounts || {}).length || recent.length);
+      const all = [
+        { id: 'liked', pref: 'autoPlLiked', icon: '💚', label: 'Disukai', count: Array.isArray(liked) ? liked.length : 0, bg: 'rgba(30,215,96,0.18)' },
+        { id: 'downloaded', pref: 'autoPlDownloaded', icon: '⬇️', label: 'Diunduh', count: offlineIds.length, bg: 'rgba(14,165,233,0.18)' },
+        { id: 'cached', pref: 'autoPlCached', icon: '⚡', label: 'Tersimpan di cache', count: Array.isArray(recent) ? recent.length : 0, bg: 'rgba(234,179,8,0.18)' },
+        { id: 'device', pref: 'autoPlDevice', icon: '📱', label: 'Di perangkat', count: deviceTracks.length, bg: 'rgba(124,58,237,0.18)' },
+        { id: 'top50', pref: 'autoPlTop50', icon: '🏆', label: 'Teratas saya 50', count: topCount, bg: 'rgba(249,115,22,0.18)' },
+        { id: 'uploaded', pref: 'autoPlUploaded', icon: '☁️', label: 'Diunggah', count: uploadedTracks.length, bg: 'rgba(236,72,153,0.18)' },
+      ];
+      return all.filter((c) => statePrefs[c.pref] !== false);
+    },
+    async openCollection(colId) {
+      let title = 'Koleksi';
+      let tracks = [];
+      let headerExtra = '';
+
+      if (colId === 'liked') {
+        title = 'Disukai';
+        tracks = Array.isArray(window.AppState?.likedTracks) ? window.AppState.likedTracks : safeJsonParse(localStorage.getItem('sf_liked_tracks'), []);
+        headerExtra = `<button type="button" class="px-3.5 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.complete.downloadAllLiked()">⬇️ Unduh Semua Offline</button>`;
+      } else if (colId === 'downloaded') {
+        title = 'Diunduh';
+        const ids = new Set(window.SF200?.getOfflineIds?.() || []);
+        const metaMap = safeJsonParse(localStorage.getItem('sf_offline_meta_v2'), {});
+        tracks = Array.from(ids).map((id) => metaMap[id] || { id, title: 'Lagu Offline ' + id, artist: { name: 'Tersimpan di APK' }, cover: '/icon-512.png' });
+      } else if (colId === 'cached') {
+        title = 'Tersimpan di cache';
+        tracks = Array.isArray(window.AppState?.recentTracks) ? window.AppState.recentTracks : safeJsonParse(localStorage.getItem('sf_recent_tracks'), []);
+      } else if (colId === 'device') {
+        title = 'Di perangkat';
+        this.scanDeviceAudio(true);
+        tracks = deviceTracks;
+        headerExtra = `<button type="button" class="px-3.5 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.complete.scanDeviceAudio(false)">🔄 Pindai Ulang</button>`;
+      } else if (colId === 'top50') {
+        title = 'Teratas saya 50';
+        const counts = safeJsonParse(localStorage.getItem('sf_play_counts'), {});
+        const pool = getUserTracksPool();
+        tracks = pool.slice().sort((a, b) => (Number(counts[b.id] || 0) - Number(counts[a.id] || 0))).slice(0, 50);
+      } else if (colId === 'uploaded') {
+        title = 'Diunggah';
+        tracks = uploadedTracks;
+        headerExtra = `
+          <label class="px-3.5 py-2 rounded-full text-xs font-extrabold text-black cursor-pointer inline-block" style="background:var(--sf3-accent);">
+            + Unggah Audio
+            <input type="file" accept="audio/*" multiple class="hidden" onchange="window.SF300.complete.handleAudioUpload(this)" />
+          </label>
+        `;
+      }
+
+      if (!Array.isArray(tracks)) tracks = [];
+      registerPlayableList(tracks);
+
+      nav.openSubpage(title, `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="text-xs sf3-muted font-bold">${tracks.length} lagu tersedia</div>
+            <div class="flex items-center gap-2">
+              ${tracks.length ? `<button type="button" class="px-4 py-2 rounded-full sf3-card text-xs font-extrabold" onclick="window.SF300.pages.playFromRendered(0, '${esc(title)}')">▶️ Putar Semua</button>` : ''}
+              ${headerExtra}
+            </div>
+          </div>
+          ${tracks.length ? `
+            <div class="sf3-card p-2">
+              ${tracks.map((t, i) => renderTrackRow(t, i, title)).join('')}
+            </div>
+          ` : `
+            <div class="sf3-card p-6 text-center text-sm sf3-muted">Belum ada lagu di koleksi ${esc(title)}.</div>
+          `}
+        </div>
+      `);
+    },
+    scanDeviceAudio(silent = false) {
+      const br = getBridge();
+      if (!br || typeof br.scanDeviceAudioFiles !== 'function') {
+        if (!silent) toast('Pemindai audio perangkat aktif otomatis di SpotyFlow APK Android 📱', 'info');
+        return;
+      }
+      try {
+        const res = JSON.parse(br.scanDeviceAudioFiles() || '{}');
+        if (res.permissionDenied) {
+          toast('Izinkan akses Audio Perangkat lalu ketuk Pindai Ulang', 'alert-circle');
+          return;
+        }
+        if (res.ok && Array.isArray(res.tracks)) {
+          deviceTracks = res.tracks.map((x) => ({
+            id: x.id,
+            title: x.title,
+            artist: { name: x.artist },
+            album: { title: x.album },
+            duration: x.durationSec,
+            durationSec: x.durationSec,
+            localUri: x.localUri,
+            isLocalDevice: true,
+            cover: '/icon-512.png',
+          }));
+          try { localStorage.setItem(DEVICE_CACHE_KEY, JSON.stringify(deviceTracks)); } catch {}
+          if (!silent) {
+            toast(`Ditemukan ${deviceTracks.length} file musik lokal! 🎵`, 'check');
+            this.openCollection('device');
+          }
+        }
+      } catch {
+        if (!silent) toast('Gagal memindai musik perangkat', 'alert-circle');
+      }
+    },
+    handleAudioUpload(input) {
+      const files = Array.from(input?.files || []);
+      if (!files.length) return;
+      for (const f of files) {
+        uploadedTracks.unshift({
+          id: 'up_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          title: f.name.replace(/\.[^.]+$/, ''),
+          artist: { name: 'Diunggah Lokal' },
+          album: { title: 'Diunggah' },
+          objectUrl: URL.createObjectURL(f),
+          cover: '/icon-512.png',
+        });
+      }
+      toast(`${files.length} file audio ditambahkan!`, 'check');
+      this.openCollection('uploaded');
+    },
+    async downloadAllLiked() {
+      const liked = Array.isArray(window.AppState?.likedTracks) ? window.AppState.likedTracks : safeJsonParse(localStorage.getItem('sf_liked_tracks'), []);
+      if (!Array.isArray(liked) || !liked.length) return toast('Belum ada lagu disukai', 'info');
+      if (typeof toggleTrackOffline !== 'function') return toast('Fitur unduh offline aktif di APK Android', 'info');
+      toast(`Mengantrekan ${Math.min(10, liked.length)} lagu untuk unduh offline...`, 'download');
+      for (const t of liked.slice(0, 10)) {
+        if (!window.SF200?.hasOfflineTrack?.(t.id)) {
+          try { await toggleTrackOffline(t); } catch {}
+        }
+      }
+    },
+    openUserPlaylist(idx) {
+      const pls = safeJsonParse(localStorage.getItem('sf_user_playlists'), []);
+      const pl = Array.isArray(pls) ? pls[idx] : null;
+      if (!pl) return;
+      const tracks = Array.isArray(pl.tracks) ? pl.tracks : [];
+      registerPlayableList(tracks);
+      nav.openSubpage(pl.name || 'Playlist', `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs sf3-muted font-bold">${tracks.length} lagu</span>
+            ${tracks.length ? `<button type="button" class="px-4 py-2 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.pages.playFromRendered(0, '${esc(pl.name)}')">▶️ Putar Playlist</button>` : ''}
+          </div>
+          ${tracks.length ? `<div class="sf3-card p-2">${tracks.map((t, i) => renderTrackRow(t, i, pl.name)).join('')}</div>` : '<div class="sf3-card p-6 text-center text-sm sf3-muted">Playlist ini masih kosong.</div>'}
+        </div>
+      `);
+    },
+    openLibraryPlusSheet() {
+      nav.openDialog(`
+        <div class="space-y-2">
+          <h3 class="font-extrabold text-base pb-1">Tambah ke Pustaka</h3>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.complete.createPlaylistPrompt()">➕ Buat Playlist Baru</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.complete.openImportAccount('ytm')">📥 Impor Playlist YouTube / Spotify</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.complete.openCollection('uploaded')">☁️ Tambah File Audio Lokal</button>
+          <button type="button" class="sf3-row w-full text-left font-bold text-sm" onclick="window.SF300.nav.closeDialog();window.SF300.complete.openCollection('device')">📱 Pindai Musik di Perangkat</button>
+        </div>
+      `);
+    },
+    createPlaylistPrompt() {
+      nav.openDialog(`
+        <div class="space-y-3">
+          <h3 class="font-extrabold text-base">Buat Playlist Baru</h3>
+          <input id="sf3-new-pl-name" type="text" placeholder="Nama playlist..." class="sf3-card-soft w-full px-3.5 py-2.5 text-sm outline-none" style="color:var(--sf3-text);" />
+          <div class="flex gap-2">
+            <button type="button" class="flex-1 py-2.5 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.nav.closeDialog()">Batal</button>
+            <button type="button" class="flex-1 py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.complete.saveNewPlaylist()">Buat</button>
+          </div>
+        </div>
+      `);
+    },
+    saveNewPlaylist() {
+      const name = (document.getElementById('sf3-new-pl-name')?.value || '').trim();
+      if (!name) return;
+      const pls = safeJsonParse(localStorage.getItem('sf_user_playlists'), []);
+      const next = Array.isArray(pls) ? pls.slice() : [];
+      next.unshift({ id: 'pl_' + Date.now(), name, tracks: [], createdAt: Date.now() });
+      try { localStorage.setItem('sf_user_playlists', JSON.stringify(next)); } catch {}
+      if (window.AppState) window.AppState.playlists = next;
+      nav.closeDialog();
+      toast(`Playlist "${name}" dibuat! 🎵`, 'check');
+      pages.render();
+    },
+    openHistory() {
+      const recent = Array.isArray(window.AppState?.recentTracks) ? window.AppState.recentTracks : safeJsonParse(localStorage.getItem('sf_recent_tracks'), []);
+      const tracks = Array.isArray(recent) ? recent : [];
+      registerPlayableList(tracks);
+      nav.openSubpage('Riwayat', tracks.length ? `
+        <div class="sf3-card p-2">${tracks.map((t, i) => renderTrackRow(t, i, 'Riwayat')).join('')}</div>
+      ` : '<div class="sf3-card p-6 text-center text-sm sf3-muted">Belum ada riwayat pemutaran.</div>');
+    },
+    openRecap() {
+      const s = streakState;
+      const totalSec = Number(localStorage.getItem('sf_listen_seconds') || 0) + (s.todaySec || 0);
+      const mins = Math.max(1, Math.round(totalSec / 60));
+      const pool = getUserTracksPool().slice(0, 5);
+      registerPlayableList(pool);
+      nav.openSubpage('Statistik dan recap', `
+        <div class="space-y-4">
+          ${streak.renderCardHtml()}
+          <div class="grid grid-cols-2 gap-3">
+            <div class="sf3-card p-4">
+              <div class="text-xs sf3-muted font-bold">Total Waktu Dengar</div>
+              <div class="text-2xl font-extrabold mt-1">${mins} <span class="text-xs font-bold sf3-muted">menit</span></div>
+            </div>
+            <div class="sf3-card p-4">
+              <div class="text-xs sf3-muted font-bold">Lagu Hari Ini</div>
+              <div class="text-2xl font-extrabold mt-1">${s.totalTracksToday || 0} <span class="text-xs font-bold sf3-muted">lagu</span></div>
+            </div>
+          </div>
+          <div class="sf3-card p-3 space-y-2">
+            <div class="text-xs font-extrabold uppercase tracking-wider sf3-muted px-2 pt-1">Lagu Teratas Kamu</div>
+            ${pool.length ? pool.map((t, i) => renderTrackRow(t, i, 'Recap')).join('') : '<p class="text-xs sf3-muted p-4 text-center">Putar beberapa lagu untuk melihat recap.</p>'}
+          </div>
+        </div>
+      `);
+    },
+    openListenTogether() {
+      const code = 'SF-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+      nav.openSubpage('Dengar bersama', `
+        <div class="space-y-4">
+          <div class="sf3-card p-5 text-center space-y-3">
+            <div class="text-3xl">🎧</div>
+            <div class="font-extrabold text-base">Ruang Dengar Bersama</div>
+            <p class="text-xs sf3-muted">Bagikan kode sesi ini ke temanmu untuk mendengarkan antrean lagu yang sama secara sinkron.</p>
+            <div class="sf3-card-soft py-3 px-4 font-mono text-xl font-extrabold tracking-widest">${code}</div>
+            <button type="button" class="w-full py-3 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="navigator.clipboard?.writeText('${code}');window.SF300.settings.toastSimple('Kode ruang ${code} disalin!')">Salin Kode Sesi</button>
+          </div>
+        </div>
+      `);
+    },
+    openImportAccount(provider) {
+      const isYtm = provider === 'ytm';
+      nav.openDialog(`
+        <div class="space-y-3">
+          <h3 class="font-extrabold text-base">${isYtm ? 'Impor dari YouTube Music' : 'Hubungkan / Impor Spotify'}</h3>
+          <p class="text-xs sf3-muted">Tempel tautan lagu/playlist atau ketik daftar judul lagu (1 baris per lagu) untuk langsung dicari &amp; dimasukkan ke SpotyFlow.</p>
+          <textarea id="sf3-import-txt" rows="4" placeholder="${isYtm ? 'https://music.youtube.com/watch?v=... atau daftar judul lagu' : 'Nama Artis - Judul Lagu (1 per baris)'}" class="sf3-card-soft w-full p-3 text-xs outline-none" style="color:var(--sf3-text);"></textarea>
+          <div class="flex gap-2">
+            <button type="button" class="flex-1 py-2.5 rounded-full sf3-card-soft text-xs font-bold" onclick="window.SF300.nav.closeDialog()">Batal</button>
+            <button type="button" class="flex-1 py-2.5 rounded-full text-xs font-extrabold text-black" style="background:var(--sf3-accent);" onclick="window.SF300.complete.runAccountImport()">Impor Sekarang</button>
+          </div>
+        </div>
+      `);
+    },
+    async runAccountImport() {
+      const raw = (document.getElementById('sf3-import-txt')?.value || '').trim();
+      if (!raw) return;
+      nav.closeDialog();
+      const firstLine = raw.split('\n')[0].trim();
+      if (firstLine.includes('youtu') && typeof playDirectYouTubeUrl === 'function') {
+        playDirectYouTubeUrl(firstLine);
+        return;
+      }
+      nav.go('cari');
+      await pages.runSearch(firstLine);
+    },
+  };
+
+  // ---------------- 10. Boot & Seamless Hook Integration ----------------
+  let bootDone = false;
+  let uiTicker = null;
+
+  function boot() {
+    if (bootDone) return;
+    bootDone = true;
+    applyPrefsToDomAndNative();
+    mountShell();
+    nav.go('beranda');
+
+    // Sync native widget config if saved on Android
+    try {
+      const br = getBridge();
+      if (br?.getWidgetConfig) {
+        const nativeCfg = safeJsonParse(br.getWidgetConfig(), null);
+        if (nativeCfg && nativeCfg.style) {
+          widgetCfg = Object.assign({}, widgetCfg, nativeCfg);
+        }
+      }
+    } catch {}
+
+    // Override openFullscreenStage & closeFullscreenStage to route cleanly to v3 Stage
+    window._sfLegacyOpenFullscreenStage = window.openFullscreenStage;
+    window.openFullscreenStage = function () { stage.open(); };
+    window.closeFullscreenStage = function () { stage.close(); };
+
+    // Lightweight 500ms ticker for progress bar, stage sync & Streak counter (0 rAF battery drain)
+    if (uiTicker) clearInterval(uiTicker);
+    uiTicker = setInterval(() => {
+      updateMiniAndStageUI();
+      if (window.AppState?.isPlaying) {
+        streak.tickListening(0.5);
+      }
+    }, 500);
+
+    // React to system dark/light theme changes when theme === 'system'
+    try {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (statePrefs.theme === 'system') applyPrefsToDomAndNative();
+      });
+    } catch {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 60));
+  } else {
+    setTimeout(boot, 60);
+  }
+
+  return {
+    version: '3.0.0',
+    prefs: { get: () => Object.assign({}, statePrefs), save: savePrefs, apply: applyPrefsToDomAndNative },
+    streak,
+    nav,
+    pages,
+    stage,
+    settings,
+    audioTools,
+    widgetSettings,
+    complete,
+    _getRenderedTrack: (idx) => currentRenderedList[idx],
+    boot,
+  };
+})();
+
   </script>
 </body>
 </html>
